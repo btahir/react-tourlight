@@ -1,0 +1,5 @@
+export { SpotlightHighlight } from './spotlight-highlight.tsx'
+export type { SpotlightHighlightProps } from './spotlight-highlight.tsx'
+export { SpotlightProvider } from './spotlight-provider.tsx'
+export { SpotlightTour } from './spotlight-tour.tsx'
+export type { SpotlightTourProps } from './spotlight-tour.tsx'

@@ -1,0 +1,164 @@
+/* ============================================================
+   react-spotlight — core styles
+   ============================================================ */
+
+:root {
+  --spotlight-duration: 300ms;
+  --spotlight-easing: ease;
+  --spotlight-z-overlay: 9998;
+  --spotlight-z-tooltip: 9999;
+}
+
+/* ---- Overlay ---- */
+
+.spotlight-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--spotlight-z-overlay);
+  pointer-events: auto;
+  will-change: clip-path;
+  transition: clip-path var(--spotlight-duration) var(--spotlight-easing);
+}
+
+/* ---- Tooltip ---- */
+
+.spotlight-tooltip {
+  position: absolute;
+  z-index: var(--spotlight-z-tooltip);
+  pointer-events: auto;
+}
+
+/* Entry animation */
+.spotlight-tooltip-enter {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+}
+
+.spotlight-tooltip-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity var(--spotlight-duration) var(--spotlight-easing),
+    transform var(--spotlight-duration) var(--spotlight-easing);
+}
+
+/* Exit animation */
+.spotlight-tooltip-exit {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.spotlight-tooltip-exit-active {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+  transition:
+    opacity var(--spotlight-duration) var(--spotlight-easing),
+    transform var(--spotlight-duration) var(--spotlight-easing);
+}
+
+/* ---- Progress bar ---- */
+
+.spotlight-progress {
+  width: 100%;
+  overflow: hidden;
+}
+
+.spotlight-progress-bar {
+  height: 100%;
+  transition: width var(--spotlight-duration) var(--spotlight-easing);
+}
+
+/* ---- Arrow ---- */
+
+.spotlight-arrow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.spotlight-arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---- Close button ---- */
+
+.spotlight-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.spotlight-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ---- Button row ---- */
+
+.spotlight-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.spotlight-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.spotlight-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ---- Step counter ---- */
+
+.spotlight-step-info {
+  font-size: 12px;
+  opacity: 0.6;
+  margin-right: auto;
+}
+
+/* ---- Reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight-overlay {
+    transition: none;
+  }
+
+  .spotlight-tooltip-enter-active,
+  .spotlight-tooltip-exit-active {
+    transition: none;
+  }
+
+  .spotlight-progress-bar {
+    transition: none;
+  }
+
+  .spotlight-close {
+    transition: none;
+  }
+
+  .spotlight-button {
+    transition: none;
+  }
+}
