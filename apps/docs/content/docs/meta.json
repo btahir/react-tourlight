@@ -1,0 +1,17 @@
+{
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "---Guides---",
+    "tour",
+    "highlight",
+    "customization",
+    "accessibility",
+    "async-elements",
+    "multi-page",
+    "---Reference---",
+    "api-reference",
+    "---Recipes---",
+    "...recipes"
+  ]
+}

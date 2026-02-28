@@ -1,0 +1,168 @@
+---
+title: Remix Integration
+description: Set up react-spotlight with Remix, including client-only rendering considerations.
+---
+
+react-spotlight uses browser APIs and must run on the client. Remix supports this through its `ClientOnly` wrapper pattern and `*.client.tsx` file convention.
+
+## Basic setup
+
+### 1. Create the provider wrapper
+
+```tsx title="app/components/spotlight-wrapper.tsx"
+import { SpotlightProvider } from 'react-spotlight'
+import 'react-spotlight/styles.css'
+
+export function SpotlightWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <SpotlightProvider theme="auto">
+      {children}
+    </SpotlightProvider>
+  )
+}
+```
+
+### 2. Add to your root route
+
+Wrap your app in the provider inside `app/root.tsx`:
+
+```tsx title="app/root.tsx"
+import { Outlet } from '@remix-run/react'
+import { SpotlightWrapper } from '~/components/spotlight-wrapper'
+
+export default function App() {
+  return (
+    <html lang="en">
+      <head>{/* ... */}</head>
+      <body>
+        <SpotlightWrapper>
+          <Outlet />
+        </SpotlightWrapper>
+      </body>
+    </html>
+  )
+}
+```
+
+### 3. Define tours in route components
+
+```tsx title="app/routes/dashboard.tsx"
+import { SpotlightTour, useSpotlight } from 'react-spotlight'
+
+export default function Dashboard() {
+  const { start } = useSpotlight()
+
+  return (
+    <div>
+      <SpotlightTour
+        id="dashboard-tour"
+        steps={[
+          {
+            target: '#stats-panel',
+            title: 'Statistics',
+            content: 'Your key metrics at a glance.',
+            placement: 'bottom',
+          },
+          {
+            target: '#recent-activity',
+            title: 'Activity',
+            content: 'See what happened recently.',
+            placement: 'right',
+          },
+        ]}
+      />
+
+      <button onClick={() => start('dashboard-tour')}>
+        Start Tour
+      </button>
+
+      <div id="stats-panel">{/* ... */}</div>
+      <div id="recent-activity">{/* ... */}</div>
+    </div>
+  )
+}
+```
+
+## Client-only rendering
+
+If you encounter hydration issues (unlikely, since react-spotlight renders no server markup), you can use Remix's `ClientOnly` utility:
+
+```tsx title="app/components/client-only-tour.tsx"
+import { ClientOnly } from 'remix-utils/client-only'
+import { SpotlightTour } from 'react-spotlight'
+import type { SpotlightStep } from 'react-spotlight'
+
+const steps: SpotlightStep[] = [
+  {
+    target: '#feature',
+    title: 'New Feature',
+    content: 'Check this out.',
+    placement: 'bottom',
+  },
+]
+
+export function ClientOnlyTour() {
+  return (
+    <ClientOnly fallback={null}>
+      {() => (
+        <SpotlightTour
+          id="feature-tour"
+          steps={steps}
+        />
+      )}
+    </ClientOnly>
+  )
+}
+```
+
+Alternatively, use the `.client.tsx` file suffix to ensure the module is only loaded on the client:
+
+```tsx title="app/components/tour.client.tsx"
+import { SpotlightTour } from 'react-spotlight'
+
+export function Tour() {
+  return (
+    <SpotlightTour
+      id="onboarding"
+      steps={[
+        { target: '#search', title: 'Search', content: 'Find anything.' },
+      ]}
+    />
+  )
+}
+```
+
+## Multi-page tours with Remix
+
+Use `useLocation` from `@remix-run/react` for route-aware steps:
+
+```tsx
+import { useLocation } from '@remix-run/react'
+import { SpotlightTour } from 'react-spotlight'
+
+export function OnboardingTour() {
+  const location = useLocation()
+
+  return (
+    <SpotlightTour
+      id="onboarding"
+      steps={[
+        {
+          target: '#dashboard-header',
+          title: 'Dashboard',
+          content: 'Your home base.',
+          when: () => location.pathname === '/dashboard',
+        },
+        {
+          target: '#settings-form',
+          title: 'Settings',
+          content: 'Configure your preferences.',
+          when: () => location.pathname === '/settings',
+        },
+      ]}
+    />
+  )
+}
+```
+
+See the [Multi-Page Tours](/docs/multi-page) guide for a full persistence setup.

@@ -1,0 +1,118 @@
+---
+title: Async Elements
+description: Handle dynamically loaded content, lazy components, and elements that appear after mount.
+---
+
+In real applications, target elements aren't always present in the DOM when a tour starts. They might be rendered by a lazy-loaded component, fetched from an API, or appear after a user interaction. react-spotlight handles this automatically.
+
+## How it works
+
+When react-spotlight encounters a step whose target element isn't in the DOM, it uses a `MutationObserver` to watch for the element to appear. The observer monitors `document.body` for `childList` and `subtree` mutations, checking for the target on each mutation batch.
+
+This approach is more reliable than polling with `setTimeout` because it reacts instantly when the element appears, regardless of how long the async operation takes.
+
+## Automatic waiting
+
+No extra configuration is needed. If a step targets a CSS selector and the element isn't found immediately, react-spotlight waits for it:
+
+```tsx
+const steps: SpotlightStep[] = [
+  {
+    target: '#dashboard',
+    title: 'Dashboard',
+    content: 'Your overview is here.',
+  },
+  {
+    // This element is rendered by a lazy-loaded component.
+    // react-spotlight will wait for it to appear.
+    target: '#analytics-chart',
+    title: 'Analytics',
+    content: 'Your metrics, visualized.',
+    placement: 'bottom',
+  },
+]
+```
+
+## Configuring timeout
+
+By default, react-spotlight waits up to **5 seconds** for a target element to appear. If the element doesn't appear within the timeout, the step is skipped and the tour advances to the next step.
+
+The timeout is a safety net -- in most cases, elements appear well within this window. If your content takes longer to load (e.g., large data fetches), you can adjust the timeout behavior using `onBeforeShow` to await the data before the step is shown:
+
+```tsx
+{
+  target: '#heavy-data-table',
+  title: 'Data Table',
+  content: 'All your records in one place.',
+  onBeforeShow: async () => {
+    // Wait for the data to load before showing this step.
+    // The element observer won't start until this resolves.
+    await waitForDataLoad()
+  },
+}
+```
+
+## Using `when` predicates as an alternative
+
+For elements that may or may not exist depending on application state, use `when` to conditionally skip the step entirely:
+
+```tsx
+{
+  target: '#admin-panel',
+  title: 'Admin Panel',
+  content: 'Manage users and settings.',
+  // Only show this step if the admin panel exists
+  when: () => document.querySelector('#admin-panel') !== null,
+}
+```
+
+This is useful when the element's existence depends on user permissions or feature flags, not just loading timing.
+
+## Using React refs for dynamic content
+
+When using React refs instead of CSS selectors, the element is available as soon as the component renders. This sidesteps the element-waiting mechanism entirely:
+
+```tsx
+import { useSpotlightTarget, SpotlightTour } from 'react-spotlight'
+
+function LazyPanel() {
+  const panelRef = useSpotlightTarget()
+
+  return (
+    <>
+      <SpotlightTour
+        id="panel-tour"
+        steps={[
+          {
+            target: panelRef,
+            title: 'Panel',
+            content: 'This panel loaded dynamically.',
+          },
+        ]}
+      />
+      <div ref={panelRef}>{/* dynamic content */}</div>
+    </>
+  )
+}
+```
+
+The tradeoff: the `<SpotlightTour>` must be rendered in the same component (or a child) that renders the target element. CSS selectors let you decouple tour definitions from the components they reference.
+
+## Error handling
+
+When a target element isn't found within the timeout:
+
+1. The step is **skipped** -- the tour advances to the next step
+2. No error is thrown -- the tour continues gracefully
+3. The skipped step is not included in `seenSteps` in the tour state
+
+If all remaining steps fail to find their targets, the tour ends. This means tours degrade gracefully even if parts of the UI fail to load.
+
+### Debugging missing elements
+
+If steps are unexpectedly being skipped, check:
+
+- The CSS selector matches the element exactly (use `document.querySelector()` in DevTools)
+- The element is in the DOM, not inside a Shadow DOM
+- The element isn't hidden with `display: none` (hidden elements are still found by selectors, but the spotlight position will be wrong)
+- If using a ref, the component with the ref is mounted before the tour starts

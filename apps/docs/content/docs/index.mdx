@@ -1,0 +1,158 @@
+---
+title: Getting Started
+description: Install react-spotlight and build your first onboarding tour in under 5 minutes.
+---
+
+## Installation
+
+Install react-spotlight and its peer dependency:
+
+```package-install
+npm install react-spotlight @floating-ui/react-dom
+```
+
+`@floating-ui/react-dom` is used for intelligent tooltip positioning (flip, shift, overflow handling). It's listed as a peer dependency to keep the core bundle small.
+
+## Import the stylesheet
+
+react-spotlight ships a small CSS file for the overlay and transitions. Import it once at the root of your app:
+
+```tsx
+import 'react-spotlight/styles.css'
+```
+
+## Wrap your app in SpotlightProvider
+
+`SpotlightProvider` manages all tour and highlight state. Place it near the root of your component tree:
+
+```tsx
+import { SpotlightProvider } from 'react-spotlight'
+import 'react-spotlight/styles.css'
+
+export default function App() {
+  return (
+    <SpotlightProvider>
+      <YourApp />
+    </SpotlightProvider>
+  )
+}
+```
+
+## Define your tour steps
+
+Each step targets a DOM element (via CSS selector or React ref), and includes a title, content, and optional placement:
+
+```tsx
+import { SpotlightTour } from 'react-spotlight'
+
+const steps = [
+  {
+    target: '#search-input',
+    title: 'Search',
+    content: 'Find anything instantly with our search.',
+    placement: 'bottom' as const,
+  },
+  {
+    target: '[data-tour="sidebar"]',
+    title: 'Navigation',
+    content: 'Browse your projects and teams here.',
+    placement: 'right' as const,
+  },
+  {
+    target: '#create-button',
+    title: 'Create',
+    content: 'Start a new project in one click.',
+    placement: 'bottom' as const,
+  },
+]
+
+// SpotlightTour registers the steps — it doesn't render any UI itself.
+<SpotlightTour id="onboarding" steps={steps} />
+```
+
+## Start the tour
+
+Use the `useSpotlight` hook to start, stop, or control any registered tour:
+
+```tsx
+import { useSpotlight } from 'react-spotlight'
+
+function OnboardingButton() {
+  const { start } = useSpotlight()
+
+  return (
+    <button onClick={() => start('onboarding')}>
+      Start Tour
+    </button>
+  )
+}
+```
+
+## Full working example
+
+Putting it all together:
+
+```tsx
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
+import 'react-spotlight/styles.css'
+
+function App() {
+  return (
+    <SpotlightProvider>
+      <SpotlightTour
+        id="onboarding"
+        steps={[
+          {
+            target: '#search-input',
+            title: 'Search',
+            content: 'Find anything instantly with our search.',
+            placement: 'bottom',
+          },
+          {
+            target: '[data-tour="sidebar"]',
+            title: 'Navigation',
+            content: 'Browse your projects and teams here.',
+            placement: 'right',
+          },
+          {
+            target: '#create-button',
+            title: 'Create',
+            content: 'Start a new project in one click.',
+            placement: 'bottom',
+          },
+        ]}
+        onComplete={() => console.log('Tour complete!')}
+      />
+      <Dashboard />
+    </SpotlightProvider>
+  )
+}
+
+function Dashboard() {
+  const { start } = useSpotlight()
+
+  return (
+    <div>
+      <header>
+        <input id="search-input" placeholder="Search..." />
+        <button id="create-button">New Project</button>
+      </header>
+      <nav data-tour="sidebar">
+        {/* sidebar content */}
+      </nav>
+      <main>
+        <button onClick={() => start('onboarding')}>
+          Start Tour
+        </button>
+      </main>
+    </div>
+  )
+}
+```
+
+## Next steps
+
+- [Multi-Step Tours](/docs/tour) -- step configuration, lifecycle hooks, and conditional steps
+- [Single-Element Highlights](/docs/highlight) -- one-off "what's new" callouts
+- [Customization](/docs/customization) -- themes, custom tooltips, and i18n
+- [API Reference](/docs/api-reference) -- full props and types reference

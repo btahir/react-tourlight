@@ -1,0 +1,158 @@
+---
+title: Next.js Integration
+description: Set up react-spotlight with Next.js App Router, including client component wrappers and SSR considerations.
+---
+
+react-spotlight is a client-side library that uses browser APIs (`MutationObserver`, `document.querySelector`, `inert`). In Next.js App Router, you need to mark the provider as a Client Component.
+
+## App Router setup
+
+### 1. Create a client wrapper
+
+Create a `SpotlightWrapper` component marked with `'use client'`:
+
+```tsx title="components/spotlight-wrapper.tsx"
+'use client'
+
+import { SpotlightProvider } from 'react-spotlight'
+import 'react-spotlight/styles.css'
+
+export function SpotlightWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <SpotlightProvider theme="auto">
+      {children}
+    </SpotlightProvider>
+  )
+}
+```
+
+### 2. Add to your root layout
+
+Import the wrapper in your root layout. The layout itself can remain a Server Component:
+
+```tsx title="app/layout.tsx"
+import { SpotlightWrapper } from '@/components/spotlight-wrapper'
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <SpotlightWrapper>
+          {children}
+        </SpotlightWrapper>
+      </body>
+    </html>
+  )
+}
+```
+
+### 3. Define tours in client components
+
+Tour definitions and the `useSpotlight` hook must be used in Client Components:
+
+```tsx title="components/onboarding-tour.tsx"
+'use client'
+
+import { SpotlightTour, useSpotlight } from 'react-spotlight'
+
+export function OnboardingTour() {
+  return (
+    <SpotlightTour
+      id="onboarding"
+      steps={[
+        {
+          target: '#search',
+          title: 'Search',
+          content: 'Find anything instantly.',
+          placement: 'bottom',
+        },
+        {
+          target: '#sidebar',
+          title: 'Navigation',
+          content: 'Browse your projects.',
+          placement: 'right',
+        },
+      ]}
+      onComplete={() => {
+        localStorage.setItem('onboarding-done', 'true')
+      }}
+    />
+  )
+}
+
+export function StartTourButton() {
+  const { start } = useSpotlight()
+
+  return (
+    <button onClick={() => start('onboarding')}>
+      Take the tour
+    </button>
+  )
+}
+```
+
+## SSR considerations
+
+react-spotlight renders nothing on the server. The overlay, tooltip, and spotlight cutout are all client-side only. This means:
+
+- No hydration mismatch issues -- the spotlight UI is only rendered in the browser
+- Server Components can render target elements (`#search`, `#sidebar`, etc.) normally
+- Tour state and `useSpotlight` are only available in Client Components
+
+## Dynamic import pattern
+
+If you want to code-split the tour logic out of your initial bundle, use `next/dynamic`:
+
+```tsx title="components/lazy-tour.tsx"
+'use client'
+
+import dynamic from 'next/dynamic'
+
+const OnboardingTour = dynamic(
+  () => import('./onboarding-tour').then((mod) => ({ default: mod.OnboardingTour })),
+  { ssr: false }
+)
+
+export function LazyOnboardingTour() {
+  return <OnboardingTour />
+}
+```
+
+This keeps the tour code out of the initial JavaScript bundle. The `ssr: false` option ensures it only loads on the client.
+
+## Multi-page tours with App Router
+
+For tours that span multiple routes, use `usePathname` with `when` predicates:
+
+```tsx title="components/onboarding-tour.tsx"
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { SpotlightTour } from 'react-spotlight'
+
+export function OnboardingTour() {
+  const pathname = usePathname()
+
+  return (
+    <SpotlightTour
+      id="onboarding"
+      steps={[
+        {
+          target: '#dashboard-nav',
+          title: 'Dashboard',
+          content: 'Your home base.',
+          when: () => pathname === '/',
+        },
+        {
+          target: '#settings-panel',
+          title: 'Settings',
+          content: 'Configure your workspace.',
+          when: () => pathname === '/settings',
+        },
+      ]}
+    />
+  )
+}
+```
+
+See the [Multi-Page Tours](/docs/multi-page) guide for a complete persistence setup.

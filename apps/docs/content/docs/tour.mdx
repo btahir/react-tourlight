@@ -1,0 +1,260 @@
+---
+title: Multi-Step Tours
+description: Build guided walkthroughs with multi-step tours, lifecycle hooks, conditional steps, and interactive elements.
+---
+
+## Defining a tour
+
+A tour is a sequence of steps registered with `<SpotlightTour>`. Each step highlights a target element and displays a tooltip with a title and content.
+
+```tsx
+import { SpotlightTour } from 'react-spotlight'
+
+const steps = [
+  {
+    target: '#dashboard-header',
+    title: 'Welcome',
+    content: 'This is your dashboard. Let us show you around.',
+    placement: 'bottom',
+  },
+  {
+    target: '#analytics-panel',
+    title: 'Analytics',
+    content: 'Track your key metrics in real time.',
+    placement: 'right',
+  },
+  {
+    target: '#settings-button',
+    title: 'Settings',
+    content: 'Customize your workspace from here.',
+    placement: 'left',
+  },
+]
+
+function App() {
+  return (
+    <SpotlightTour
+      id="dashboard-tour"
+      steps={steps}
+      onComplete={() => console.log('Done!')}
+      onSkip={(stepIndex) => console.log(`Skipped at step ${stepIndex}`)}
+    />
+  )
+}
+```
+
+`<SpotlightTour>` doesn't render any UI itself. It registers the steps with the nearest `<SpotlightProvider>`, making them available to start via `useSpotlight().start('dashboard-tour')`.
+
+## Step configuration
+
+Every step requires `target`, `title`, and `content`. Everything else is optional.
+
+```tsx
+const step: SpotlightStep = {
+  // Required
+  target: '#my-element',             // CSS selector or React ref
+  title: 'Feature Name',
+  content: 'Description of the feature.',
+
+  // Positioning
+  placement: 'bottom',              // 'top' | 'bottom' | 'left' | 'right' | 'auto'
+  spotlightPadding: 8,              // padding around the cutout (px)
+  spotlightRadius: 8,               // border radius of the cutout (px)
+
+  // Interactivity
+  interactive: false,                // let users click the highlighted element
+  disableOverlayClose: false,        // prevent overlay click from dismissing
+
+  // CTA button
+  action: {
+    label: 'Try it now',
+    onClick: () => openFeature(),
+  },
+
+  // Conditional display
+  when: () => userHasPermission(),   // skip step if returns false
+
+  // Lifecycle hooks
+  onBeforeShow: () => loadData(),    // called before step is shown (can be async)
+  onAfterShow: () => trackView(),    // called after step is visible
+  onHide: () => cleanup(),           // called when step is hidden
+}
+```
+
+## Using React refs as targets
+
+Instead of CSS selectors, you can use refs. This is useful when elements don't have stable IDs or `data-` attributes:
+
+```tsx
+import { useSpotlightTarget, SpotlightTour } from 'react-spotlight'
+
+function Dashboard() {
+  const searchRef = useSpotlightTarget()
+  const navRef = useSpotlightTarget()
+
+  return (
+    <>
+      <SpotlightTour
+        id="onboarding"
+        steps={[
+          { target: searchRef, title: 'Search', content: 'Find anything.' },
+          { target: navRef, title: 'Navigation', content: 'Browse projects.' },
+        ]}
+      />
+      <input ref={searchRef} placeholder="Search..." />
+      <nav ref={navRef}>{/* ... */}</nav>
+    </>
+  )
+}
+```
+
+## Starting and stopping tours
+
+Use the `useSpotlight` hook to control tours programmatically:
+
+```tsx
+import { useSpotlight } from 'react-spotlight'
+
+function TourControls() {
+  const { start, stop, next, previous, skip, isActive, currentStep, totalSteps } = useSpotlight()
+
+  return (
+    <div>
+      {!isActive ? (
+        <button onClick={() => start('onboarding')}>Start Tour</button>
+      ) : (
+        <>
+          <p>Step {currentStep + 1} of {totalSteps}</p>
+          <button onClick={previous}>Previous</button>
+          <button onClick={next}>Next</button>
+          <button onClick={skip}>Skip</button>
+          <button onClick={stop}>Stop</button>
+        </>
+      )}
+    </div>
+  )
+}
+```
+
+You can also jump to a specific step by index:
+
+```tsx
+const { goToStep } = useSpotlight()
+goToStep(2) // jump to the third step
+```
+
+## Tour lifecycle callbacks
+
+Handle tour completion and skip events at both the provider and tour level:
+
+```tsx
+// Provider-level — fires for any tour
+<SpotlightProvider
+  onComplete={(tourId) => {
+    console.log(`Tour "${tourId}" completed`)
+  }}
+  onSkip={(tourId, stepIndex) => {
+    console.log(`Tour "${tourId}" skipped at step ${stepIndex}`)
+  }}
+>
+  {/* ... */}
+</SpotlightProvider>
+
+// Tour-level — fires for this specific tour
+<SpotlightTour
+  id="onboarding"
+  steps={steps}
+  onComplete={() => markOnboardingDone()}
+  onSkip={(stepIndex) => trackDropoff(stepIndex)}
+/>
+```
+
+## Conditional steps
+
+Use the `when` predicate to conditionally include or skip steps. The step is skipped if `when` returns `false`. This can be synchronous or asynchronous:
+
+```tsx
+const steps: SpotlightStep[] = [
+  {
+    target: '#basic-feature',
+    title: 'Basic Feature',
+    content: 'Available to everyone.',
+  },
+  {
+    target: '#admin-panel',
+    title: 'Admin Panel',
+    content: 'Manage users and permissions.',
+    when: () => currentUser.role === 'admin',
+  },
+  {
+    target: '#beta-feature',
+    title: 'Beta Feature',
+    content: 'Try out our latest experiment.',
+    when: async () => {
+      const flags = await fetchFeatureFlags()
+      return flags.betaEnabled
+    },
+  },
+]
+```
+
+## Step lifecycle hooks
+
+Each step can define hooks that run at specific points in its lifecycle:
+
+```tsx
+{
+  target: '#data-table',
+  title: 'Data Table',
+  content: 'Your latest data, refreshed.',
+
+  // Runs before the step is shown. Can be async — the step
+  // waits for the promise to resolve before appearing.
+  onBeforeShow: async () => {
+    await fetchLatestData()
+  },
+
+  // Runs after the step tooltip is visible on screen.
+  onAfterShow: () => {
+    analytics.track('tour_step_viewed', { step: 'data-table' })
+  },
+
+  // Runs when the user leaves this step (next, previous, skip, or close).
+  onHide: () => {
+    resetTableFilters()
+  },
+}
+```
+
+## Interactive steps
+
+By default, the overlay prevents interaction with background elements. Set `interactive: true` to allow users to click and interact with the highlighted element:
+
+```tsx
+{
+  target: '#theme-toggle',
+  title: 'Try Dark Mode',
+  content: 'Click the toggle to switch themes.',
+  interactive: true,
+}
+```
+
+This is useful for steps that ask users to perform an action (toggle a switch, click a button, type in an input) as part of the tour.
+
+## Action buttons
+
+Add a custom CTA button inside the tooltip with the `action` property:
+
+```tsx
+{
+  target: '#invite-button',
+  title: 'Invite Your Team',
+  content: 'Collaboration works best with teammates.',
+  action: {
+    label: 'Invite Now',
+    onClick: () => openInviteModal(),
+  },
+}
+```
+
+The action button appears alongside the default navigation buttons (Next, Previous, Skip).

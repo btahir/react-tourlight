@@ -1,0 +1,199 @@
+---
+title: Multi-Page Tours
+description: Build tours that span multiple routes with state persistence and route-aware step configuration.
+---
+
+Some tours need to guide users across multiple pages or routes. react-spotlight supports this through state persistence and route-aware step configuration.
+
+## How it works
+
+react-spotlight doesn't manage routing. Instead, it provides persistence hooks that let you save and restore tour state across page navigations. You bring your own router -- react-spotlight works with Next.js, React Router, TanStack Router, or any routing solution.
+
+The pattern is:
+
+1. Save tour state on every change via `onStateChange`
+2. Restore tour state on mount via `initialState`
+3. Configure steps per-route, with `when` predicates to skip steps not relevant to the current page
+
+## Persistence with onStateChange
+
+The `onStateChange` callback fires whenever a tour's state changes (start, step change, complete, skip). Use it to persist the state to `localStorage`, a database, or any storage:
+
+```tsx
+function App() {
+  const [savedState, setSavedState] = useState<Record<string, TourState>>(() => {
+    if (typeof window === 'undefined') return {}
+    const stored = localStorage.getItem('spotlight-state')
+    return stored ? JSON.parse(stored) : {}
+  })
+
+  const handleStateChange = (tourId: string, state: TourState) => {
+    setSavedState((prev) => {
+      const next = { ...prev, [tourId]: state }
+      localStorage.setItem('spotlight-state', JSON.stringify(next))
+      return next
+    })
+  }
+
+  return (
+    <SpotlightProvider
+      initialState={savedState}
+      onStateChange={handleStateChange}
+    >
+      {/* your app */}
+    </SpotlightProvider>
+  )
+}
+```
+
+## Route-aware steps
+
+Define all steps across all routes in a single tour, using `when` predicates to conditionally show steps based on the current route:
+
+```tsx
+import { usePathname } from 'next/navigation' // or your router
+
+function OnboardingTour() {
+  const pathname = usePathname()
+
+  const steps: SpotlightStep[] = [
+    // Dashboard page steps
+    {
+      target: '#dashboard-header',
+      title: 'Welcome',
+      content: 'This is your dashboard.',
+      when: () => pathname === '/dashboard',
+    },
+    {
+      target: '#metrics-panel',
+      title: 'Metrics',
+      content: 'Your key metrics at a glance.',
+      when: () => pathname === '/dashboard',
+    },
+    // Settings page steps
+    {
+      target: '#profile-section',
+      title: 'Profile',
+      content: 'Update your profile information.',
+      when: () => pathname === '/settings',
+    },
+    {
+      target: '#notifications-toggle',
+      title: 'Notifications',
+      content: 'Configure your notification preferences.',
+      when: () => pathname === '/settings',
+    },
+  ]
+
+  return (
+    <SpotlightTour
+      id="onboarding"
+      steps={steps}
+      onComplete={() => console.log('Multi-page tour complete!')}
+    />
+  )
+}
+```
+
+## Navigating between pages
+
+Use `onHide` on the last step of a page to navigate the user to the next page, then pick up the tour there:
+
+```tsx
+import { useRouter } from 'next/navigation'
+
+function OnboardingTour() {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const steps: SpotlightStep[] = [
+    {
+      target: '#dashboard-header',
+      title: 'Welcome',
+      content: 'Let us show you around.',
+      when: () => pathname === '/dashboard',
+    },
+    {
+      target: '#quick-actions',
+      title: 'Quick Actions',
+      content: 'Next, let us show you the settings.',
+      when: () => pathname === '/dashboard',
+      onHide: () => {
+        // Navigate to the next page when leaving this step
+        if (pathname === '/dashboard') {
+          router.push('/settings')
+        }
+      },
+    },
+    {
+      target: '#profile-section',
+      title: 'Profile',
+      content: 'Update your profile here.',
+      when: () => pathname === '/settings',
+    },
+  ]
+
+  return <SpotlightTour id="onboarding" steps={steps} />
+}
+```
+
+## Full example with localStorage
+
+Here's a complete multi-page tour setup with persistence:
+
+```tsx
+import { useState } from 'react'
+import {
+  SpotlightProvider,
+  SpotlightTour,
+  useSpotlight,
+} from 'react-spotlight'
+import type { TourState } from 'react-spotlight'
+import 'react-spotlight/styles.css'
+
+function loadState(): Record<string, TourState> {
+  if (typeof window === 'undefined') return {}
+  try {
+    const stored = localStorage.getItem('spotlight-tours')
+    return stored ? JSON.parse(stored) : {}
+  } catch {
+    return {}
+  }
+}
+
+function saveState(state: Record<string, TourState>) {
+  localStorage.setItem('spotlight-tours', JSON.stringify(state))
+}
+
+export function AppProviders({ children }: { children: React.ReactNode }) {
+  const [tourState, setTourState] = useState(loadState)
+
+  const handleStateChange = (tourId: string, state: TourState) => {
+    setTourState((prev) => {
+      const next = { ...prev, [tourId]: state }
+      saveState(next)
+      return next
+    })
+  }
+
+  return (
+    <SpotlightProvider
+      initialState={tourState}
+      onStateChange={handleStateChange}
+    >
+      {children}
+    </SpotlightProvider>
+  )
+}
+```
+
+## Works with any router
+
+react-spotlight doesn't import or depend on any router. The `when` predicates and `onHide` callbacks are plain functions, so they work with any routing solution:
+
+- **Next.js App Router** -- use `usePathname()` from `next/navigation`
+- **Next.js Pages Router** -- use `useRouter()` from `next/router`
+- **React Router** -- use `useLocation()` from `react-router-dom`
+- **TanStack Router** -- use `useRouterState()` from `@tanstack/react-router`
+
+The only requirement is that the `<SpotlightProvider>` wraps your router's layout, so tour state persists across navigations.

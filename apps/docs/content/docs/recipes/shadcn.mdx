@@ -1,0 +1,139 @@
+---
+title: shadcn/ui Themed Tooltip
+description: Build a custom tooltip styled with shadcn/ui components to match your app's design system.
+---
+
+react-spotlight's `renderTooltip` prop gives you full control over the tooltip UI. This recipe shows how to build a tooltip using shadcn/ui's `Card` and `Button` components so your tour matches the rest of your app.
+
+## Custom tooltip component
+
+First, create a reusable tooltip component using shadcn/ui primitives:
+
+```tsx title="components/spotlight-tooltip.tsx"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import type { TooltipRenderProps } from 'react-spotlight'
+
+export function ShadcnTooltip({
+  step,
+  next,
+  previous,
+  skip,
+  currentIndex,
+  totalSteps,
+}: TooltipRenderProps) {
+  const isFirstStep = currentIndex === 0
+  const isLastStep = currentIndex === totalSteps - 1
+  const progress = ((currentIndex + 1) / totalSteps) * 100
+
+  return (
+    <Card className="w-[380px] shadow-lg">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{step.title}</CardTitle>
+          <span className="text-sm text-muted-foreground">
+            {currentIndex + 1} / {totalSteps}
+          </span>
+        </div>
+        <Progress value={progress} className="h-1" />
+      </CardHeader>
+
+      <CardContent className="text-sm text-muted-foreground">
+        {step.content}
+      </CardContent>
+
+      <CardFooter className="flex justify-between pt-3">
+        <Button variant="ghost" size="sm" onClick={skip}>
+          Skip
+        </Button>
+        <div className="flex gap-2">
+          {!isFirstStep && (
+            <Button variant="outline" size="sm" onClick={previous}>
+              Back
+            </Button>
+          )}
+          <Button size="sm" onClick={next}>
+            {isLastStep ? 'Done' : 'Next'}
+          </Button>
+        </div>
+      </CardFooter>
+    </Card>
+  )
+}
+```
+
+## Using the custom tooltip
+
+Pass your component to the `renderTooltip` prop on `<SpotlightTour>`:
+
+```tsx title="components/onboarding-tour.tsx"
+import { SpotlightTour } from 'react-spotlight'
+import { ShadcnTooltip } from './spotlight-tooltip'
+
+export function OnboardingTour() {
+  return (
+    <SpotlightTour
+      id="onboarding"
+      steps={[
+        {
+          target: '#search',
+          title: 'Search',
+          content: 'Find anything instantly with our search.',
+          placement: 'bottom',
+        },
+        {
+          target: '#sidebar',
+          title: 'Navigation',
+          content: 'Browse your projects and teams.',
+          placement: 'right',
+        },
+        {
+          target: '#create-btn',
+          title: 'Create',
+          content: 'Start a new project in one click.',
+          placement: 'bottom',
+        },
+      ]}
+      renderTooltip={(props) => <ShadcnTooltip {...props} />}
+    />
+  )
+}
+```
+
+## Adding an action button
+
+If a step has an `action` property, you can render it as an additional button:
+
+```tsx title="components/spotlight-tooltip.tsx"
+<CardContent className="text-sm text-muted-foreground">
+  {step.content}
+  {step.action && (
+    <Button
+      variant="link"
+      size="sm"
+      className="mt-2 h-auto p-0"
+      onClick={step.action.onClick}
+    >
+      {step.action.label}
+    </Button>
+  )}
+</CardContent>
+```
+
+## Matching dark mode
+
+If your app uses shadcn/ui's dark mode (via `class` strategy on `<html>`), set the spotlight provider to `theme="auto"` or `theme="dark"` so the overlay matches. The tooltip itself inherits colors from your shadcn/ui theme through Tailwind's dark mode classes:
+
+```tsx
+<SpotlightProvider theme="auto" overlayColor="rgba(0, 0, 0, 0.6)">
+  <SpotlightTour
+    id="onboarding"
+    steps={steps}
+    renderTooltip={(props) => <ShadcnTooltip {...props} />}
+  />
+  {/* ... */}
+</SpotlightProvider>
+```
+
+Since the custom tooltip uses shadcn/ui components, it automatically picks up your `dark:` Tailwind classes -- no extra theme configuration needed.

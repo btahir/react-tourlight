@@ -1,0 +1,103 @@
+---
+title: Accessibility
+description: react-spotlight is WCAG 2.1 AA compliant with focus trapping, keyboard navigation, ARIA attributes, and screen reader support.
+---
+
+react-spotlight is designed to be accessible out of the box. No additional configuration is needed to meet WCAG 2.1 AA compliance.
+
+## Focus management
+
+When a tour or highlight becomes active, focus is immediately moved into the tooltip. This prevents users from accidentally interacting with background content while the spotlight is active.
+
+### Focus trap
+
+A focus trap is applied to the tooltip while it's visible. Pressing **Tab** cycles focus through the interactive elements inside the tooltip (buttons, links) without leaking focus to the background page. When the tour ends or the highlight is dismissed, focus is restored to the element that was focused before the tour started.
+
+## Keyboard navigation
+
+All tours and highlights support full keyboard navigation:
+
+| Key | Action |
+|-----|--------|
+| **Escape** | Dismiss the tour or highlight |
+| **Right Arrow** | Go to the next step |
+| **Left Arrow** | Go to the previous step |
+| **Tab** | Cycle focus through tooltip buttons |
+| **Shift + Tab** | Reverse cycle through tooltip buttons |
+| **Enter / Space** | Activate the focused button |
+
+Escape can be disabled per-provider with `escToDismiss={false}`, though this is not recommended for accessibility.
+
+## ARIA attributes
+
+The tooltip is rendered as a dialog with proper ARIA semantics:
+
+- **`role="dialog"`** -- Identifies the tooltip as a dialog to assistive technology
+- **`aria-labelledby`** -- Points to the step title element, giving the dialog an accessible name
+- **`aria-describedby`** -- Points to the step content element, giving the dialog an accessible description
+- **`aria-live="polite"`** -- Announces step changes to screen readers without interrupting the current announcement queue
+
+### Example rendered markup
+
+```html
+<div
+  role="dialog"
+  aria-labelledby="spotlight-title-0"
+  aria-describedby="spotlight-content-0"
+>
+  <h2 id="spotlight-title-0">Search</h2>
+  <p id="spotlight-content-0">Find anything instantly with our search.</p>
+  <button>Next</button>
+  <button>Skip</button>
+</div>
+```
+
+## Screen reader support
+
+Step changes are announced via an `aria-live` region. When the user navigates to a new step, screen readers announce the new step's title and content. This works with VoiceOver (macOS/iOS), NVDA (Windows), JAWS (Windows), and TalkBack (Android).
+
+## prefers-reduced-motion
+
+react-spotlight respects the `prefers-reduced-motion` media query. When this preference is enabled:
+
+- Spotlight transitions between steps are instant (no animation)
+- Tooltip enter/exit animations are disabled
+- The overlay fades in without the smooth clip-path transition
+
+No configuration is needed. This behavior is automatic and CSS-based.
+
+## Inert background content
+
+When a tour or highlight is active, the background page content is marked with the `inert` attribute. This means:
+
+- Background elements cannot receive focus via Tab
+- Background elements are hidden from the accessibility tree
+- Screen readers won't read background content while the tour is active
+- Click events on background elements are blocked
+
+This ensures that users navigating with a screen reader or keyboard stay within the tour context.
+
+## Semantic button elements
+
+All interactive elements in the tooltip (Next, Previous, Skip, Done, Close) are rendered as semantic `<button>` elements with descriptive text labels. This ensures they are:
+
+- Discoverable by screen readers
+- Activatable via Enter or Space
+- Properly included in the tab order
+- Visually identifiable as interactive controls
+
+## Checklist
+
+Here's a summary of the accessibility features built into react-spotlight:
+
+- Focus trap inside tooltip
+- Focus restored on tour end
+- Escape key dismisses tour
+- Arrow key navigation between steps
+- `role="dialog"` on tooltip
+- `aria-labelledby` and `aria-describedby` set
+- `aria-live="polite"` for step announcements
+- `inert` on background content
+- `prefers-reduced-motion` respected
+- Semantic `<button>` elements throughout
+- Keyboard-only operation fully supported

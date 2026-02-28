@@ -1,0 +1,194 @@
+---
+title: API Reference
+description: Complete reference for all react-spotlight components, hooks, and types.
+---
+
+## SpotlightProviderProps
+
+Props for the `<SpotlightProvider>` component that wraps your application and manages all tour state.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `children` | `ReactNode` | -- | Your application content |
+| `theme` | `'light' \| 'dark' \| 'auto' \| SpotlightTheme` | `'light'` | Theme preset or custom theme object |
+| `overlayColor` | `string` | `'rgba(0, 0, 0, 0.5)'` | Overlay background color (with alpha) |
+| `transitionDuration` | `number` | `300` | Transition duration in milliseconds |
+| `escToDismiss` | `boolean` | `true` | Whether pressing Escape dismisses the tour |
+| `overlayClickToDismiss` | `boolean` | `true` | Whether clicking the overlay dismisses the tour |
+| `showProgress` | `boolean` | `true` | Whether to show a progress bar |
+| `showSkip` | `boolean` | `true` | Whether to show a skip button |
+| `labels` | `SpotlightLabels` | -- | Custom labels for i18n |
+| `onComplete` | `(tourId: string) => void` | -- | Called when any tour completes |
+| `onSkip` | `(tourId: string, stepIndex: number) => void` | -- | Called when any tour is skipped |
+| `onStateChange` | `(tourId: string, state: TourState) => void` | -- | Called with tour state for persistence |
+| `initialState` | `Record<string, TourState>` | -- | Initial state for restoring persisted tours |
+
+## SpotlightTourProps
+
+Props for the `<SpotlightTour>` component that registers a tour's steps with the provider.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `id` | `string` | -- | Unique identifier for this tour |
+| `steps` | `SpotlightStep[]` | -- | Array of step configurations |
+| `onComplete` | `() => void` | -- | Called when this tour completes |
+| `onSkip` | `(stepIndex: number) => void` | -- | Called when this tour is skipped |
+| `renderTooltip` | `(props: TooltipRenderProps) => ReactNode` | -- | Custom tooltip render function |
+
+## SpotlightStep
+
+Configuration for a single tour step.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `target` | `string \| RefObject<HTMLElement \| null>` | -- | CSS selector or React ref for the target element |
+| `title` | `string` | -- | Step title shown in the tooltip header |
+| `content` | `ReactNode` | -- | Step content -- string or React element |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right' \| 'auto'` | `'auto'` | Tooltip placement relative to target |
+| `spotlightPadding` | `number` | -- | Padding around the spotlight cutout (px) |
+| `spotlightRadius` | `number` | -- | Border radius of the spotlight cutout (px) |
+| `action` | `{ label: string; onClick: () => void }` | -- | Optional CTA button inside the tooltip |
+| `when` | `() => boolean \| Promise<boolean>` | -- | Condition -- step is skipped if this returns `false` |
+| `onBeforeShow` | `() => void \| Promise<void>` | -- | Called before the step is shown (can be async) |
+| `onAfterShow` | `() => void` | -- | Called after the step is visible |
+| `onHide` | `() => void` | -- | Called when the step is hidden |
+| `disableOverlayClose` | `boolean` | `false` | Prevent overlay click from dismissing |
+| `interactive` | `boolean` | `false` | Allow clicking the highlighted element |
+
+## SpotlightHighlightProps
+
+Props for the `<SpotlightHighlight>` component for single-element highlights.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `target` | `string \| RefObject<HTMLElement \| null>` | -- | CSS selector or React ref for the target element |
+| `title` | `string` | -- | Tooltip title |
+| `content` | `ReactNode` | -- | Tooltip content |
+| `active` | `boolean` | `true` | Whether the highlight is currently visible |
+| `placement` | `'top' \| 'bottom' \| 'left' \| 'right' \| 'auto'` | `'auto'` | Tooltip placement relative to target |
+| `spotlightPadding` | `number` | -- | Padding around the spotlight cutout (px) |
+| `spotlightRadius` | `number` | -- | Border radius of the spotlight cutout (px) |
+| `onDismiss` | `() => void` | -- | Called when the highlight is dismissed |
+
+## useSpotlight()
+
+Hook to access spotlight context. Must be used within a `<SpotlightProvider>`.
+
+```tsx
+const spotlight = useSpotlight()
+```
+
+### Return value: SpotlightContextValue
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `start` | `(tourId: string) => void` | Start a tour by its ID |
+| `stop` | `() => void` | Stop the currently active tour |
+| `next` | `() => void` | Advance to the next step |
+| `previous` | `() => void` | Go back to the previous step |
+| `skip` | `() => void` | Skip the current tour |
+| `goToStep` | `(index: number) => void` | Jump to a specific step by index |
+| `isActive` | `boolean` | Whether a tour or highlight is currently active |
+| `activeTourId` | `string \| null` | ID of the currently active tour, or `null` |
+| `currentStep` | `number` | Index of the current step (zero-based) |
+| `totalSteps` | `number` | Total number of steps in the active tour |
+| `registerTour` | `(id, steps, callbacks?) => void` | Register a tour (used internally by SpotlightTour) |
+| `unregisterTour` | `(id: string) => void` | Unregister a tour (used internally) |
+| `highlight` | `(step: SpotlightStep) => void` | Show a single-element highlight |
+| `dismissHighlight` | `() => void` | Dismiss the active highlight |
+
+## useSpotlightControl()
+
+A convenience hook that wraps `useSpotlight()` with memoized callbacks. Provides the same control methods without the internal registration methods.
+
+```tsx
+const spotlight = useSpotlightControl()
+```
+
+### Return value: SpotlightControl
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `start` | `(tourId: string) => void` | Start a tour by its ID |
+| `stop` | `() => void` | Stop the currently active tour |
+| `next` | `() => void` | Advance to the next step |
+| `previous` | `() => void` | Go back to the previous step |
+| `skip` | `() => void` | Skip the current tour |
+| `goToStep` | `(index: number) => void` | Jump to a specific step by index |
+| `highlight` | `(step: SpotlightStep) => void` | Show a single-element highlight |
+| `dismissHighlight` | `() => void` | Dismiss the active highlight |
+| `isActive` | `boolean` | Whether a tour or highlight is currently active |
+
+## useSpotlightTarget()
+
+Hook that returns a `RefObject` to attach to a target element. Use this instead of CSS selectors when you want type-safe, refactor-friendly targets.
+
+```tsx
+const ref = useSpotlightTarget<HTMLInputElement>()
+
+// Use in steps:
+{ target: ref, title: 'Search', content: '...' }
+
+// Attach to element:
+<input ref={ref} />
+```
+
+### Return value
+
+| Type | Description |
+|------|-------------|
+| `RefObject<T \| null>` | A React ref to attach to the target DOM element |
+
+## SpotlightLabels
+
+Labels for i18n. All properties are optional and fall back to English defaults.
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `next` | `string` | `'Next'` | Next button label |
+| `previous` | `string` | `'Previous'` | Previous button label |
+| `skip` | `string` | `'Skip'` | Skip button label |
+| `done` | `string` | `'Done'` | Done button label (last step) |
+| `close` | `string` | `'Close'` | Close button aria-label |
+| `stepOf` | `(current: number, total: number) => string` | `'Step {n} of {m}'` | Step counter format function |
+
+## TooltipRenderProps
+
+Props passed to the `renderTooltip` function on `<SpotlightTour>`.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `step` | `SpotlightStep` | The current step configuration |
+| `next` | `() => void` | Advance to the next step or complete the tour |
+| `previous` | `() => void` | Go back to the previous step |
+| `skip` | `() => void` | Skip the tour |
+| `currentIndex` | `number` | Zero-based index of the current step |
+| `totalSteps` | `number` | Total number of steps |
+
+## TourState
+
+Persisted state for a tour, provided via the `onStateChange` callback.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `status` | `'idle' \| 'active' \| 'completed'` | Current lifecycle status |
+| `currentStepIndex` | `number` | Index of the current step (when active) |
+| `seenSteps` | `number[]` | Indices of steps the user has seen |
+| `completedAt` | `number \| undefined` | Timestamp when the tour was completed |
+| `skippedAt` | `{ stepIndex: number; timestamp: number } \| undefined` | Step index and timestamp when the tour was skipped |
+
+## SpotlightTheme
+
+Full theme interface. See the [Customization](/docs/customization) page for usage examples.
+
+| Section | Properties |
+|---------|-----------|
+| `overlay` | `background: string` |
+| `tooltip` | `background: string`, `color: string`, `borderRadius: string`, `boxShadow: string`, `padding: string`, `maxWidth: string` |
+| `title` | `fontSize: string`, `fontWeight: string`, `color: string`, `marginBottom: string` |
+| `content` | `fontSize: string`, `color: string`, `lineHeight: string` |
+| `button` | `background: string`, `color: string`, `borderRadius: string`, `padding: string`, `fontSize: string`, `fontWeight: string`, `border: string`, `cursor: string`, `hoverBackground: string` |
+| `buttonSecondary` | `background: string`, `color: string`, `border: string`, `hoverBackground: string` |
+| `progress` | `background: string`, `fill: string`, `height: string`, `borderRadius: string` |
+| `arrow` | `fill: string` |
+| `closeButton` | `color: string`, `hoverColor: string` |

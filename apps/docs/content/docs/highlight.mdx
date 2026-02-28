@@ -1,0 +1,135 @@
+---
+title: Single-Element Highlights
+description: Highlight individual elements for "what's new" callouts and feature announcements without a full tour.
+---
+
+Sometimes you don't need a multi-step tour. You just want to draw attention to a single element -- a new feature, a changed button, or an important action. react-spotlight provides two ways to do this.
+
+## SpotlightHighlight component
+
+`<SpotlightHighlight>` is a declarative component for one-off highlights. It shows a spotlight and tooltip around a single element:
+
+```tsx
+import { useState } from 'react'
+import { SpotlightHighlight } from 'react-spotlight'
+
+function Dashboard() {
+  const [showHighlight, setShowHighlight] = useState(true)
+
+  return (
+    <>
+      <SpotlightHighlight
+        target="#new-feature"
+        title="New: Dark Mode"
+        content="We just shipped dark mode. Try it out!"
+        active={showHighlight}
+        placement="bottom"
+        onDismiss={() => setShowHighlight(false)}
+      />
+      <button id="new-feature">Toggle Theme</button>
+    </>
+  )
+}
+```
+
+### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `target` | `string \| RefObject<HTMLElement>` | -- | CSS selector or React ref for the target element |
+| `title` | `string` | -- | Tooltip title |
+| `content` | `ReactNode` | -- | Tooltip content |
+| `active` | `boolean` | `true` | Whether the highlight is currently visible |
+| `placement` | `Placement` | `'auto'` | Tooltip placement relative to target |
+| `spotlightPadding` | `number` | -- | Padding around the spotlight cutout (px) |
+| `spotlightRadius` | `number` | -- | Border radius of the spotlight cutout (px) |
+| `onDismiss` | `() => void` | -- | Called when the highlight is dismissed |
+
+The highlight is automatically cleaned up when the component unmounts or when `active` is set to `false`.
+
+## useSpotlightControl hook
+
+For imperative control, use `useSpotlightControl()`. This is useful when you need to trigger highlights from event handlers or effects:
+
+```tsx
+import { useSpotlightControl } from 'react-spotlight'
+
+function FeatureAnnouncement() {
+  const spotlight = useSpotlightControl()
+
+  const showAnnouncement = () => {
+    spotlight.highlight({
+      target: '#export-button',
+      title: 'New: CSV Export',
+      content: 'You can now export your data as CSV.',
+      placement: 'bottom',
+    })
+  }
+
+  return <button onClick={showAnnouncement}>Show Announcement</button>
+}
+```
+
+Dismiss the highlight programmatically with `spotlight.dismissHighlight()`.
+
+### SpotlightControl API
+
+| Method | Type | Description |
+|--------|------|-------------|
+| `highlight` | `(step: SpotlightStep) => void` | Show a spotlight on a single element |
+| `dismissHighlight` | `() => void` | Dismiss the active highlight |
+| `start` | `(tourId: string) => void` | Start a registered tour |
+| `stop` | `() => void` | Stop the active tour |
+| `next` | `() => void` | Go to the next step |
+| `previous` | `() => void` | Go to the previous step |
+| `skip` | `() => void` | Skip the current tour |
+| `goToStep` | `(index: number) => void` | Jump to a specific step |
+| `isActive` | `boolean` | Whether a tour or highlight is active |
+
+## "What's new" callout pattern
+
+A common use case is showing a highlight once when a user first encounters a new feature. Combine `SpotlightHighlight` with `localStorage` to show it only once:
+
+```tsx
+import { useState, useEffect } from 'react'
+import { SpotlightHighlight } from 'react-spotlight'
+
+function NewFeatureCallout() {
+  const [show, setShow] = useState(false)
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('dismissed-export-callout')
+    if (!dismissed) {
+      setShow(true)
+    }
+  }, [])
+
+  const handleDismiss = () => {
+    setShow(false)
+    localStorage.setItem('dismissed-export-callout', 'true')
+  }
+
+  return (
+    <SpotlightHighlight
+      target="#export-button"
+      title="New: CSV Export"
+      content="Export your data as CSV with one click."
+      active={show}
+      placement="bottom"
+      onDismiss={handleDismiss}
+    />
+  )
+}
+```
+
+## Dismissing highlights
+
+Highlights can be dismissed in several ways:
+
+- **Pressing Escape** (if `escToDismiss` is enabled on the provider, which it is by default)
+- **Clicking the overlay** (if `overlayClickToDismiss` is enabled, which it is by default)
+- **Clicking the close button** on the tooltip
+- **Programmatically** via `dismissHighlight()` from `useSpotlightControl`
+- **Setting `active={false}`** on `SpotlightHighlight`
+
+When a highlight is dismissed by the user (Escape, overlay click, or close button), the `onDismiss` callback is called, allowing you to update your state accordingly.

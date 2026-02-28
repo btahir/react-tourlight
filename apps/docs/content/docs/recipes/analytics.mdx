@@ -1,0 +1,205 @@
+---
+title: Tracking Tour Completion
+description: Track tour completion, skip events, and step-level drop-off with analytics providers.
+---
+
+Understanding how users interact with your tours helps you improve onboarding flows. react-spotlight provides callbacks at both the provider and tour level that integrate with any analytics service.
+
+## Basic tracking with callbacks
+
+Use `onComplete` and `onSkip` on `<SpotlightProvider>` to track all tours globally, or on `<SpotlightTour>` for specific tours:
+
+```tsx
+<SpotlightProvider
+  onComplete={(tourId) => {
+    console.log(`Tour "${tourId}" completed`)
+  }}
+  onSkip={(tourId, stepIndex) => {
+    console.log(`Tour "${tourId}" skipped at step ${stepIndex}`)
+  }}
+>
+  {/* ... */}
+</SpotlightProvider>
+```
+
+## Tracking with onStateChange
+
+For detailed step-level tracking, use `onStateChange`. It fires on every state transition -- start, step change, complete, and skip:
+
+```tsx
+import type { TourState } from 'react-spotlight'
+
+<SpotlightProvider
+  onStateChange={(tourId: string, state: TourState) => {
+    // state.status is 'idle' | 'active' | 'completed'
+    // state.currentStepIndex tells you which step the user is on
+    // state.seenSteps tracks which steps were viewed
+    // state.completedAt / state.skippedAt provide timestamps
+
+    if (state.status === 'active') {
+      analytics.track('tour_step_viewed', {
+        tourId,
+        stepIndex: state.currentStepIndex,
+        seenSteps: state.seenSteps.length,
+      })
+    }
+  }}
+>
+```
+
+## localStorage persistence
+
+Track whether users have completed tours so you don't show them again:
+
+```tsx
+import { useState } from 'react'
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
+import type { TourState } from 'react-spotlight'
+
+function App() {
+  const [tourState, setTourState] = useState<Record<string, TourState>>(() => {
+    try {
+      const stored = localStorage.getItem('tour-state')
+      return stored ? JSON.parse(stored) : {}
+    } catch {
+      return {}
+    }
+  })
+
+  const handleStateChange = (tourId: string, state: TourState) => {
+    setTourState((prev) => {
+      const next = { ...prev, [tourId]: state }
+      localStorage.setItem('tour-state', JSON.stringify(next))
+      return next
+    })
+  }
+
+  // Don't start the tour if already completed
+  const isCompleted = tourState['onboarding']?.status === 'completed'
+
+  return (
+    <SpotlightProvider
+      initialState={tourState}
+      onStateChange={handleStateChange}
+    >
+      <SpotlightTour id="onboarding" steps={steps} />
+      {!isCompleted && <AutoStartTour />}
+    </SpotlightProvider>
+  )
+}
+
+function AutoStartTour() {
+  const { start } = useSpotlight()
+
+  // Start the tour on mount
+  useEffect(() => {
+    start('onboarding')
+  }, [start])
+
+  return null
+}
+```
+
+## PostHog
+
+```tsx
+import posthog from 'posthog-js'
+
+<SpotlightProvider
+  onComplete={(tourId) => {
+    posthog.capture('tour_completed', { tour_id: tourId })
+  }}
+  onSkip={(tourId, stepIndex) => {
+    posthog.capture('tour_skipped', {
+      tour_id: tourId,
+      skipped_at_step: stepIndex,
+    })
+  }}
+  onStateChange={(tourId, state) => {
+    if (state.status === 'active') {
+      posthog.capture('tour_step_viewed', {
+        tour_id: tourId,
+        step_index: state.currentStepIndex,
+      })
+    }
+  }}
+>
+```
+
+## Amplitude
+
+```tsx
+import * as amplitude from '@amplitude/analytics-browser'
+
+<SpotlightProvider
+  onComplete={(tourId) => {
+    amplitude.track('Tour Completed', { tourId })
+  }}
+  onSkip={(tourId, stepIndex) => {
+    amplitude.track('Tour Skipped', { tourId, stepIndex })
+  }}
+  onStateChange={(tourId, state) => {
+    if (state.status === 'active') {
+      amplitude.track('Tour Step Viewed', {
+        tourId,
+        stepIndex: state.currentStepIndex,
+      })
+    }
+  }}
+>
+```
+
+## Mixpanel
+
+```tsx
+import mixpanel from 'mixpanel-browser'
+
+<SpotlightProvider
+  onComplete={(tourId) => {
+    mixpanel.track('Tour Completed', { tour_id: tourId })
+  }}
+  onSkip={(tourId, stepIndex) => {
+    mixpanel.track('Tour Skipped', {
+      tour_id: tourId,
+      skipped_at_step: stepIndex,
+    })
+  }}
+  onStateChange={(tourId, state) => {
+    if (state.status === 'active') {
+      mixpanel.track('Tour Step Viewed', {
+        tour_id: tourId,
+        step_index: state.currentStepIndex,
+      })
+    }
+  }}
+>
+```
+
+## Tracking step-level drop-off
+
+To understand where users abandon tours, compare `seenSteps` against total steps in the `onSkip` callback:
+
+```tsx
+<SpotlightTour
+  id="onboarding"
+  steps={steps}
+  onSkip={(stepIndex) => {
+    analytics.track('tour_abandoned', {
+      tourId: 'onboarding',
+      abandonedAtStep: stepIndex,
+      totalSteps: steps.length,
+      completionRate: stepIndex / steps.length,
+      // Which steps did they see before dropping off?
+      stepsViewed: stepIndex + 1,
+    })
+  }}
+  onComplete={() => {
+    analytics.track('tour_completed', {
+      tourId: 'onboarding',
+      totalSteps: steps.length,
+    })
+  }}
+/>
+```
+
+This data helps you identify steps that are confusing, too long, or not valuable to users -- so you can iterate on your onboarding flow.

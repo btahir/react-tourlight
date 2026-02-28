@@ -1,0 +1,227 @@
+---
+title: Customization
+description: Customize themes, tooltips, labels, transitions, and overlay appearance to match your brand.
+---
+
+## Themes
+
+react-spotlight ships with `light` and `dark` themes, plus an `auto` mode that follows the user's OS preference via `prefers-color-scheme`.
+
+```tsx
+// Auto-detect OS preference
+<SpotlightProvider theme="auto">
+
+// Explicit theme
+<SpotlightProvider theme="dark">
+<SpotlightProvider theme="light">
+```
+
+### Custom themes
+
+Pass a full `SpotlightTheme` object to completely control the look of the tooltip, buttons, progress bar, and overlay:
+
+```tsx
+import type { SpotlightTheme } from 'react-spotlight'
+
+const brandTheme: SpotlightTheme = {
+  overlay: {
+    background: 'rgba(0, 0, 0, 0.6)',
+  },
+  tooltip: {
+    background: '#1a1a2e',
+    color: '#f0f0f8',
+    borderRadius: '16px',
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+    padding: '24px',
+    maxWidth: '400px',
+  },
+  title: {
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#f0f0f8',
+    marginBottom: '8px',
+  },
+  content: {
+    fontSize: '14px',
+    color: '#a0a0be',
+    lineHeight: '1.6',
+  },
+  button: {
+    background: '#6366f1',
+    color: '#ffffff',
+    borderRadius: '8px',
+    padding: '8px 16px',
+    fontSize: '14px',
+    fontWeight: '500',
+    border: 'none',
+    cursor: 'pointer',
+    hoverBackground: '#4f46e5',
+  },
+  buttonSecondary: {
+    background: 'transparent',
+    color: '#a0a0be',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    hoverBackground: 'rgba(255, 255, 255, 0.06)',
+  },
+  progress: {
+    background: 'rgba(255, 255, 255, 0.1)',
+    fill: '#6366f1',
+    height: '4px',
+    borderRadius: '2px',
+  },
+  arrow: {
+    fill: '#1a1a2e',
+  },
+  closeButton: {
+    color: 'rgba(255, 255, 255, 0.4)',
+    hoverColor: '#f0f0f8',
+  },
+}
+
+<SpotlightProvider theme={brandTheme}>
+```
+
+### SpotlightTheme interface
+
+The theme object controls every visual aspect of the spotlight UI:
+
+| Section | Properties | Description |
+|---------|-----------|-------------|
+| `overlay` | `background` | Overlay background color (with alpha) |
+| `tooltip` | `background`, `color`, `borderRadius`, `boxShadow`, `padding`, `maxWidth` | Tooltip container styles |
+| `title` | `fontSize`, `fontWeight`, `color`, `marginBottom` | Step title text styles |
+| `content` | `fontSize`, `color`, `lineHeight` | Step content text styles |
+| `button` | `background`, `color`, `borderRadius`, `padding`, `fontSize`, `fontWeight`, `border`, `cursor`, `hoverBackground` | Primary button (Next, Done) |
+| `buttonSecondary` | `background`, `color`, `border`, `hoverBackground` | Secondary button (Previous, Skip) |
+| `progress` | `background`, `fill`, `height`, `borderRadius` | Progress bar |
+| `arrow` | `fill` | Tooltip arrow color |
+| `closeButton` | `color`, `hoverColor` | Close button in the tooltip |
+
+### Overriding individual properties
+
+You can import a built-in theme and override specific properties using spread syntax:
+
+```tsx
+import { darkTheme } from 'react-spotlight'
+
+const customTheme: SpotlightTheme = {
+  ...darkTheme,
+  button: {
+    ...darkTheme.button,
+    background: '#e11d48',
+    hoverBackground: '#be123c',
+  },
+  progress: {
+    ...darkTheme.progress,
+    fill: '#e11d48',
+  },
+}
+
+<SpotlightProvider theme={customTheme}>
+```
+
+## Custom tooltip
+
+For full control over the tooltip UI, use the `renderTooltip` prop on `<SpotlightTour>`. This completely replaces the built-in tooltip with your own component:
+
+```tsx
+<SpotlightTour
+  id="onboarding"
+  steps={steps}
+  renderTooltip={({ step, next, previous, skip, currentIndex, totalSteps }) => (
+    <div className="my-tooltip">
+      <h3>{step.title}</h3>
+      <p>{step.content}</p>
+      <footer>
+        <button onClick={previous} disabled={currentIndex === 0}>
+          Back
+        </button>
+        <span>
+          {currentIndex + 1} / {totalSteps}
+        </span>
+        {currentIndex < totalSteps - 1 ? (
+          <button onClick={next}>Next</button>
+        ) : (
+          <button onClick={next}>Done</button>
+        )}
+      </footer>
+    </div>
+  )}
+/>
+```
+
+The render function receives a `TooltipRenderProps` object:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `step` | `SpotlightStep` | The current step configuration |
+| `next` | `() => void` | Advance to the next step (or complete the tour on the last step) |
+| `previous` | `() => void` | Go back to the previous step |
+| `skip` | `() => void` | Skip the tour |
+| `currentIndex` | `number` | Zero-based index of the current step |
+| `totalSteps` | `number` | Total number of steps in the tour |
+
+## i18n and custom labels
+
+Customize all button labels and the step counter format via the `labels` prop on `SpotlightProvider`:
+
+```tsx
+<SpotlightProvider
+  labels={{
+    next: 'Weiter',
+    previous: 'Zuruck',
+    skip: 'Uberspringen',
+    done: 'Fertig',
+    close: 'Schliessen',
+    stepOf: (current, total) => `Schritt ${current} von ${total}`,
+  }}
+>
+```
+
+All labels are optional -- any omitted label falls back to its English default.
+
+## Overlay color
+
+Control the overlay background color (including opacity) via the `overlayColor` prop:
+
+```tsx
+// Lighter overlay
+<SpotlightProvider overlayColor="rgba(0, 0, 0, 0.3)">
+
+// Darker overlay
+<SpotlightProvider overlayColor="rgba(0, 0, 0, 0.8)">
+
+// Tinted overlay
+<SpotlightProvider overlayColor="rgba(99, 102, 241, 0.4)">
+```
+
+## Spotlight padding and radius
+
+Adjust the padding and border radius of the spotlight cutout on a per-step basis:
+
+```tsx
+{
+  target: '#avatar',
+  title: 'Your Profile',
+  content: 'Click to update your profile picture.',
+  spotlightPadding: 16,   // extra space around the element
+  spotlightRadius: 999,   // fully circular cutout
+}
+```
+
+## Transition duration
+
+Control how fast the spotlight and tooltip animate between steps:
+
+```tsx
+// Faster transitions
+<SpotlightProvider transitionDuration={150}>
+
+// Slower, more dramatic transitions
+<SpotlightProvider transitionDuration={500}>
+
+// No animation
+<SpotlightProvider transitionDuration={0}>
+```
+
+The default is `300ms`. Users with `prefers-reduced-motion: reduce` will see reduced or no animation regardless of this setting.
