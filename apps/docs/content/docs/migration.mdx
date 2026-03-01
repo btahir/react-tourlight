@@ -1,0 +1,183 @@
+---
+title: Migrating from React Joyride
+description: Step-by-step guide to migrate from React Joyride to react-spotlight.
+---
+
+If you're coming from React Joyride — especially after hitting React 19 incompatibilities — this guide maps every concept to its react-spotlight equivalent.
+
+## Why migrate?
+
+React Joyride uses deprecated React APIs (`unmountComponentAtNode`, `unstable_renderSubtreeIntoContainer`) that are removed in React 19. react-spotlight is built from the ground up for modern React with zero deprecated APIs.
+
+## Concept mapping
+
+| React Joyride | react-spotlight | Notes |
+|---|---|---|
+| `<Joyride steps={...} />` | `<SpotlightTour id="..." steps={...} />` | Tours require a unique `id` |
+| `run` prop | `useSpotlight().start(id)` | Imperative control via hook |
+| `continuous` prop | Always continuous | Step-by-step is the default |
+| `callback` with `STATUS` | `onComplete` / `onSkip` props | Cleaner event model |
+| `styles` prop | `theme` prop on Provider | Centralized theming |
+| `floaterProps` | Floating UI peer dep | Uses `@floating-ui/react-dom` |
+| `disableOverlay` | `overlayColor="transparent"` | Set overlay to transparent |
+| `spotlightPadding` | `spotlightPadding` on step | Same concept, per-step |
+| `locale` | `labels` prop on Provider | i18n for button text |
+| `tooltipComponent` | `renderTooltip` render prop | Full control via render props |
+
+## Step-by-step migration
+
+### 1. Install react-spotlight
+
+```bash
+npm uninstall react-joyride
+npm install react-spotlight @floating-ui/react-dom
+```
+
+### 2. Replace the provider
+
+**Before (Joyride):**
+
+```tsx
+import Joyride from 'react-joyride'
+
+function App() {
+  const [run, setRun] = useState(false)
+  return (
+    <>
+      <Joyride
+        steps={steps}
+        run={run}
+        continuous
+        callback={(data) => {
+          if (data.status === 'finished') handleComplete()
+        }}
+      />
+      <button onClick={() => setRun(true)}>Start Tour</button>
+    </>
+  )
+}
+```
+
+**After (react-spotlight):**
+
+```tsx
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
+import 'react-spotlight/styles.css'
+
+function App() {
+  return (
+    <SpotlightProvider>
+      <SpotlightTour
+        id="onboarding"
+        steps={steps}
+        onComplete={() => handleComplete()}
+      />
+      <StartButton />
+    </SpotlightProvider>
+  )
+}
+
+function StartButton() {
+  const { start } = useSpotlight()
+  return <button onClick={() => start('onboarding')}>Start Tour</button>
+}
+```
+
+### 3. Convert step format
+
+**Before:**
+
+```tsx
+const steps = [
+  {
+    target: '.my-element',
+    content: 'This is the first step',
+    title: 'Step 1',
+    placement: 'bottom',
+    disableBeacon: true,
+  },
+]
+```
+
+**After:**
+
+```tsx
+const steps = [
+  {
+    target: '.my-element',
+    content: 'This is the first step',
+    title: 'Step 1',
+    placement: 'bottom',
+    // No beacon concept — spotlights start directly
+  },
+]
+```
+
+Key differences:
+- No `disableBeacon` — react-spotlight doesn't have beacons
+- `content` accepts `ReactNode`, not just strings
+- `placement` supports `'auto'` for smart positioning
+- Add `spotlightPadding` and `spotlightRadius` per step
+
+### 4. Update event handling
+
+**Before:**
+
+```tsx
+callback={(data) => {
+  const { status, type, index } = data
+  if (status === 'finished') { /* done */ }
+  if (status === 'skipped') { /* skipped */ }
+  if (type === 'step:after') { /* step changed */ }
+}}
+```
+
+**After:**
+
+```tsx
+<SpotlightTour
+  id="onboarding"
+  steps={steps}
+  onComplete={() => { /* done */ }}
+  onSkip={(stepIndex) => { /* skipped at step */ }}
+/>
+```
+
+### 5. Update custom tooltips
+
+**Before:**
+
+```tsx
+tooltipComponent={({ step, primaryProps, backProps, skipProps, index, size }) => (
+  <div>
+    <h3>{step.title}</h3>
+    <p>{step.content}</p>
+    <button {...backProps}>Back</button>
+    <button {...primaryProps}>Next</button>
+  </div>
+)}
+```
+
+**After:**
+
+```tsx
+renderTooltip={({ step, next, previous, skip, currentIndex, totalSteps }) => (
+  <div>
+    <h3>{step.title}</h3>
+    <p>{step.content}</p>
+    <button onClick={previous} disabled={currentIndex === 0}>Back</button>
+    <button onClick={next}>
+      {currentIndex < totalSteps - 1 ? 'Next' : 'Done'}
+    </button>
+  </div>
+)}
+```
+
+## What you gain
+
+After migrating, you get:
+- **React 19 compatibility** — no deprecated APIs
+- **Better accessibility** — focus trap, full keyboard nav, ARIA roles, screen reader support
+- **Smaller bundle** — ~5KB vs ~30KB
+- **CSS clip-path overlay** — works perfectly in dark mode (no `mix-blend-mode` hacks)
+- **Async element support** — `MutationObserver`-based waiting for lazy-loaded content

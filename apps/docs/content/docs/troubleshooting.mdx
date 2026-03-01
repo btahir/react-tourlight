@@ -1,0 +1,108 @@
+---
+title: Troubleshooting & FAQ
+description: Common issues, browser compatibility, and frequently asked questions.
+---
+
+## Common issues
+
+### Spotlight doesn't appear
+
+1. **Missing CSS import** — Make sure you import the stylesheet:
+   ```tsx
+   import 'react-spotlight/styles.css'
+   ```
+
+2. **Tour not started** — `<SpotlightTour>` only registers steps. You need to call `start()`:
+   ```tsx
+   const { start } = useSpotlight()
+   start('your-tour-id')
+   ```
+
+3. **Target element not found** — Verify the CSS selector or ref points to a mounted element. Open DevTools and run `document.querySelector('#your-selector')` to confirm.
+
+4. **Missing Provider** — Ensure `<SpotlightProvider>` wraps both your `<SpotlightTour>` and the component calling `useSpotlight()`.
+
+### Tooltip is mispositioned
+
+1. **Install Floating UI** — Without `@floating-ui/react-dom`, positioning falls back to a basic algorithm. Install the optional peer dependency:
+   ```bash
+   npm install @floating-ui/react-dom
+   ```
+
+2. **Target inside a scroll container** — Floating UI handles this automatically, but the basic fallback may not. Ensure the target element is visible in the viewport.
+
+3. **CSS transforms on ancestors** — CSS `transform` on a parent element creates a new containing block, which can offset fixed positioning. This is a browser behavior, not a bug. Floating UI handles this correctly.
+
+### Tour doesn't advance
+
+1. **Async elements** — If the next step's target isn't in the DOM yet, react-spotlight waits for it using `MutationObserver`. Ensure the element eventually mounts. Check the `when` callback if you're using conditional steps.
+
+2. **Focus trap interference** — If another focus trap (e.g., a modal) is active, it may conflict with the spotlight's focus trap. Dismiss the modal before starting the tour.
+
+### SSR / hydration issues
+
+react-spotlight is client-only. The overlay and tooltip render via portals and depend on `document`. In Next.js or other SSR frameworks:
+
+```tsx
+// Dynamically import if needed
+import dynamic from 'next/dynamic'
+
+const SpotlightProvider = dynamic(
+  () => import('react-spotlight').then(m => m.SpotlightProvider),
+  { ssr: false }
+)
+```
+
+Or simply ensure `start()` is only called after hydration (e.g., in a `useEffect`), which is the normal pattern.
+
+## Browser compatibility
+
+| Browser | Minimum version | Notes |
+|---|---|---|
+| Chrome | 88+ | Full support |
+| Firefox | 97+ | Full support |
+| Safari | 15.4+ | Full support |
+| Edge | 88+ | Full support (Chromium-based) |
+| iOS Safari | 15.4+ | Full support |
+| Chrome Android | 88+ | Full support |
+
+react-spotlight uses:
+- CSS `clip-path: path()` (widely supported)
+- `MutationObserver` (supported everywhere)
+- `inert` attribute (Chrome 102+, Firefox 112+, Safari 15.5+)
+
+For older browsers without `inert` support, the accessibility features degrade gracefully — keyboard navigation and ARIA attributes still work, but background content won't be fully inert.
+
+## FAQ
+
+### Does it work with React Native?
+
+No. react-spotlight is for React DOM (web) only. It relies on DOM APIs like `getBoundingClientRect`, CSS `clip-path`, and portal rendering.
+
+### Can I use it without Floating UI?
+
+Yes. `@floating-ui/react-dom` is an **optional** peer dependency. Without it, tooltip positioning uses a basic algorithm that places the tooltip adjacent to the target element. For most cases this works fine, but you lose smart flip/shift behavior when the tooltip would overflow the viewport.
+
+### Does it support multiple simultaneous tours?
+
+Only one tour can be active at a time. You can register multiple tours with different IDs and start them independently, but starting a new tour will stop the current one.
+
+### Can I persist tour completion state?
+
+react-spotlight doesn't handle persistence — that's your app's concern. Use the `onComplete` callback to save state:
+
+```tsx
+<SpotlightTour
+  id="onboarding"
+  steps={steps}
+  onComplete={() => localStorage.setItem('onboarding-done', 'true')}
+/>
+```
+
+### Does it work with CSS-in-JS libraries?
+
+Yes. The default styles are in a regular CSS file (`react-spotlight/styles.css`). You can override styles via CSS custom properties, the `theme` prop, or the `renderTooltip` render prop for full control.
+
+### What's the bundle size?
+
+The core library is **~5KB gzipped** with zero runtime dependencies. If you add `@floating-ui/react-dom`, that adds ~4KB gzipped.

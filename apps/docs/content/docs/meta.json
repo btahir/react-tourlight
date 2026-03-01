@@ -2,6 +2,7 @@
   "pages": [
     "---Getting Started---",
     "index",
+    "migration",
     "---Guides---",
     "tour",
     "highlight",
@@ -11,6 +12,7 @@
     "multi-page",
     "---Reference---",
     "api-reference",
+    "troubleshooting",
     "---Recipes---",
     "...recipes"
   ]
