@@ -1,5 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
+  "files": { "includes": ["src/**", "tests/**", "apps/**", "*.config.*", "*.json"] },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
@@ -7,7 +8,8 @@
       "recommended": true,
       "a11y": { "recommended": true },
       "correctness": { "noUnusedImports": "error" },
-      "style": { "noNonNullAssertion": "warn" }
+      "style": { "noNonNullAssertion": "warn" },
+      "suspicious": { "noConsole": "error" }
     }
   },
   "formatter": {
@@ -22,5 +24,15 @@
       "semicolons": "asNeeded",
       "trailingCommas": "all"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["tests/**", "*.config.*"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noConsole": "off" }
+        }
+      }
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createKeyboardHandler } from '../engine/keyboard.ts'
-import { createTourStateMachine } from '../engine/state-machine.ts'
 import type { TourStateMachineActions } from '../engine/state-machine.ts'
+import { createTourStateMachine } from '../engine/state-machine.ts'
 import { resolveTarget } from '../engine/step-resolver.ts'
 import { measureElement } from '../overlay/measure.ts'
 import { SpotlightOverlay } from '../overlay/spotlight-overlay.tsx'
@@ -183,6 +183,7 @@ export function SpotlightProvider({
     (tourId: string) => {
       const tour = tours.current.get(tourId)
       if (!tour) {
+        // biome-ignore lint/suspicious/noConsole: Intentional developer warning for invalid tour ID
         console.warn(
           `react-spotlight: Tour "${tourId}" not found. Make sure <SpotlightTour id="${tourId}"> is mounted.`,
         )
@@ -380,7 +381,18 @@ export function SpotlightProvider({
           />
 
           {/* Live region for screen reader step announcements */}
-          <div aria-live="polite" className="sr-only" style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap' }}>
+          <div
+            aria-live="polite"
+            className="sr-only"
+            style={{
+              position: 'absolute',
+              width: 1,
+              height: 1,
+              overflow: 'hidden',
+              clip: 'rect(0, 0, 0, 0)',
+              whiteSpace: 'nowrap',
+            }}
+          >
             {currentStep.title &&
               getStepAriaLabel(
                 highlightStep ? 0 : currentStepIndex,
