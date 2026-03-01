@@ -4,3 +4,7 @@ dist
 .DS_Store
 coverage
 PLAN.md
+.next
+.source
+next-env.d.ts
+test-results

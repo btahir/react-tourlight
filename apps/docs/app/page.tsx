@@ -2,386 +2,623 @@ import Link from 'next/link'
 import { AnimateOnScroll } from '@/components/animate-on-scroll'
 import { InteractiveTour } from '@/components/demo/interactive-tour'
 
-const features = [
-  {
-    title: 'Beautiful',
-    description:
-      'Smooth CSS clip-path animations with customizable themes. Light and dark mode out of the box.',
-    icon: (
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-      </svg>
-    ),
-    color: 'from-purple-500/20 to-purple-500/5',
-    iconBg: 'bg-purple-500/15 text-purple-400',
-  },
-  {
-    title: 'Accessible',
-    description:
-      'Full keyboard navigation, focus trapping, screen reader announcements, and ARIA attributes built in.',
-    icon: (
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <circle cx="16" cy="4" r="1" />
-        <path d="m18 19 1-7-6 1" />
-        <path d="m5 8 3-3 5.5 3-2.36 3.5" />
-        <path d="m4.24 14.5 5-6.5" />
-        <path d="m9 19 2-8" />
-      </svg>
-    ),
-    color: 'from-blue-500/20 to-blue-500/5',
-    iconBg: 'bg-blue-500/15 text-blue-400',
-  },
-  {
-    title: 'Tiny',
-    description:
-      'Zero runtime dependencies. The core library is under 5 kB gzipped. Only pay for what you use.',
-    icon: (
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" />
-        <line x1="16" x2="2" y1="8" y2="22" />
-        <line x1="17.5" x2="9" y1="15" y2="15" />
-      </svg>
-    ),
-    color: 'from-emerald-500/20 to-emerald-500/5',
-    iconBg: 'bg-emerald-500/15 text-emerald-400',
-  },
-  {
-    title: 'MIT License',
-    description:
-      'Free and open-source forever. Use it in personal and commercial projects without restrictions.',
-    icon: (
-      <svg
-        aria-hidden="true"
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
-        <path d="m9 12 2 2 4-4" />
-      </svg>
-    ),
-    color: 'from-amber-500/20 to-amber-500/5',
-    iconBg: 'bg-amber-500/15 text-amber-400',
-  },
-]
-
-const installCommand = 'npm install react-spotlight @floating-ui/react-dom'
-
-const stats = [
-  { label: '~5KB gzipped', detail: 'Core bundle' },
-  { label: '0 dependencies', detail: 'Zero runtime deps' },
-  { label: 'WCAG 2.1 AA', detail: 'Fully accessible' },
-]
-
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col">
-      {/* Hero */}
-      <section
-        data-tour="hero"
-        className="relative flex flex-col items-center justify-center gap-6 overflow-hidden px-6 pb-20 pt-32 text-center"
+    <main
+      className="font-body flex min-h-screen flex-col"
+      style={{ fontFamily: 'var(--font-body)', background: 'var(--color-surface)' }}
+    >
+      {/* ─── NAV ─── */}
+      <nav
+        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md sm:px-12 lg:px-24"
+        style={{
+          background: 'rgba(12, 12, 14, 0.8)',
+          borderBottom: '1px solid var(--color-border-subtle)',
+        }}
       >
-        {/* Gradient mesh background */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-b from-indigo-500/10 via-transparent to-transparent" />
-          <div className="animate-float absolute left-1/4 top-20 h-72 w-72 rounded-full bg-purple-500/10 blur-3xl" />
-          <div className="animate-float animation-delay-200 absolute right-1/4 top-40 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
-        </div>
-
-        {/* Version badge */}
-        <div className="animate-fade-in-up rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-medium text-indigo-300">
-          v0.1.0 — Now available
-        </div>
-
-        {/* Heading with animated gradient */}
-        <h1 className="animate-fade-in-up animation-delay-100 max-w-3xl text-5xl font-extrabold tracking-tight sm:text-7xl">
-          <span className="animate-gradient-shift bg-gradient-to-r from-white via-indigo-200 to-white bg-clip-text text-transparent">
-            react-spotlight
-          </span>
-        </h1>
-
-        <p className="animate-fade-in-up animation-delay-200 max-w-xl text-lg text-fd-muted-foreground sm:text-xl">
-          Beautiful onboarding tours &amp; feature highlights for React. Zero dependencies, fully
-          accessible, tiny bundle.
-        </p>
-
-        {/* CTAs */}
-        <div className="animate-fade-in-up animation-delay-300 flex gap-4">
+        <Link
+          href="/"
+          className="font-display text-lg tracking-tight"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
+          react-spotlight
+        </Link>
+        <div className="flex items-center gap-6">
           <Link
             href="/docs"
-            className="animate-pulse-glow inline-flex items-center rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+            className="text-sm transition-colors hover:text-white"
+            style={{ color: 'var(--color-text-secondary)' }}
           >
-            Get Started
+            Docs
           </Link>
           <a
             href="https://github.com/bilaltahir/react-spotlight"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-lg border border-fd-border bg-fd-background px-6 py-3 text-sm font-medium transition-colors hover:bg-fd-accent"
+            className="text-sm transition-colors hover:text-white"
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             GitHub
           </a>
+          <Link
+            href="/docs"
+            className="rounded-md px-4 py-1.5 text-sm font-medium transition-all hover:brightness-110"
+            style={{
+              background: 'var(--color-amber)',
+              color: 'var(--color-surface)',
+            }}
+          >
+            Get Started
+          </Link>
         </div>
+      </nav>
 
-        {/* Interactive tour button */}
-        <div className="animate-fade-in-up animation-delay-400 mt-4">
-          <InteractiveTour />
-        </div>
+      {/* ─── HERO ─── */}
+      <section
+        data-tour="hero"
+        className="grain relative flex flex-col items-start overflow-hidden px-6 pb-24 pt-20 sm:px-12 lg:px-24"
+      >
+        {/* Warm radial glow — top right */}
+        <div
+          className="absolute -right-40 -top-40 h-[600px] w-[600px] rounded-full opacity-20 blur-3xl"
+          style={{ background: 'radial-gradient(circle, var(--color-amber) 0%, transparent 70%)' }}
+        />
+        {/* Subtle cool glow — bottom left */}
+        <div
+          className="absolute -bottom-60 -left-40 h-[500px] w-[500px] rounded-full opacity-10 blur-3xl"
+          style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 70%)' }}
+        />
 
-        {/* Stats row */}
-        <div className="animate-fade-in-up animation-delay-500 mt-6 flex flex-wrap items-center justify-center gap-8 text-sm">
-          {stats.map((stat, i) => (
-            <div key={stat.label} className="flex items-center gap-2">
-              {i > 0 && <span className="mr-6 hidden h-4 w-px bg-fd-border sm:block" />}
-              <span className="font-semibold text-fd-foreground">{stat.label}</span>
-              <span className="text-fd-muted-foreground">{stat.detail}</span>
-            </div>
-          ))}
+        <div className="relative z-10 mx-auto w-full max-w-6xl">
+          {/* Version pill */}
+          <div
+            className="animate-fade-in mb-8 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs"
+            style={{
+              border: '1px solid var(--color-border-accent)',
+              color: 'var(--color-amber-light)',
+              background: 'rgba(245, 158, 11, 0.06)',
+            }}
+          >
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: 'var(--color-amber)' }}
+            />
+            v0.1.0 — Now available
+          </div>
+
+          {/* Headline — Instrument Serif, oversized, italic accent */}
+          <h1 className="animate-fade-in-up delay-100 max-w-4xl leading-[0.95]">
+            <span
+              className="font-display block text-6xl tracking-tight sm:text-8xl lg:text-9xl"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              Onboarding tours
+            </span>
+            <span
+              className="font-display mt-1 block text-6xl italic tracking-tight sm:text-8xl lg:text-9xl"
+              style={{ color: 'var(--color-amber)' }}
+            >
+              that ship.
+            </span>
+          </h1>
+
+          {/* Subhead */}
+          <p
+            className="animate-fade-in-up delay-300 mt-8 max-w-lg text-lg leading-relaxed sm:text-xl"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
+            react-spotlight is the modern React tour library. Zero dependencies, WCAG 2.1 AA
+            accessible, under 5 kB gzipped. The one that works with React 19.
+          </p>
+
+          {/* CTA row */}
+          <div className="animate-fade-in-up delay-400 mt-10 flex flex-wrap items-center gap-4">
+            <Link
+              href="/docs"
+              className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-semibold transition-all duration-200 hover:brightness-110"
+              style={{
+                background: 'var(--color-amber)',
+                color: 'var(--color-surface)',
+              }}
+            >
+              Get Started
+              <svg
+                aria-hidden="true"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
+            </Link>
+            <a
+              href="https://github.com/bilaltahir/react-spotlight"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-medium transition-colors duration-200 hover:bg-white/5"
+              style={{
+                border: '1px solid var(--color-border-subtle)',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
+              GitHub
+            </a>
+          </div>
+
+          {/* Interactive tour */}
+          <div className="animate-fade-in-up delay-500 mt-6">
+            <InteractiveTour />
+          </div>
+
+          {/* Stats strip */}
+          <div
+            className="animate-fade-in-up delay-600 mt-16 flex flex-wrap gap-12 border-t pt-8"
+            style={{ borderColor: 'var(--color-border-subtle)' }}
+          >
+            {[
+              { value: '~5KB', label: 'gzipped' },
+              { value: '0', label: 'dependencies' },
+              { value: 'AA', label: 'WCAG 2.1' },
+              { value: 'MIT', label: 'licensed' },
+            ].map((stat) => (
+              <div key={stat.label} className="flex items-baseline gap-2">
+                <span
+                  className="font-display text-3xl tracking-tight"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {stat.value}
+                </span>
+                <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  {stat.label}
+                </span>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Features */}
+      {/* ─── THE PROBLEM ─── */}
+      <AnimateOnScroll>
+        <section
+          className="relative px-6 py-24 sm:px-12 lg:px-24"
+          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
+        >
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-16 lg:grid-cols-[1fr_1.2fr]">
+              <div>
+                <span
+                  className="font-mono text-xs font-medium uppercase tracking-widest"
+                  style={{ color: 'var(--color-amber)' }}
+                >
+                  The Problem
+                </span>
+                <h2
+                  className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  Every tour library
+                  <br />
+                  <em style={{ color: 'var(--color-text-secondary)' }}>is broken.</em>
+                </h2>
+              </div>
+              <div
+                className="space-y-6 text-base leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                <p>
+                  React Joyride uses deprecated APIs that are{' '}
+                  <strong style={{ color: 'var(--color-text-primary)' }}>
+                    removed in React 19
+                  </strong>
+                  . Shepherd.js requires a paid commercial license. Intro.js is GPL. Driver.js has
+                  no React bindings.
+                </p>
+                <p>
+                  Every developer evaluating tour libraries in 2025 hits the same wall:{' '}
+                  <strong style={{ color: 'var(--color-text-primary)' }}>
+                    nothing modern, free, and React-native exists.
+                  </strong>
+                </p>
+                <p style={{ color: 'var(--color-amber-light)' }}>react-spotlight fills that gap.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </AnimateOnScroll>
+
+      {/* ─── FEATURES ─── */}
       <section
         data-tour="features"
-        className="mx-auto grid w-full max-w-5xl gap-6 px-6 pb-20 sm:grid-cols-2"
+        className="px-6 py-24 sm:px-12 lg:px-24"
+        style={{ borderTop: '1px solid var(--color-border-subtle)' }}
       >
-        {features.map((feature, i) => (
-          <AnimateOnScroll key={feature.title} delay={i * 100}>
-            <div className="group relative overflow-hidden rounded-xl border border-fd-border/50 bg-fd-card/50 p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-indigo-500/40 hover:shadow-lg hover:shadow-indigo-500/5">
-              <div
-                className={`absolute inset-0 -z-10 bg-gradient-to-br ${feature.color} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
-              />
-              <div
-                className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${feature.iconBg}`}
-              >
-                {feature.icon}
-              </div>
-              <h3 className="mb-1 text-lg font-semibold">{feature.title}</h3>
-              <p className="text-sm text-fd-muted-foreground">{feature.description}</p>
-            </div>
+        <div className="mx-auto max-w-6xl">
+          <AnimateOnScroll>
+            <span
+              className="font-mono text-xs font-medium uppercase tracking-widest"
+              style={{ color: 'var(--color-amber)' }}
+            >
+              Why react-spotlight
+            </span>
+            <h2
+              className="font-display mt-4 max-w-xl text-4xl leading-tight tracking-tight sm:text-5xl"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              Built different.
+            </h2>
           </AnimateOnScroll>
-        ))}
+
+          <div
+            className="mt-16 grid gap-px overflow-hidden rounded-2xl sm:grid-cols-2"
+            style={{ background: 'var(--color-border-subtle)' }}
+          >
+            {[
+              {
+                title: 'Beautiful by default',
+                body: 'Smooth CSS clip-path spotlight transitions. Light, dark, and custom themes. GPU-accelerated animations that never break in dark mode.',
+                detail: 'clip-path > mix-blend-mode',
+              },
+              {
+                title: 'Fully accessible',
+                body: 'WCAG 2.1 AA compliant out of the box. Focus trap, keyboard navigation, ARIA roles, and screen reader announcements.',
+                detail: 'Focus trap + ARIA + inert',
+              },
+              {
+                title: 'Under 5 kB',
+                body: 'Zero runtime dependencies. Floating UI is optional. The core is smaller than most icon libraries.',
+                detail: '~5 kB gzip / 0 deps',
+              },
+              {
+                title: 'MIT licensed',
+                body: 'Free for commercial use. No GPL restrictions, no paid tiers, no "enterprise" upsell. Open source forever.',
+                detail: 'Free forever',
+              },
+            ].map((feature, i) => (
+              <AnimateOnScroll key={feature.title} delay={i * 80}>
+                <div
+                  className="group relative flex flex-col justify-between p-8 transition-colors duration-300 hover:brightness-125 sm:p-10"
+                  style={{ background: 'var(--color-surface-raised)' }}
+                >
+                  <div>
+                    <h3
+                      className="text-lg font-semibold"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p
+                      className="mt-3 text-sm leading-relaxed"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      {feature.body}
+                    </p>
+                  </div>
+                  <div
+                    className="font-mono mt-6 text-xs font-medium"
+                    style={{ color: 'var(--color-amber)' }}
+                  >
+                    {feature.detail}
+                  </div>
+                </div>
+              </AnimateOnScroll>
+            ))}
+          </div>
+        </div>
       </section>
 
-      {/* Install */}
+      {/* ─── INSTALL + CODE ─── */}
       <AnimateOnScroll>
         <section
           data-tour="install"
-          className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 px-6 pb-20"
+          className="px-6 py-24 sm:px-12 lg:px-24"
+          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
         >
-          <h2 className="text-3xl font-bold tracking-tight">Get started in seconds</h2>
-          <div className="group relative w-full max-w-2xl overflow-hidden rounded-xl border border-fd-border bg-fd-card transition-all duration-300 hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5">
-            <div className="flex items-center gap-2 border-b border-fd-border px-4 py-2 text-xs text-fd-muted-foreground">
-              <span className="h-3 w-3 rounded-full bg-red-500/60" />
-              <span className="h-3 w-3 rounded-full bg-yellow-500/60" />
-              <span className="h-3 w-3 rounded-full bg-green-500/60" />
-              <span className="ml-2">Terminal</span>
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+              {/* Install */}
+              <div>
+                <span
+                  className="font-mono text-xs font-medium uppercase tracking-widest"
+                  style={{ color: 'var(--color-amber)' }}
+                >
+                  Quick Start
+                </span>
+                <h2
+                  className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  One command.
+                </h2>
+                <p
+                  className="mt-4 text-base leading-relaxed"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
+                  Install the package, wrap your app, define your steps. That's it. You're shipping
+                  onboarding in under five minutes.
+                </p>
+
+                {/* Terminal block */}
+                <div
+                  className="mt-8 overflow-hidden rounded-xl"
+                  style={{
+                    border: '1px solid var(--color-border-subtle)',
+                    background: 'var(--color-surface-raised)',
+                  }}
+                >
+                  <div
+                    className="font-mono flex items-center gap-2 px-4 py-2.5 text-xs"
+                    style={{
+                      borderBottom: '1px solid var(--color-border-subtle)',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#ef4444' }} />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#eab308' }} />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#22c55e' }} />
+                    <span className="ml-2">terminal</span>
+                  </div>
+                  <pre
+                    className="overflow-x-auto p-5 text-sm"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    <code>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>$ </span>
+                      <span style={{ color: 'var(--color-text-primary)' }}>
+                        npm install react-spotlight @floating-ui/react-dom
+                      </span>
+                    </code>
+                  </pre>
+                </div>
+              </div>
+
+              {/* Code example */}
+              <div>
+                <div
+                  className="overflow-hidden rounded-xl"
+                  style={{
+                    border: '1px solid var(--color-border-subtle)',
+                    background: 'var(--color-surface-raised)',
+                  }}
+                >
+                  <div
+                    className="font-mono flex items-center gap-2 px-4 py-2.5 text-xs"
+                    style={{
+                      borderBottom: '1px solid var(--color-border-subtle)',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#ef4444' }} />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#eab308' }} />
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#22c55e' }} />
+                    <span className="ml-2">App.tsx</span>
+                  </div>
+                  <pre
+                    className="overflow-x-auto p-5 text-[13px] leading-relaxed"
+                    style={{ fontFamily: 'var(--font-mono)' }}
+                  >
+                    <code>
+                      <span style={{ color: '#c084fc' }}>import</span>
+                      {' { '}
+                      <span style={{ color: 'var(--color-text-primary)' }}>SpotlightProvider</span>
+                      {', '}
+                      <span style={{ color: 'var(--color-text-primary)' }}>SpotlightTour</span>
+                      {' }\n'}
+                      <span style={{ color: '#c084fc' }}> from</span>{' '}
+                      <span style={{ color: '#86efac' }}>{"'react-spotlight'"}</span>
+                      {'\n'}
+                      <span style={{ color: '#c084fc' }}>import</span>{' '}
+                      <span style={{ color: '#86efac' }}>{"'react-spotlight/styles.css'"}</span>
+                      {'\n\n'}
+                      <span style={{ color: '#c084fc' }}>const</span>
+                      <span style={{ color: 'var(--color-text-primary)' }}> steps</span>
+                      {' = [\n'}
+                      {'  { '}
+                      <span style={{ color: '#93c5fd' }}>target</span>
+                      {': '}
+                      <span style={{ color: '#86efac' }}>{"'#welcome'"}</span>
+                      {', '}
+                      <span style={{ color: '#93c5fd' }}>title</span>
+                      {': '}
+                      <span style={{ color: '#86efac' }}>{"'Welcome'"}</span>
+                      {' },\n'}
+                      {'  { '}
+                      <span style={{ color: '#93c5fd' }}>target</span>
+                      {': '}
+                      <span style={{ color: '#86efac' }}>{"'#features'"}</span>
+                      {', '}
+                      <span style={{ color: '#93c5fd' }}>title</span>
+                      {': '}
+                      <span style={{ color: '#86efac' }}>{"'Features'"}</span>
+                      {' },\n]\n\n'}
+                      <span style={{ color: '#c084fc' }}>function</span>{' '}
+                      <span style={{ color: 'var(--color-amber-light)' }}>App</span>
+                      {'() {\n  '}
+                      <span style={{ color: '#c084fc' }}>return</span>
+                      {' (\n    '}
+                      <span style={{ color: '#93c5fd' }}>{'<SpotlightProvider>'}</span>
+                      {'\n      '}
+                      <span style={{ color: '#93c5fd' }}>{'<SpotlightTour'}</span>
+                      {'\n        '}
+                      <span style={{ color: '#93c5fd' }}>id</span>
+                      {'='}
+                      <span style={{ color: '#86efac' }}>{'"onboarding"'}</span>
+                      {'\n        '}
+                      <span style={{ color: '#93c5fd' }}>steps</span>
+                      {'={steps}\n      '}
+                      <span style={{ color: '#93c5fd' }}>{'/>'}</span>
+                      {'\n      '}
+                      <span style={{ color: '#93c5fd' }}>{'<YourApp />'}</span>
+                      {'\n    '}
+                      <span style={{ color: '#93c5fd' }}>{'</SpotlightProvider>'}</span>
+                      {'\n  )\n}'}
+                    </code>
+                  </pre>
+                </div>
+              </div>
             </div>
-            <pre className="overflow-x-auto p-4 text-sm">
-              <code>
-                <span className="text-fd-muted-foreground">$ </span>
-                {installCommand}
-              </code>
-            </pre>
           </div>
         </section>
       </AnimateOnScroll>
 
-      {/* Code Example */}
-      <AnimateOnScroll>
-        <section className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 px-6 pb-20">
-          <h2 className="text-3xl font-bold tracking-tight">Simple, declarative API</h2>
-          <div className="w-full max-w-2xl overflow-hidden rounded-xl border border-fd-border bg-fd-card">
-            <div className="flex items-center gap-2 border-b border-fd-border px-4 py-2 text-xs text-fd-muted-foreground">
-              <span className="h-3 w-3 rounded-full bg-red-500/60" />
-              <span className="h-3 w-3 rounded-full bg-yellow-500/60" />
-              <span className="h-3 w-3 rounded-full bg-green-500/60" />
-              <span className="ml-2">App.tsx</span>
-            </div>
-            <pre className="overflow-x-auto p-4 text-sm leading-relaxed">
-              <code>
-                <span className="text-purple-400">import</span>
-                {' { '}
-                <span className="text-blue-300">SpotlightProvider</span>
-                {', '}
-                <span className="text-blue-300">SpotlightTour</span>
-                {', '}
-                <span className="text-blue-300">useSpotlight</span>
-                {' } '}
-                <span className="text-purple-400">from</span>{' '}
-                <span className="text-emerald-400">{"'react-spotlight'"}</span>
-                {'\n'}
-                <span className="text-purple-400">import</span>{' '}
-                <span className="text-emerald-400">{"'react-spotlight/styles.css'"}</span>
-                {'\n\n'}
-                <span className="text-purple-400">const</span>
-                {' steps = [\n  { '}
-                <span className="text-blue-300">target</span>
-                {': '}
-                <span className="text-emerald-400">{"'#step-1'"}</span>
-                {', '}
-                <span className="text-blue-300">title</span>
-                {': '}
-                <span className="text-emerald-400">{"'Welcome!'"}</span>
-                {', '}
-                <span className="text-blue-300">content</span>
-                {': '}
-                <span className="text-emerald-400">{"'Let us show you around.'"}</span>
-                {' },\n  { '}
-                <span className="text-blue-300">target</span>
-                {': '}
-                <span className="text-emerald-400">{"'#step-2'"}</span>
-                {', '}
-                <span className="text-blue-300">title</span>
-                {': '}
-                <span className="text-emerald-400">{"'Features'"}</span>
-                {', '}
-                <span className="text-blue-300">content</span>
-                {': '}
-                <span className="text-emerald-400">{"'Check out what we offer.'"}</span>
-                {' },\n]\n\n'}
-                <span className="text-purple-400">function</span>{' '}
-                <span className="text-yellow-300">App</span>
-                {'() {\n  '}
-                <span className="text-purple-400">return</span>
-                {' (\n    '}
-                <span className="text-blue-300">{'<SpotlightProvider>'}</span>
-                {'\n      '}
-                <span className="text-blue-300">{'<SpotlightTour'}</span>{' '}
-                <span className="text-blue-300">id</span>
-                {'='}
-                <span className="text-emerald-400">{'"onboarding"'}</span>{' '}
-                <span className="text-blue-300">steps</span>
-                {'={steps} '}
-                <span className="text-blue-300">{'/>'}</span>
-                {'\n      '}
-                <span className="text-blue-300">{'<YourApp />'}</span>
-                {'\n    '}
-                <span className="text-blue-300">{'</SpotlightProvider>'}</span>
-                {'\n  )\n}'}
-              </code>
-            </pre>
-          </div>
-        </section>
-      </AnimateOnScroll>
-
-      {/* Comparison */}
+      {/* ─── COMPARISON ─── */}
       <AnimateOnScroll>
         <section
           data-tour="comparison"
-          className="mx-auto flex w-full max-w-5xl flex-col items-center gap-8 px-6 pb-24"
+          className="px-6 py-24 sm:px-12 lg:px-24"
+          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
         >
-          <h2 className="text-3xl font-bold tracking-tight">Why react-spotlight?</h2>
-          <div className="w-full max-w-3xl overflow-hidden rounded-xl border border-fd-border">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-fd-border bg-fd-card">
-                  <th className="px-4 py-3 font-medium">Feature</th>
-                  <th className="px-4 py-3 font-medium">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="text-indigo-400">react-spotlight</span>
-                      <span className="rounded-full bg-indigo-500/15 px-2 py-0.5 text-[10px] font-semibold text-indigo-300">
-                        Recommended
-                      </span>
-                    </span>
-                  </th>
-                  <th className="px-4 py-3 font-medium text-fd-muted-foreground">Others</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-fd-border">
-                {[
-                  ['Bundle size', '< 5 kB', '15–50 kB'],
-                  ['Dependencies', '0', '5–15+'],
-                  ['Accessibility', 'Full ARIA + keyboard', 'Partial'],
-                  ['Animation', 'CSS clip-path (GPU)', 'mix-blend-mode / DOM'],
-                  ['React 19', 'Fully compatible', 'Broken / wrappers'],
-                ].map(([feature, ours, theirs]) => (
-                  <tr key={feature}>
-                    <td className="px-4 py-3">{feature}</td>
-                    <td className="px-4 py-3">
-                      <span className="inline-flex items-center gap-1.5 text-indigo-400">
-                        <svg
-                          aria-hidden="true"
-                          className="h-4 w-4 text-emerald-400"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                        {ours}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-fd-muted-foreground">{theirs}</td>
+          <div className="mx-auto max-w-6xl">
+            <span
+              className="font-mono text-xs font-medium uppercase tracking-widest"
+              style={{ color: 'var(--color-amber)' }}
+            >
+              Comparison
+            </span>
+            <h2
+              className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              See the difference.
+            </h2>
+
+            <div
+              className="mt-12 overflow-hidden rounded-xl"
+              style={{
+                border: '1px solid var(--color-border-subtle)',
+              }}
+            >
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr style={{ background: 'var(--color-surface-overlay)' }}>
+                    <th
+                      className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
+                      style={{
+                        color: 'var(--color-text-secondary)',
+                        borderBottom: '1px solid var(--color-border-subtle)',
+                      }}
+                    >
+                      Feature
+                    </th>
+                    <th
+                      className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
+                      style={{
+                        color: 'var(--color-amber)',
+                        borderBottom: '1px solid var(--color-border-accent)',
+                      }}
+                    >
+                      react-spotlight
+                    </th>
+                    <th
+                      className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
+                      style={{
+                        color: 'var(--color-text-secondary)',
+                        borderBottom: '1px solid var(--color-border-subtle)',
+                      }}
+                    >
+                      Others
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {[
+                    ['React 19', 'Fully compatible', 'Broken / wrappers'],
+                    ['Bundle size', '< 5 kB', '15–50 kB'],
+                    ['Dependencies', '0', '5–15+'],
+                    ['Accessibility', 'WCAG 2.1 AA', 'Partial at best'],
+                    ['Focus trap', 'Built-in', 'Not available'],
+                    ['Dark mode', 'CSS clip-path', 'mix-blend-mode (breaks)'],
+                    ['License', 'MIT', 'GPL / Paid / MIT'],
+                  ].map(([feature, ours, theirs], i) => (
+                    <tr
+                      key={feature}
+                      style={{
+                        background:
+                          i % 2 === 0 ? 'var(--color-surface-raised)' : 'var(--color-surface)',
+                        borderBottom: '1px solid var(--color-border-subtle)',
+                      }}
+                    >
+                      <td
+                        className="px-6 py-4 font-medium"
+                        style={{ color: 'var(--color-text-primary)' }}
+                      >
+                        {feature}
+                      </td>
+                      <td className="px-6 py-4" style={{ color: 'var(--color-amber-light)' }}>
+                        {ours}
+                      </td>
+                      <td className="px-6 py-4" style={{ color: 'var(--color-text-secondary)' }}>
+                        {theirs}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       </AnimateOnScroll>
 
-      {/* CTA Footer */}
+      {/* ─── CTA ─── */}
       <AnimateOnScroll>
-        <section className="mx-auto flex w-full max-w-3xl flex-col items-center gap-6 px-6 pb-24">
-          <div className="w-full rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-fd-card to-fd-card p-10 text-center">
-            <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Ready to ship better onboarding?
+        <section
+          className="px-6 py-32 sm:px-12 lg:px-24"
+          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
+        >
+          <div className="mx-auto max-w-3xl text-center">
+            <h2
+              className="font-display text-5xl leading-tight tracking-tight sm:text-6xl lg:text-7xl"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
+              Ship onboarding
+              <br />
+              <em style={{ color: 'var(--color-amber)' }}>that converts.</em>
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-fd-muted-foreground">
-              Get up and running in under 5 minutes. Beautiful tours, zero dependencies, fully
-              accessible.
+            <p
+              className="mx-auto mt-6 max-w-md text-lg leading-relaxed"
+              style={{ color: 'var(--color-text-secondary)' }}
+            >
+              Five minutes to integrate. Beautiful by default. The tour library React has been
+              waiting for.
             </p>
-            <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
               <Link
                 href="/docs"
-                className="inline-flex items-center rounded-lg bg-indigo-600 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                className="inline-flex items-center gap-2 rounded-lg px-8 py-4 text-sm font-semibold transition-all duration-200 hover:brightness-110"
+                style={{
+                  background: 'var(--color-amber)',
+                  color: 'var(--color-surface)',
+                }}
               >
                 Read the Docs
+                <svg
+                  aria-hidden="true"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 12h14" />
+                  <path d="m12 5 7 7-7 7" />
+                </svg>
               </Link>
-              <code className="rounded-lg border border-fd-border bg-fd-background px-4 py-3 text-sm text-fd-muted-foreground">
+              <code
+                className="font-mono rounded-lg px-5 py-4 text-sm"
+                style={{
+                  border: '1px solid var(--color-border-subtle)',
+                  color: 'var(--color-text-secondary)',
+                  background: 'var(--color-surface-raised)',
+                }}
+              >
                 npm install react-spotlight
               </code>
             </div>
@@ -389,15 +626,21 @@ export default function HomePage() {
         </section>
       </AnimateOnScroll>
 
-      {/* Footer */}
-      <footer className="mt-auto border-t border-fd-border py-8 text-center text-sm text-fd-muted-foreground">
+      {/* ─── FOOTER ─── */}
+      <footer
+        className="px-6 py-8 text-center text-sm sm:px-12"
+        style={{
+          borderTop: '1px solid var(--color-border-subtle)',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
         <p>
           MIT License &middot;{' '}
           <a
             href="https://github.com/bilaltahir/react-spotlight"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-fd-foreground"
+            className="underline transition-colors hover:text-white"
           >
             GitHub
           </a>{' '}
@@ -406,7 +649,7 @@ export default function HomePage() {
             href="https://fumadocs.vercel.app"
             target="_blank"
             rel="noopener noreferrer"
-            className="underline hover:text-fd-foreground"
+            className="underline transition-colors hover:text-white"
           >
             Fumadocs
           </a>
