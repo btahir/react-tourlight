@@ -103,8 +103,8 @@ describe('accessibility', () => {
       await new Promise((r) => setTimeout(r, 50))
     })
 
-    // There should be a live region with aria-live="polite"
-    const liveRegion = container.querySelector('[aria-live="polite"]')
+    // There should be a live region with aria-live="polite" (portaled to document.body)
+    const liveRegion = document.querySelector('[aria-live="polite"]')
     expect(liveRegion).toBeInTheDocument()
     expect(liveRegion?.textContent).toContain('Step 1 of 2')
     expect(liveRegion?.textContent).toContain('Accessible Step')

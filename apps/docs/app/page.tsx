@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { AnimateOnScroll } from '@/components/animate-on-scroll'
-import { InteractiveTour } from '@/components/demo/interactive-tour'
+import { InteractiveTour, TourTriggerButton } from '@/components/demo/interactive-tour'
 
 export default function HomePage() {
   return (
@@ -40,16 +40,13 @@ export default function HomePage() {
           >
             GitHub
           </a>
-          <Link
-            href="/docs"
+          <TourTriggerButton
             className="rounded-md px-4 py-1.5 text-sm font-medium transition-all hover:brightness-110"
             style={{
               background: 'var(--color-amber)',
               color: 'var(--color-surface)',
             }}
-          >
-            Get Started
-          </Link>
+          />
         </div>
       </nav>
 
@@ -87,7 +84,7 @@ export default function HomePage() {
           </div>
 
           {/* Headline — Instrument Serif, oversized, italic accent */}
-          <h1 className="animate-fade-in-up delay-100 max-w-4xl leading-[0.95]">
+          <h1 data-tour="headline" className="animate-fade-in-up delay-100 max-w-4xl leading-[0.95]">
             <span
               className="font-display block text-6xl tracking-tight sm:text-8xl lg:text-9xl"
               style={{ color: 'var(--color-text-primary)' }}
@@ -113,30 +110,13 @@ export default function HomePage() {
 
           {/* CTA row */}
           <div className="animate-fade-in-up delay-400 mt-10 flex flex-wrap items-center gap-4">
-            <Link
-              href="/docs"
+            <TourTriggerButton
               className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-semibold transition-all duration-200 hover:brightness-110"
               style={{
                 background: 'var(--color-amber)',
                 color: 'var(--color-surface)',
               }}
-            >
-              Get Started
-              <svg
-                aria-hidden="true"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14" />
-                <path d="m12 5 7 7-7 7" />
-              </svg>
-            </Link>
+            />
             <a
               href="https://github.com/bilaltahir/react-spotlight"
               target="_blank"
@@ -151,10 +131,8 @@ export default function HomePage() {
             </a>
           </div>
 
-          {/* Interactive tour */}
-          <div className="animate-fade-in-up delay-500 mt-6">
-            <InteractiveTour />
-          </div>
+          {/* Interactive tour (no visible UI — listens for trigger events) */}
+          <InteractiveTour />
 
           {/* Stats strip */}
           <div
@@ -282,6 +260,7 @@ export default function HomePage() {
             ].map((feature, i) => (
               <AnimateOnScroll key={feature.title} delay={i * 80}>
                 <div
+                  {...(i === 0 ? { 'data-tour': 'feature-card' } : {})}
                   className="group relative flex flex-col justify-between p-8 transition-colors duration-300 hover:brightness-125 sm:p-10"
                   style={{ background: 'var(--color-surface-raised)' }}
                 >
@@ -345,6 +324,7 @@ export default function HomePage() {
 
                 {/* Terminal block */}
                 <div
+                  data-tour="terminal"
                   className="mt-8 overflow-hidden rounded-xl"
                   style={{
                     border: '1px solid var(--color-border-subtle)',
@@ -493,7 +473,7 @@ export default function HomePage() {
                 border: '1px solid var(--color-border-subtle)',
               }}
             >
-              <table className="w-full text-left text-sm">
+              <table data-tour="comparison-table" className="w-full text-left text-sm">
                 <thead>
                   <tr style={{ background: 'var(--color-surface-overlay)' }}>
                     <th

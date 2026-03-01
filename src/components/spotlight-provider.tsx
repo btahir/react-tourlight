@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { createKeyboardHandler } from '../engine/keyboard.ts'
 import type { TourStateMachineActions } from '../engine/state-machine.ts'
 import { createTourStateMachine } from '../engine/state-machine.ts'
@@ -351,7 +352,7 @@ export function SpotlightProvider({
     <SpotlightContext.Provider value={contextValue}>
       {children}
 
-      {isActive && currentStep && (
+      {isActive && currentStep && createPortal(
         <>
           <SpotlightOverlay
             targetRect={activeRect}
@@ -400,7 +401,8 @@ export function SpotlightProvider({
                 currentStep.title,
               )}
           </div>
-        </>
+        </>,
+        document.body
       )}
     </SpotlightContext.Provider>
   )
