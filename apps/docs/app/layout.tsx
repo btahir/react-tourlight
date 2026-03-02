@@ -5,8 +5,8 @@ import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
   title: {
-    default: 'react-spotlight — Beautiful onboarding tours for React',
-    template: '%s | react-spotlight',
+    default: 'react-tourlight — Beautiful onboarding tours for React',
+    template: '%s | react-tourlight',
   },
   description:
     'Beautiful onboarding tours & feature highlights for React. Zero dependencies, fully accessible, ~5KB gzipped. MIT licensed.',
@@ -26,16 +26,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://react-spotlight.dev',
-    siteName: 'react-spotlight',
-    title: 'react-spotlight — Beautiful onboarding tours for React',
+    url: 'https://react-tourlight.dev',
+    siteName: 'react-tourlight',
+    title: 'react-tourlight — Beautiful onboarding tours for React',
     description:
       'Zero dependencies, fully accessible, ~5KB gzipped. The modern alternative to React Joyride.',
     images: [{ url: '/og.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'react-spotlight — Beautiful onboarding tours for React',
+    title: 'react-tourlight — Beautiful onboarding tours for React',
     description:
       'Zero dependencies, fully accessible, ~5KB gzipped. The modern alternative to React Joyride.',
     images: ['/og.png'],

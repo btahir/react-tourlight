@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import type { SpotlightTheme } from 'react-spotlight'
-import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import type { SpotlightTheme } from 'react-tourlight'
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 const TOUR_EVENT = 'start-docs-tour'
 
@@ -66,9 +66,9 @@ const amberDarkTheme: SpotlightTheme = {
 const steps = [
   {
     target: '[data-tour="headline"]',
-    title: 'Welcome to react-spotlight',
+    title: 'Welcome to react-tourlight',
     content:
-      "This is a live tour — you're experiencing the library right now. Every overlay, tooltip, and transition you see is react-spotlight.",
+      "This is a live tour — you're experiencing the library right now. Every overlay, tooltip, and transition you see is react-tourlight.",
     placement: 'bottom' as const,
   },
   {
@@ -89,7 +89,7 @@ const steps = [
     target: '[data-tour="comparison-table"]',
     title: 'See the difference',
     content:
-      'Smaller, faster, more accessible, and MIT licensed. Compare react-spotlight against everything else.',
+      'Smaller, faster, more accessible, and MIT licensed. Compare react-tourlight against everything else.',
     placement: 'top' as const,
   },
 ]

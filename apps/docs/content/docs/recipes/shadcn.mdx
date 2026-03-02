@@ -3,7 +3,7 @@ title: shadcn/ui Themed Tooltip
 description: Build a custom tooltip styled with shadcn/ui components to match your app's design system.
 ---
 
-react-spotlight's `renderTooltip` prop gives you full control over the tooltip UI. This recipe shows how to build a tooltip using shadcn/ui's `Card` and `Button` components so your tour matches the rest of your app.
+react-tourlight's `renderTooltip` prop gives you full control over the tooltip UI. This recipe shows how to build a tooltip using shadcn/ui's `Card` and `Button` components so your tour matches the rest of your app.
 
 ## Custom tooltip component
 
@@ -13,7 +13,7 @@ First, create a reusable tooltip component using shadcn/ui primitives:
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import type { TooltipRenderProps } from 'react-spotlight'
+import type { TooltipRenderProps } from 'react-tourlight'
 
 export function ShadcnTooltip({
   step,
@@ -68,7 +68,7 @@ export function ShadcnTooltip({
 Pass your component to the `renderTooltip` prop on `<SpotlightTour>`:
 
 ```tsx title="components/onboarding-tour.tsx"
-import { SpotlightTour } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
 import { ShadcnTooltip } from './spotlight-tooltip'
 
 export function OnboardingTour() {

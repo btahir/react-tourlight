@@ -21,7 +21,7 @@ export default function HomePage() {
           className="font-display text-lg tracking-tight"
           style={{ color: 'var(--color-text-primary)' }}
         >
-          react-spotlight
+          react-tourlight
         </Link>
         <div className="flex items-center gap-6">
           <Link
@@ -32,7 +32,7 @@ export default function HomePage() {
             Docs
           </Link>
           <a
-            href="https://github.com/bilaltahir/react-spotlight"
+            href="https://github.com/bilaltahir/react-tourlight"
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm transition-colors hover:text-white"
@@ -80,7 +80,7 @@ export default function HomePage() {
               className="h-1.5 w-1.5 rounded-full"
               style={{ background: 'var(--color-amber)' }}
             />
-            v0.1.0 — Now available
+            Now available on npm
           </div>
 
           {/* Headline — Instrument Serif, oversized, italic accent */}
@@ -104,7 +104,7 @@ export default function HomePage() {
             className="animate-fade-in-up delay-300 mt-8 max-w-lg text-lg leading-relaxed sm:text-xl"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            react-spotlight is the modern React tour library. Zero dependencies, WCAG 2.1 AA
+            react-tourlight is the modern React tour library. Zero dependencies, WCAG 2.1 AA
             accessible, under 5 kB gzipped. The one that works with React 19.
           </p>
 
@@ -118,7 +118,7 @@ export default function HomePage() {
               }}
             />
             <a
-              href="https://github.com/bilaltahir/react-spotlight"
+              href="https://github.com/bilaltahir/react-tourlight"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-medium transition-colors duration-200 hover:bg-white/5"
@@ -203,7 +203,7 @@ export default function HomePage() {
                     nothing modern, free, and React-native exists.
                   </strong>
                 </p>
-                <p style={{ color: 'var(--color-amber-light)' }}>react-spotlight fills that gap.</p>
+                <p style={{ color: 'var(--color-amber-light)' }}>react-tourlight fills that gap.</p>
               </div>
             </div>
           </div>
@@ -222,7 +222,7 @@ export default function HomePage() {
               className="font-mono text-xs font-medium uppercase tracking-widest"
               style={{ color: 'var(--color-amber)' }}
             >
-              Why react-spotlight
+              Why react-tourlight
             </span>
             <h2
               className="font-display mt-4 max-w-xl text-4xl leading-tight tracking-tight sm:text-5xl"
@@ -350,7 +350,7 @@ export default function HomePage() {
                     <code>
                       <span style={{ color: 'var(--color-text-secondary)' }}>$ </span>
                       <span style={{ color: 'var(--color-text-primary)' }}>
-                        npm install react-spotlight @floating-ui/react-dom
+                        npm install react-tourlight @floating-ui/react-dom
                       </span>
                     </code>
                   </pre>
@@ -390,10 +390,10 @@ export default function HomePage() {
                       <span style={{ color: 'var(--color-text-primary)' }}>SpotlightTour</span>
                       {' }\n'}
                       <span style={{ color: '#c084fc' }}> from</span>{' '}
-                      <span style={{ color: '#86efac' }}>{"'react-spotlight'"}</span>
+                      <span style={{ color: '#86efac' }}>{"'react-tourlight'"}</span>
                       {'\n'}
                       <span style={{ color: '#c084fc' }}>import</span>{' '}
-                      <span style={{ color: '#86efac' }}>{"'react-spotlight/styles.css'"}</span>
+                      <span style={{ color: '#86efac' }}>{"'react-tourlight/styles.css'"}</span>
                       {'\n\n'}
                       <span style={{ color: '#c084fc' }}>const</span>
                       <span style={{ color: 'var(--color-text-primary)' }}> steps</span>
@@ -492,7 +492,7 @@ export default function HomePage() {
                         borderBottom: '1px solid var(--color-border-accent)',
                       }}
                     >
-                      react-spotlight
+                      react-tourlight
                     </th>
                     <th
                       className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
@@ -599,7 +599,7 @@ export default function HomePage() {
                   background: 'var(--color-surface-raised)',
                 }}
               >
-                npm install react-spotlight
+                npm install react-tourlight
               </code>
             </div>
           </div>
@@ -617,7 +617,7 @@ export default function HomePage() {
         <p>
           MIT License &middot;{' '}
           <a
-            href="https://github.com/bilaltahir/react-spotlight"
+            href="https://github.com/bilaltahir/react-tourlight"
             target="_blank"
             rel="noopener noreferrer"
             className="underline transition-colors hover:text-white"

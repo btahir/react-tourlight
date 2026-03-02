@@ -5,7 +5,7 @@ description: Customize themes, tooltips, labels, transitions, and overlay appear
 
 ## Themes
 
-react-spotlight ships with `light` and `dark` themes, plus an `auto` mode that follows the user's OS preference via `prefers-color-scheme`.
+react-tourlight ships with `light` and `dark` themes, plus an `auto` mode that follows the user's OS preference via `prefers-color-scheme`.
 
 ```tsx
 // Auto-detect OS preference
@@ -21,7 +21,7 @@ react-spotlight ships with `light` and `dark` themes, plus an `auto` mode that f
 Pass a full `SpotlightTheme` object to completely control the look of the tooltip, buttons, progress bar, and overlay:
 
 ```tsx
-import type { SpotlightTheme } from 'react-spotlight'
+import type { SpotlightTheme } from 'react-tourlight'
 
 const brandTheme: SpotlightTheme = {
   overlay: {
@@ -102,7 +102,7 @@ The theme object controls every visual aspect of the spotlight UI:
 You can import a built-in theme and override specific properties using spread syntax:
 
 ```tsx
-import { darkTheme } from 'react-spotlight'
+import { darkTheme } from 'react-tourlight'
 
 const customTheme: SpotlightTheme = {
   ...darkTheme,

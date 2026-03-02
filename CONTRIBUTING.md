@@ -1,4 +1,4 @@
-# Contributing to react-spotlight
+# Contributing to react-tourlight
 
 Thanks for your interest in contributing! This guide will help you get set up and understand the project workflow.
 
@@ -13,8 +13,8 @@ Thanks for your interest in contributing! This guide will help you get set up an
 
 ```bash
 # Clone the repository
-git clone https://github.com/bilaltahir/react-spotlight.git
-cd react-spotlight
+git clone https://github.com/bilaltahir/react-tourlight.git
+cd react-tourlight
 
 # Install dependencies
 pnpm install
@@ -29,7 +29,7 @@ cd apps/docs && pnpm dev
 ## Project structure
 
 ```
-react-spotlight/
+react-tourlight/
 ├── src/                    # Library source code
 │   ├── components/         # React components (Provider, Tour, Highlight, etc.)
 │   ├── hooks/              # Custom hooks (useSpotlight, useSpotlightControl)
@@ -100,7 +100,7 @@ pnpm changeset
 ```
 
 This will prompt you for:
-1. **Package** — select `react-spotlight`
+1. **Package** — select `react-tourlight`
 2. **Bump type** — `patch` (bug fix), `minor` (new feature), or `major` (breaking change)
 3. **Summary** — a short description of the change
 
@@ -122,7 +122,7 @@ The changeset file will be committed with your PR and consumed during the releas
 
 ## Reporting issues
 
-Found a bug or have a feature request? [Open an issue](https://github.com/bilaltahir/react-spotlight/issues) with:
+Found a bug or have a feature request? [Open an issue](https://github.com/bilaltahir/react-tourlight/issues) with:
 - A clear title and description
 - Steps to reproduce (for bugs)
 - Expected vs actual behavior

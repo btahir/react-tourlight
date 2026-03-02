@@ -3,7 +3,7 @@ title: Single-Element Highlights
 description: Highlight individual elements for "what's new" callouts and feature announcements without a full tour.
 ---
 
-Sometimes you don't need a multi-step tour. You just want to draw attention to a single element -- a new feature, a changed button, or an important action. react-spotlight provides two ways to do this.
+Sometimes you don't need a multi-step tour. You just want to draw attention to a single element -- a new feature, a changed button, or an important action. react-tourlight provides two ways to do this.
 
 ## SpotlightHighlight component
 
@@ -11,7 +11,7 @@ Sometimes you don't need a multi-step tour. You just want to draw attention to a
 
 ```tsx
 import { useState } from 'react'
-import { SpotlightHighlight } from 'react-spotlight'
+import { SpotlightHighlight } from 'react-tourlight'
 
 function Dashboard() {
   const [showHighlight, setShowHighlight] = useState(true)
@@ -52,7 +52,7 @@ The highlight is automatically cleaned up when the component unmounts or when `a
 For imperative control, use `useSpotlightControl()`. This is useful when you need to trigger highlights from event handlers or effects:
 
 ```tsx
-import { useSpotlightControl } from 'react-spotlight'
+import { useSpotlightControl } from 'react-tourlight'
 
 function FeatureAnnouncement() {
   const spotlight = useSpotlightControl()
@@ -92,7 +92,7 @@ A common use case is showing a highlight once when a user first encounters a new
 
 ```tsx
 import { useState, useEffect } from 'react'
-import { SpotlightHighlight } from 'react-spotlight'
+import { SpotlightHighlight } from 'react-tourlight'
 
 function NewFeatureCallout() {
   const [show, setShow] = useState(false)

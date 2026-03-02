@@ -1,16 +1,16 @@
 {
-  "name": "react-spotlight",
-  "version": "0.1.0",
+  "name": "react-tourlight",
+  "version": "2.0.0",
   "description": "Beautiful onboarding tours & feature highlights for React. Zero dependencies.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bilaltahir/react-spotlight.git"
+    "url": "git+https://github.com/bilaltahir/react-tourlight.git"
   },
   "bugs": {
-    "url": "https://github.com/bilaltahir/react-spotlight/issues"
+    "url": "https://github.com/bilaltahir/react-tourlight/issues"
   },
-  "homepage": "https://react-spotlight.dev",
+  "homepage": "https://react-tourlight.dev",
   "engines": {
     "node": ">=18.0.0"
   },

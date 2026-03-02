@@ -1,24 +1,24 @@
 ---
 title: Introduction
-description: Install react-spotlight and build your first onboarding tour in under 5 minutes.
+description: Install react-tourlight and build your first onboarding tour in under 5 minutes.
 ---
 
 ## Installation
 
-Install react-spotlight and its peer dependency:
+Install react-tourlight and its peer dependency:
 
 ```package-install
-npm install react-spotlight @floating-ui/react-dom
+npm install react-tourlight @floating-ui/react-dom
 ```
 
 `@floating-ui/react-dom` is used for intelligent tooltip positioning (flip, shift, overflow handling). It's listed as a peer dependency to keep the core bundle small.
 
 ## Import the stylesheet
 
-react-spotlight ships a small CSS file for the overlay and transitions. Import it once at the root of your app:
+react-tourlight ships a small CSS file for the overlay and transitions. Import it once at the root of your app:
 
 ```tsx
-import 'react-spotlight/styles.css'
+import 'react-tourlight/styles.css'
 ```
 
 ## Wrap your app in SpotlightProvider
@@ -26,8 +26,8 @@ import 'react-spotlight/styles.css'
 `SpotlightProvider` manages all tour and highlight state. Place it near the root of your component tree:
 
 ```tsx
-import { SpotlightProvider } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import { SpotlightProvider } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 export default function App() {
   return (
@@ -43,7 +43,7 @@ export default function App() {
 Each step targets a DOM element (via CSS selector or React ref), and includes a title, content, and optional placement:
 
 ```tsx
-import { SpotlightTour } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
 
 const steps = [
   {
@@ -75,7 +75,7 @@ const steps = [
 Use the `useSpotlight` hook to start, stop, or control any registered tour:
 
 ```tsx
-import { useSpotlight } from 'react-spotlight'
+import { useSpotlight } from 'react-tourlight'
 
 function OnboardingButton() {
   const { start } = useSpotlight()
@@ -93,8 +93,8 @@ function OnboardingButton() {
 Putting it all together:
 
 ```tsx
-import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 function App() {
   return (

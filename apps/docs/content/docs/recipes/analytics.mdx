@@ -3,7 +3,7 @@ title: Tracking Tour Completion
 description: Track tour completion, skip events, and step-level drop-off with analytics providers.
 ---
 
-Understanding how users interact with your tours helps you improve onboarding flows. react-spotlight provides callbacks at both the provider and tour level that integrate with any analytics service.
+Understanding how users interact with your tours helps you improve onboarding flows. react-tourlight provides callbacks at both the provider and tour level that integrate with any analytics service.
 
 ## Basic tracking with callbacks
 
@@ -27,7 +27,7 @@ Use `onComplete` and `onSkip` on `<SpotlightProvider>` to track all tours global
 For detailed step-level tracking, use `onStateChange`. It fires on every state transition -- start, step change, complete, and skip:
 
 ```tsx
-import type { TourState } from 'react-spotlight'
+import type { TourState } from 'react-tourlight'
 
 <SpotlightProvider
   onStateChange={(tourId: string, state: TourState) => {
@@ -53,8 +53,8 @@ Track whether users have completed tours so you don't show them again:
 
 ```tsx
 import { useState } from 'react'
-import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
-import type { TourState } from 'react-spotlight'
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-tourlight'
+import type { TourState } from 'react-tourlight'
 
 function App() {
   const [tourState, setTourState] = useState<Record<string, TourState>>(() => {

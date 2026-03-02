@@ -80,7 +80,7 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.4(react@19.2.4)
-      react-spotlight:
+      react-tourlight:
         specifier: workspace:*
         version: link:../..
     devDependencies:
@@ -5696,14 +5696,14 @@ snapshots:
       '@remotion/studio-shared': 4.0.431(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       '@rspack/core': 1.7.6(@swc/helpers@0.5.15)
       '@rspack/plugin-react-refresh': 1.6.1(react-refresh@0.9.0)
-      css-loader: 5.2.7(webpack@5.105.0)
+      css-loader: 5.2.7(webpack@5.105.0(esbuild@0.25.0))
       esbuild: 0.25.0
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
       react-refresh: 0.9.0
       remotion: 4.0.431(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       source-map: 0.7.3
-      style-loader: 4.0.0(webpack@5.105.0)
+      style-loader: 4.0.0(webpack@5.105.0(esbuild@0.25.0))
       webpack: 5.105.0(esbuild@0.25.0)
     transitivePeerDependencies:
       - '@swc/core'
@@ -6665,7 +6665,7 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
-  css-loader@5.2.7(webpack@5.105.0):
+  css-loader@5.2.7(webpack@5.105.0(esbuild@0.25.0)):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.6)
       loader-utils: 2.0.4
@@ -8642,7 +8642,7 @@ snapshots:
     dependencies:
       js-tokens: 9.0.1
 
-  style-loader@4.0.0(webpack@5.105.0):
+  style-loader@4.0.0(webpack@5.105.0(esbuild@0.25.0)):
     dependencies:
       webpack: 5.105.0(esbuild@0.25.0)
 

@@ -1,17 +1,17 @@
 ---
 title: Remix Integration
-description: Set up react-spotlight with Remix, including client-only rendering considerations.
+description: Set up react-tourlight with Remix, including client-only rendering considerations.
 ---
 
-react-spotlight uses browser APIs and must run on the client. Remix supports this through its `ClientOnly` wrapper pattern and `*.client.tsx` file convention.
+react-tourlight uses browser APIs and must run on the client. Remix supports this through its `ClientOnly` wrapper pattern and `*.client.tsx` file convention.
 
 ## Basic setup
 
 ### 1. Create the provider wrapper
 
 ```tsx title="app/components/spotlight-wrapper.tsx"
-import { SpotlightProvider } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import { SpotlightProvider } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 export function SpotlightWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -47,7 +47,7 @@ export default function App() {
 ### 3. Define tours in route components
 
 ```tsx title="app/routes/dashboard.tsx"
-import { SpotlightTour, useSpotlight } from 'react-spotlight'
+import { SpotlightTour, useSpotlight } from 'react-tourlight'
 
 export default function Dashboard() {
   const { start } = useSpotlight()
@@ -85,12 +85,12 @@ export default function Dashboard() {
 
 ## Client-only rendering
 
-If you encounter hydration issues (unlikely, since react-spotlight renders no server markup), you can use Remix's `ClientOnly` utility:
+If you encounter hydration issues (unlikely, since react-tourlight renders no server markup), you can use Remix's `ClientOnly` utility:
 
 ```tsx title="app/components/client-only-tour.tsx"
 import { ClientOnly } from 'remix-utils/client-only'
-import { SpotlightTour } from 'react-spotlight'
-import type { SpotlightStep } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
+import type { SpotlightStep } from 'react-tourlight'
 
 const steps: SpotlightStep[] = [
   {
@@ -118,7 +118,7 @@ export function ClientOnlyTour() {
 Alternatively, use the `.client.tsx` file suffix to ensure the module is only loaded on the client:
 
 ```tsx title="app/components/tour.client.tsx"
-import { SpotlightTour } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
 
 export function Tour() {
   return (
@@ -138,7 +138,7 @@ Use `useLocation` from `@remix-run/react` for route-aware steps:
 
 ```tsx
 import { useLocation } from '@remix-run/react'
-import { SpotlightTour } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
 
 export function OnboardingTour() {
   const location = useLocation()

@@ -14,7 +14,7 @@ export function useSpotlight(): SpotlightContextValue {
   const context = useContext(SpotlightContext)
 
   if (!context) {
-    throw new Error('react-spotlight: useSpotlight() must be used within a <SpotlightProvider>.')
+    throw new Error('react-tourlight: useSpotlight() must be used within a <SpotlightProvider>.')
   }
 
   return context

@@ -119,7 +119,7 @@ export function Comparison() {
           <tr>
             <th style={{ ...headerStyle, textAlign: 'left' }}>Feature</th>
             <th style={{ ...headerStyle, textAlign: 'center', color: '#818cf8' }}>
-              react-spotlight
+              react-tourlight
             </th>
             <th style={{ ...headerStyle, textAlign: 'center' }}>Joyride</th>
             <th style={{ ...headerStyle, textAlign: 'center' }}>Shepherd</th>

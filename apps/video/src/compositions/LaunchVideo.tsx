@@ -139,7 +139,7 @@ const SceneInstall: React.FC = () => {
         <AppWindow title="terminal" width={700} height={200}>
           <div style={{ padding: 24, background: theme.bg }}>
             <TypeWriter
-              text="npm install react-spotlight @floating-ui/react-dom"
+              text="npm install react-tourlight @floating-ui/react-dom"
               startFrame={8}
               charsPerFrame={2.4}
               fontSize={16}
@@ -152,8 +152,8 @@ const SceneInstall: React.FC = () => {
           <AppWindow title="App.tsx" width={700} height={240}>
             <div style={{ padding: 20, background: theme.bg }}>
               <TypeWriter
-                text={`import { SpotlightProvider, SpotlightTour } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+                text={`import { SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 const steps = [
   { target: '#welcome', title: 'Welcome!' },
@@ -314,7 +314,7 @@ const SceneComparison: React.FC = () => {
           }}
         >
           <span style={{ flex: 1, color: theme.textSecondary }}>Feature</span>
-          <span style={{ flex: 1, color: theme.amber }}>react-spotlight</span>
+          <span style={{ flex: 1, color: theme.amber }}>react-tourlight</span>
           <span style={{ flex: 1, color: theme.textSecondary }}>Others</span>
         </div>
 
@@ -411,7 +411,7 @@ const SceneCTA: React.FC = () => {
           color: theme.textSecondary,
         }}
       >
-        npm install react-spotlight
+        npm install react-tourlight
       </div>
     </AbsoluteFill>
   );

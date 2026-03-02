@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/readme-hero.gif" alt="react-spotlight demo" width="720" />
+  <img src="assets/readme-hero.gif" alt="react-tourlight demo" width="720" />
 </p>
 
-<h1 align="center">react-spotlight</h1>
+<h1 align="center">react-tourlight</h1>
 
 <p align="center">
   <a href="assets/launch-video.mp4">Watch the launch video</a>
@@ -14,10 +14,10 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/react-spotlight"><img src="https://img.shields.io/npm/v/react-spotlight.svg?style=flat-square" alt="npm version" /></a>
-  <a href="https://bundlephobia.com/package/react-spotlight"><img src="https://img.shields.io/bundlephobia/minzip/react-spotlight?style=flat-square&label=gzip" alt="bundle size" /></a>
-  <a href="https://github.com/bilaltahir/react-spotlight/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/react-spotlight.svg?style=flat-square" alt="license" /></a>
-  <a href="https://www.npmjs.com/package/react-spotlight"><img src="https://img.shields.io/npm/dm/react-spotlight.svg?style=flat-square" alt="downloads" /></a>
+  <a href="https://www.npmjs.com/package/react-tourlight"><img src="https://img.shields.io/npm/v/react-tourlight.svg?style=flat-square" alt="npm version" /></a>
+  <a href="https://bundlephobia.com/package/react-tourlight"><img src="https://img.shields.io/bundlephobia/minzip/react-tourlight?style=flat-square&label=gzip" alt="bundle size" /></a>
+  <a href="https://github.com/bilaltahir/react-tourlight/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/react-tourlight.svg?style=flat-square" alt="license" /></a>
+  <a href="https://www.npmjs.com/package/react-tourlight"><img src="https://img.shields.io/npm/dm/react-tourlight.svg?style=flat-square" alt="downloads" /></a>
 </p>
 
 ---
@@ -25,24 +25,24 @@
 ## The Problem
 
 <p align="center">
-  <img src="assets/readme-comparison.png" alt="react-spotlight vs React Joyride" width="720" />
+  <img src="assets/readme-comparison.png" alt="react-tourlight vs React Joyride" width="720" />
 </p>
 
 React Joyride — the most popular tour library — is **broken on React 19**. It uses deprecated APIs (`unmountComponentAtNode`, `unstable_renderSubtreeIntoContainer`) and hasn't been updated in 9+ months. Shepherd.js requires a paid commercial license. Intro.js is GPL. Driver.js has no React bindings. Every developer evaluating tour libraries in 2025–2026 hit the same wall: **nothing modern, free, and React-native exists.**
 
-react-spotlight fills that gap.
+react-tourlight fills that gap.
 
 ## Install
 
 ```bash
-npm install react-spotlight @floating-ui/react-dom
+npm install react-tourlight @floating-ui/react-dom
 ```
 
 ## Quickstart
 
 ```tsx
-import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 function App() {
   return (
@@ -75,7 +75,7 @@ function Dashboard() {
 }
 ```
 
-## Why react-spotlight
+## Why react-tourlight
 
 |  | What you get |
 |---|---|
@@ -99,7 +99,7 @@ function Dashboard() {
 
 ## Comparison
 
-| Feature | react-spotlight | React Joyride | Shepherd.js | Driver.js | Intro.js |
+| Feature | react-tourlight | React Joyride | Shepherd.js | Driver.js | Intro.js |
 |---|---|---|---|---|---|
 | **React 19** | Yes | Broken | Wrapper | No React | No React |
 | **License** | MIT | MIT | Paid commercial | MIT | GPL / Paid |
@@ -112,7 +112,7 @@ function Dashboard() {
 
 ## Documentation
 
-Visit **[react-spotlight.dev](https://react-spotlight.dev)** for the full docs — API reference, interactive examples, theming guide, accessibility details, and recipes for Next.js, Remix, and shadcn/ui.
+Visit **[react-tourlight.dev](https://react-tourlight.dev)** for the full docs — API reference, interactive examples, theming guide, accessibility details, and recipes for Next.js, Remix, and shadcn/ui.
 
 ## Contributing
 

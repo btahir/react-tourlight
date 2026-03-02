@@ -1,9 +1,9 @@
 ---
 title: Next.js Integration
-description: Set up react-spotlight with Next.js App Router, including client component wrappers and SSR considerations.
+description: Set up react-tourlight with Next.js App Router, including client component wrappers and SSR considerations.
 ---
 
-react-spotlight is a client-side library that uses browser APIs (`MutationObserver`, `document.querySelector`, `inert`). In Next.js App Router, you need to mark the provider as a Client Component.
+react-tourlight is a client-side library that uses browser APIs (`MutationObserver`, `document.querySelector`, `inert`). In Next.js App Router, you need to mark the provider as a Client Component.
 
 ## App Router setup
 
@@ -14,8 +14,8 @@ Create a `SpotlightWrapper` component marked with `'use client'`:
 ```tsx title="components/spotlight-wrapper.tsx"
 'use client'
 
-import { SpotlightProvider } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import { SpotlightProvider } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 export function SpotlightWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -53,7 +53,7 @@ Tour definitions and the `useSpotlight` hook must be used in Client Components:
 ```tsx title="components/onboarding-tour.tsx"
 'use client'
 
-import { SpotlightTour, useSpotlight } from 'react-spotlight'
+import { SpotlightTour, useSpotlight } from 'react-tourlight'
 
 export function OnboardingTour() {
   return (
@@ -93,7 +93,7 @@ export function StartTourButton() {
 
 ## SSR considerations
 
-react-spotlight renders nothing on the server. The overlay, tooltip, and spotlight cutout are all client-side only. This means:
+react-tourlight renders nothing on the server. The overlay, tooltip, and spotlight cutout are all client-side only. This means:
 
 - No hydration mismatch issues -- the spotlight UI is only rendered in the browser
 - Server Components can render target elements (`#search`, `#sidebar`, etc.) normally
@@ -128,7 +128,7 @@ For tours that span multiple routes, use `usePathname` with `when` predicates:
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { SpotlightTour } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
 
 export function OnboardingTour() {
   const pathname = usePathname()

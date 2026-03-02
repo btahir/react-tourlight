@@ -9,7 +9,7 @@ description: Common issues, browser compatibility, and frequently asked question
 
 1. **Missing CSS import** — Make sure you import the stylesheet:
    ```tsx
-   import 'react-spotlight/styles.css'
+   import 'react-tourlight/styles.css'
    ```
 
 2. **Tour not started** — `<SpotlightTour>` only registers steps. You need to call `start()`:
@@ -35,20 +35,20 @@ description: Common issues, browser compatibility, and frequently asked question
 
 ### Tour doesn't advance
 
-1. **Async elements** — If the next step's target isn't in the DOM yet, react-spotlight waits for it using `MutationObserver`. Ensure the element eventually mounts. Check the `when` callback if you're using conditional steps.
+1. **Async elements** — If the next step's target isn't in the DOM yet, react-tourlight waits for it using `MutationObserver`. Ensure the element eventually mounts. Check the `when` callback if you're using conditional steps.
 
 2. **Focus trap interference** — If another focus trap (e.g., a modal) is active, it may conflict with the spotlight's focus trap. Dismiss the modal before starting the tour.
 
 ### SSR / hydration issues
 
-react-spotlight is client-only. The overlay and tooltip render via portals and depend on `document`. In Next.js or other SSR frameworks:
+react-tourlight is client-only. The overlay and tooltip render via portals and depend on `document`. In Next.js or other SSR frameworks:
 
 ```tsx
 // Dynamically import if needed
 import dynamic from 'next/dynamic'
 
 const SpotlightProvider = dynamic(
-  () => import('react-spotlight').then(m => m.SpotlightProvider),
+  () => import('react-tourlight').then(m => m.SpotlightProvider),
   { ssr: false }
 )
 ```
@@ -66,7 +66,7 @@ Or simply ensure `start()` is only called after hydration (e.g., in a `useEffect
 | iOS Safari | 15.4+ | Full support |
 | Chrome Android | 88+ | Full support |
 
-react-spotlight uses:
+react-tourlight uses:
 - CSS `clip-path: path()` (widely supported)
 - `MutationObserver` (supported everywhere)
 - `inert` attribute (Chrome 102+, Firefox 112+, Safari 15.5+)
@@ -77,7 +77,7 @@ For older browsers without `inert` support, the accessibility features degrade g
 
 ### Does it work with React Native?
 
-No. react-spotlight is for React DOM (web) only. It relies on DOM APIs like `getBoundingClientRect`, CSS `clip-path`, and portal rendering.
+No. react-tourlight is for React DOM (web) only. It relies on DOM APIs like `getBoundingClientRect`, CSS `clip-path`, and portal rendering.
 
 ### Can I use it without Floating UI?
 
@@ -89,7 +89,7 @@ Only one tour can be active at a time. You can register multiple tours with diff
 
 ### Can I persist tour completion state?
 
-react-spotlight doesn't handle persistence — that's your app's concern. Use the `onComplete` callback to save state:
+react-tourlight doesn't handle persistence — that's your app's concern. Use the `onComplete` callback to save state:
 
 ```tsx
 <SpotlightTour
@@ -101,7 +101,7 @@ react-spotlight doesn't handle persistence — that's your app's concern. Use th
 
 ### Does it work with CSS-in-JS libraries?
 
-Yes. The default styles are in a regular CSS file (`react-spotlight/styles.css`). You can override styles via CSS custom properties, the `theme` prop, or the `renderTooltip` render prop for full control.
+Yes. The default styles are in a regular CSS file (`react-tourlight/styles.css`). You can override styles via CSS custom properties, the `theme` prop, or the `renderTooltip` render prop for full control.
 
 ### What's the bundle size?
 

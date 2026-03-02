@@ -9,7 +9,7 @@ describe('useSpotlight', () => {
 
     expect(() => {
       renderHook(() => useSpotlight())
-    }).toThrow('react-spotlight: useSpotlight() must be used within a <SpotlightProvider>.')
+    }).toThrow('react-tourlight: useSpotlight() must be used within a <SpotlightProvider>.')
 
     consoleSpy.mockRestore()
   })

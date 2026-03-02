@@ -42,7 +42,7 @@ export function SpotlightHighlight({
 
   if (!context) {
     throw new Error(
-      'react-spotlight: <SpotlightHighlight> must be used within a <SpotlightProvider>.',
+      'react-tourlight: <SpotlightHighlight> must be used within a <SpotlightProvider>.',
     )
   }
 

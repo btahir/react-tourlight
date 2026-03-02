@@ -47,7 +47,7 @@ describe('SpotlightHighlight', () => {
 
     expect(() => {
       render(<SpotlightHighlight target="#highlight-target" title="Title" content="Content" />)
-    }).toThrow('react-spotlight: <SpotlightHighlight> must be used within a <SpotlightProvider>.')
+    }).toThrow('react-tourlight: <SpotlightHighlight> must be used within a <SpotlightProvider>.')
 
     spy.mockRestore()
   })

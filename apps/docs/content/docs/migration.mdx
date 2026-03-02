@@ -1,17 +1,17 @@
 ---
 title: Migrating from React Joyride
-description: Step-by-step guide to migrate from React Joyride to react-spotlight.
+description: Step-by-step guide to migrate from React Joyride to react-tourlight.
 ---
 
-If you're coming from React Joyride — especially after hitting React 19 incompatibilities — this guide maps every concept to its react-spotlight equivalent.
+If you're coming from React Joyride — especially after hitting React 19 incompatibilities — this guide maps every concept to its react-tourlight equivalent.
 
 ## Why migrate?
 
-React Joyride uses deprecated React APIs (`unmountComponentAtNode`, `unstable_renderSubtreeIntoContainer`) that are removed in React 19. react-spotlight is built from the ground up for modern React with zero deprecated APIs.
+React Joyride uses deprecated React APIs (`unmountComponentAtNode`, `unstable_renderSubtreeIntoContainer`) that are removed in React 19. react-tourlight is built from the ground up for modern React with zero deprecated APIs.
 
 ## Concept mapping
 
-| React Joyride | react-spotlight | Notes |
+| React Joyride | react-tourlight | Notes |
 |---|---|---|
 | `<Joyride steps={...} />` | `<SpotlightTour id="..." steps={...} />` | Tours require a unique `id` |
 | `run` prop | `useSpotlight().start(id)` | Imperative control via hook |
@@ -26,11 +26,11 @@ React Joyride uses deprecated React APIs (`unmountComponentAtNode`, `unstable_re
 
 ## Step-by-step migration
 
-### 1. Install react-spotlight
+### 1. Install react-tourlight
 
 ```bash
 npm uninstall react-joyride
-npm install react-spotlight @floating-ui/react-dom
+npm install react-tourlight @floating-ui/react-dom
 ```
 
 ### 2. Replace the provider
@@ -58,11 +58,11 @@ function App() {
 }
 ```
 
-**After (react-spotlight):**
+**After (react-tourlight):**
 
 ```tsx
-import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 function App() {
   return (
@@ -114,7 +114,7 @@ const steps = [
 ```
 
 Key differences:
-- No `disableBeacon` — react-spotlight doesn't have beacons
+- No `disableBeacon` — react-tourlight doesn't have beacons
 - `content` accepts `ReactNode`, not just strings
 - `placement` supports `'auto'` for smart positioning
 - Add `spotlightPadding` and `spotlightRadius` per step

@@ -62,7 +62,7 @@ export const SocialCard: React.FC = () => {
           marginBottom: 20,
         }}
       >
-        react-spotlight
+        react-tourlight
       </div>
 
       {/* Headline */}

@@ -3,11 +3,11 @@ title: Multi-Page Tours
 description: Build tours that span multiple routes with state persistence and route-aware step configuration.
 ---
 
-Some tours need to guide users across multiple pages or routes. react-spotlight supports this through state persistence and route-aware step configuration.
+Some tours need to guide users across multiple pages or routes. react-tourlight supports this through state persistence and route-aware step configuration.
 
 ## How it works
 
-react-spotlight doesn't manage routing. Instead, it provides persistence hooks that let you save and restore tour state across page navigations. You bring your own router -- react-spotlight works with Next.js, React Router, TanStack Router, or any routing solution.
+react-tourlight doesn't manage routing. Instead, it provides persistence hooks that let you save and restore tour state across page navigations. You bring your own router -- react-tourlight works with Next.js, React Router, TanStack Router, or any routing solution.
 
 The pattern is:
 
@@ -147,9 +147,9 @@ import {
   SpotlightProvider,
   SpotlightTour,
   useSpotlight,
-} from 'react-spotlight'
-import type { TourState } from 'react-spotlight'
-import 'react-spotlight/styles.css'
+} from 'react-tourlight'
+import type { TourState } from 'react-tourlight'
+import 'react-tourlight/styles.css'
 
 function loadState(): Record<string, TourState> {
   if (typeof window === 'undefined') return {}
@@ -189,7 +189,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 
 ## Works with any router
 
-react-spotlight doesn't import or depend on any router. The `when` predicates and `onHide` callbacks are plain functions, so they work with any routing solution:
+react-tourlight doesn't import or depend on any router. The `when` predicates and `onHide` callbacks are plain functions, so they work with any routing solution:
 
 - **Next.js App Router** -- use `usePathname()` from `next/navigation`
 - **Next.js Pages Router** -- use `useRouter()` from `next/router`

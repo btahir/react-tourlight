@@ -8,7 +8,7 @@ description: Build guided walkthroughs with multi-step tours, lifecycle hooks, c
 A tour is a sequence of steps registered with `<SpotlightTour>`. Each step highlights a target element and displays a tooltip with a title and content.
 
 ```tsx
-import { SpotlightTour } from 'react-spotlight'
+import { SpotlightTour } from 'react-tourlight'
 
 const steps = [
   {
@@ -86,7 +86,7 @@ const step: SpotlightStep = {
 Instead of CSS selectors, you can use refs. This is useful when elements don't have stable IDs or `data-` attributes:
 
 ```tsx
-import { useSpotlightTarget, SpotlightTour } from 'react-spotlight'
+import { useSpotlightTarget, SpotlightTour } from 'react-tourlight'
 
 function Dashboard() {
   const searchRef = useSpotlightTarget()
@@ -113,7 +113,7 @@ function Dashboard() {
 Use the `useSpotlight` hook to control tours programmatically:
 
 ```tsx
-import { useSpotlight } from 'react-spotlight'
+import { useSpotlight } from 'react-tourlight'
 
 function TourControls() {
   const { start, stop, next, previous, skip, isActive, currentStep, totalSteps } = useSpotlight()

@@ -3,17 +3,17 @@ title: Async Elements
 description: Handle dynamically loaded content, lazy components, and elements that appear after mount.
 ---
 
-In real applications, target elements aren't always present in the DOM when a tour starts. They might be rendered by a lazy-loaded component, fetched from an API, or appear after a user interaction. react-spotlight handles this automatically.
+In real applications, target elements aren't always present in the DOM when a tour starts. They might be rendered by a lazy-loaded component, fetched from an API, or appear after a user interaction. react-tourlight handles this automatically.
 
 ## How it works
 
-When react-spotlight encounters a step whose target element isn't in the DOM, it uses a `MutationObserver` to watch for the element to appear. The observer monitors `document.body` for `childList` and `subtree` mutations, checking for the target on each mutation batch.
+When react-tourlight encounters a step whose target element isn't in the DOM, it uses a `MutationObserver` to watch for the element to appear. The observer monitors `document.body` for `childList` and `subtree` mutations, checking for the target on each mutation batch.
 
 This approach is more reliable than polling with `setTimeout` because it reacts instantly when the element appears, regardless of how long the async operation takes.
 
 ## Automatic waiting
 
-No extra configuration is needed. If a step targets a CSS selector and the element isn't found immediately, react-spotlight waits for it:
+No extra configuration is needed. If a step targets a CSS selector and the element isn't found immediately, react-tourlight waits for it:
 
 ```tsx
 const steps: SpotlightStep[] = [
@@ -24,7 +24,7 @@ const steps: SpotlightStep[] = [
   },
   {
     // This element is rendered by a lazy-loaded component.
-    // react-spotlight will wait for it to appear.
+    // react-tourlight will wait for it to appear.
     target: '#analytics-chart',
     title: 'Analytics',
     content: 'Your metrics, visualized.',
@@ -35,7 +35,7 @@ const steps: SpotlightStep[] = [
 
 ## Configuring timeout
 
-By default, react-spotlight waits up to **5 seconds** for a target element to appear. If the element doesn't appear within the timeout, the step is skipped and the tour advances to the next step.
+By default, react-tourlight waits up to **5 seconds** for a target element to appear. If the element doesn't appear within the timeout, the step is skipped and the tour advances to the next step.
 
 The timeout is a safety net -- in most cases, elements appear well within this window. If your content takes longer to load (e.g., large data fetches), you can adjust the timeout behavior using `onBeforeShow` to await the data before the step is shown:
 
@@ -73,7 +73,7 @@ This is useful when the element's existence depends on user permissions or featu
 When using React refs instead of CSS selectors, the element is available as soon as the component renders. This sidesteps the element-waiting mechanism entirely:
 
 ```tsx
-import { useSpotlightTarget, SpotlightTour } from 'react-spotlight'
+import { useSpotlightTarget, SpotlightTour } from 'react-tourlight'
 
 function LazyPanel() {
   const panelRef = useSpotlightTarget()

@@ -30,7 +30,7 @@ describe('SpotlightTour', () => {
 
     expect(() => {
       render(<SpotlightTour id="orphan" steps={testSteps} />)
-    }).toThrow('react-spotlight: <SpotlightTour> must be used within a <SpotlightProvider>.')
+    }).toThrow('react-tourlight: <SpotlightTour> must be used within a <SpotlightProvider>.')
 
     consoleSpy.mockRestore()
   })

@@ -31,7 +31,7 @@ export function SpotlightTour({
   const context = useContext(SpotlightContext)
 
   if (!context) {
-    throw new Error('react-spotlight: <SpotlightTour> must be used within a <SpotlightProvider>.')
+    throw new Error('react-tourlight: <SpotlightTour> must be used within a <SpotlightProvider>.')
   }
 
   const { registerTour, unregisterTour } = context

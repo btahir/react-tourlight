@@ -186,7 +186,7 @@ export function SpotlightProvider({
       if (!tour) {
         // biome-ignore lint/suspicious/noConsole: Intentional developer warning for invalid tour ID
         console.warn(
-          `react-spotlight: Tour "${tourId}" not found. Make sure <SpotlightTour id="${tourId}"> is mounted.`,
+          `react-tourlight: Tour "${tourId}" not found. Make sure <SpotlightTour id="${tourId}"> is mounted.`,
         )
         return
       }

@@ -1,5 +1,5 @@
 {
-  "name": "react-spotlight-docs",
+  "name": "react-tourlight-docs",
   "version": "0.0.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.0",
-    "react-spotlight": "workspace:*",
+    "react-tourlight": "workspace:*",
     "fumadocs-core": "^15.0.0",
     "fumadocs-mdx": "^13.0.0",
     "fumadocs-ui": "^15.0.0",
