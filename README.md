@@ -1,12 +1,8 @@
 <p align="center">
-  <img src="assets/readme-hero.gif" alt="react-tourlight demo" width="720" />
+  <img src="assets/logo.svg" alt="react-tourlight" width="120" />
 </p>
 
 <h1 align="center">react-tourlight</h1>
-
-<p align="center">
-  <a href="assets/launch-video.mp4">Watch the launch video</a>
-</p>
 
 <p align="center">
   Beautiful onboarding tours & feature highlights for React.<br/>
@@ -20,7 +16,15 @@
   <a href="https://www.npmjs.com/package/react-tourlight"><img src="https://img.shields.io/npm/dm/react-tourlight.svg?style=flat-square" alt="downloads" /></a>
 </p>
 
+<p align="center">
+  <a href="assets/launch-video.mp4">Watch the launch video</a>
+</p>
+
 ---
+
+<p align="center">
+  <img src="assets/readme-hero.gif" alt="react-tourlight spotlight tour demo" width="720" />
+</p>
 
 ## The Problem
 
