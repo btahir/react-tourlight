@@ -107,6 +107,7 @@ export function SpotlightTooltip({
     placement: computedPlacement,
     middlewareData,
   } = useFloating({
+    strategy: 'fixed',
     placement: floatingPlacement,
     whileElementsMounted: autoUpdate,
     middleware: [offset(12), flip(), shift({ padding: 8 }), arrow({ element: arrowRef })],

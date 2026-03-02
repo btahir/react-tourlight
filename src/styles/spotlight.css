@@ -23,7 +23,7 @@
 /* ---- Tooltip ---- */
 
 .spotlight-tooltip {
-  position: absolute;
+  position: fixed;
   z-index: var(--spotlight-z-tooltip);
   pointer-events: auto;
 }
