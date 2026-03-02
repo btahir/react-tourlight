@@ -4,6 +4,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://react-tourlight.vercel.app'),
   title: {
     default: 'react-tourlight — Beautiful onboarding tours for React',
     template: '%s | react-tourlight',
