@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://react-tourlight.dev',
+    url: 'https://react-tourlight.vercel.app',
     siteName: 'react-tourlight',
     title: 'react-tourlight — Beautiful onboarding tours for React',
     description:

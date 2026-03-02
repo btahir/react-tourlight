@@ -10,7 +10,7 @@
   "bugs": {
     "url": "https://github.com/btahir/react-tourlight/issues"
   },
-  "homepage": "https://react-tourlight.dev",
+  "homepage": "https://react-tourlight.vercel.app",
   "engines": {
     "node": ">=18.0.0"
   },

@@ -112,7 +112,7 @@ function Dashboard() {
 
 ## Documentation
 
-Visit **[react-tourlight.dev](https://react-tourlight.dev)** for the full docs — API reference, interactive examples, theming guide, accessibility details, and recipes for Next.js, Remix, and shadcn/ui.
+Visit **[react-tourlight.vercel.app](https://react-tourlight.vercel.app)** for the full docs — API reference, interactive examples, theming guide, accessibility details, and recipes for Next.js, Remix, and shadcn/ui.
 
 ## Contributing
 
