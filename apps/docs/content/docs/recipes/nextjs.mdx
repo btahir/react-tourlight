@@ -3,11 +3,20 @@ title: Next.js Integration
 description: Set up react-tourlight with Next.js App Router, including client component wrappers and SSR considerations.
 ---
 
-react-tourlight is a client-side library that uses browser APIs (`MutationObserver`, `document.querySelector`, `inert`). In Next.js App Router, you need to mark the provider as a Client Component.
+react-tourlight is a client-side library that uses browser APIs (`MutationObserver`, `document.querySelector`, `inert`).
+
+As of v0.2.0, react-tourlight's published entry point ships its own `"use client"`
+directive. That means `SpotlightProvider` and `SpotlightTour` can be imported
+directly into a Server Component file (like `app/layout.tsx`) and rendered
+there without you writing a wrapper — Next.js reads the client boundary from
+inside the package itself. The wrapper pattern below is still useful if you
+want a single place to configure the provider (theme, labels, callbacks) or
+to keep `app/layout.tsx` free of react-tourlight imports, but it's no longer
+required just to satisfy the Server/Client Component boundary.
 
 ## App Router setup
 
-### 1. Create a client wrapper
+### 1. (Optional) Create a client wrapper
 
 Create a `SpotlightWrapper` component marked with `'use client'`:
 

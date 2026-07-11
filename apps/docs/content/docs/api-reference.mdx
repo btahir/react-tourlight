@@ -22,6 +22,7 @@ Props for the `<SpotlightProvider>` component that wraps your application and ma
 | `onSkip` | `(tourId: string, stepIndex: number) => void` | -- | Called when any tour is skipped |
 | `onStateChange` | `(tourId: string, state: TourState) => void` | -- | Called with tour state for persistence |
 | `initialState` | `Record<string, TourState>` | -- | Initial state for restoring persisted tours |
+| `waitForElementTimeout` | `number` | `5000` | Default max time (ms) to wait for a step's `target` to appear in the DOM before skipping to the next step. Overridable per-step via `SpotlightStep.timeout` |
 
 ## SpotlightTourProps
 
@@ -53,7 +54,8 @@ Configuration for a single tour step.
 | `onAfterShow` | `() => void` | -- | Called after the step is visible |
 | `onHide` | `() => void` | -- | Called when the step is hidden |
 | `disableOverlayClose` | `boolean` | `false` | Prevent overlay click from dismissing |
-| `interactive` | `boolean` | `false` | Allow clicking the highlighted element |
+| `interactive` | `boolean` | `false` | Forward click events through the overlay to the highlighted element. Only click events are forwarded — hover and other interactions on the target still go to the dimmed overlay |
+| `timeout` | `number` | `5000` | Max time (ms) to wait for `target` to appear in the DOM before skipping this step. Overrides `waitForElementTimeout` on the provider |
 
 ## SpotlightHighlightProps
 
@@ -176,6 +178,37 @@ Persisted state for a tour, provided via the `onStateChange` callback.
 | `seenSteps` | `number[]` | Indices of steps the user has seen |
 | `completedAt` | `number \| undefined` | Timestamp when the tour was completed |
 | `skippedAt` | `{ stepIndex: number; timestamp: number } \| undefined` | Step index and timestamp when the tour was skipped |
+
+## Engine primitives
+
+Advanced/low-level exports for building a fully custom tour UI. Most
+consumers won't need these directly — `SpotlightProvider` and
+`SpotlightTour` use them internally.
+
+| Export | Signature | Description |
+|--------|-----------|-------------|
+| `createTourStateMachine` | `(options: TourStateMachineOptions) => TourStateMachineActions` | Closure-based state machine driving step/lifecycle transitions (`start`, `stop`, `next`, `previous`, `skip`, `goToStep`, `getState`, `subscribe`). No UI or DOM access. |
+| `waitForElement` | `(target: string, options?: WaitForElementOptions) => Promise<HTMLElement \| null>` | Waits for a CSS selector to match an element in the DOM via `MutationObserver`. Resolves with the element, or `null` after `options.timeout` (default `5000`ms) elapses. |
+| `resolveTarget` | `(target: string \| RefObject<HTMLElement \| null>) => HTMLElement \| null` | Resolves a step's `target` (CSS selector or ref) to a DOM element, or `null` if not found. |
+| `getTargetRect` | `(element: HTMLElement) => ElementRect` | Returns an element's `getBoundingClientRect()` as a plain `{ x, y, width, height }` object. |
+| `measureElement` | `(element: HTMLElement, padding?: number) => ElementRect` | Like `getTargetRect`, but expands the rect by `padding` pixels on all sides. |
+| `generateClipPath` | `(rect: ElementRect, padding: number, radius: number) => string` | Builds the `clip-path: path(evenodd, ...)` value used for the spotlight cutout around `rect`. |
+
+### TourStateMachineOptions
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `steps` | `SpotlightStep[]` | Steps to drive through |
+| `initialState` | `Partial<TourState>` | Optional initial state (e.g. to resume a persisted tour) |
+| `onComplete` | `() => void` | Called when the tour finishes |
+| `onSkip` | `(stepIndex: number) => void` | Called when the tour is skipped |
+| `onStateChange` | `(state: TourState) => void` | Called on every state transition |
+
+### WaitForElementOptions
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `timeout` | `number` | `5000` | Maximum time to wait, in milliseconds |
 
 ## SpotlightTheme
 

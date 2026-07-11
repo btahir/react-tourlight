@@ -42,6 +42,25 @@ react-tourlight fills that gap.
 npm install react-tourlight @floating-ui/react-dom
 ```
 
+`@floating-ui/react-dom` is a **required peer dependency** — it powers tooltip
+positioning (flip, shift, overflow handling). It's a peer dep rather than a
+bundled dependency so you control the version and it isn't duplicated if
+something else in your app already depends on it.
+
+```bash
+# yarn
+yarn add react-tourlight @floating-ui/react-dom
+
+# pnpm
+pnpm add react-tourlight @floating-ui/react-dom
+```
+
+**Next.js App Router:** as of v0.2.0 the package ships its own `"use client"`
+directive, so `SpotlightProvider`, `SpotlightTour`, and friends can be
+imported directly into a Server Component (like `app/layout.tsx`) without
+wrapping them in your own client component first — Next.js honors the
+boundary declared inside `react-tourlight` itself.
+
 ## Quickstart
 
 ```tsx
@@ -92,14 +111,52 @@ function Dashboard() {
 
 - **CSS clip-path spotlight** — GPU-accelerated, perfect in dark mode (no `mix-blend-mode` hacks)
 - **Floating UI positioning** — smart flip, shift, and overflow handling
-- **Full keyboard navigation** — Arrow keys, Escape, Tab focus trap
-- **Async element waiting** — `MutationObserver`-based, handles lazy-loaded content
-- **Light / Dark / Custom themes** — auto-detect OS preference or bring your own
+- **Full keyboard navigation** — Arrow keys, Escape, Tab focus trap that opens with focus on the primary (Next/Done) button
+- **Async element waiting** — `MutationObserver`-based, handles lazy-loaded content, with a configurable timeout (`SpotlightStep.timeout` / `SpotlightProviderProps.waitForElementTimeout`) and a dimmed loading overlay while a target is still resolving
+- **Light / Dark / Custom themes** — auto-detect OS preference (and stay in sync when it changes live), or bring your own theme, including working hover states on buttons and the close button
 - **Responsive & mobile-friendly** — works on any screen size
 - **React 19 compatible** — built for modern React, no deprecated APIs
+- **Next.js / RSC ready** — ships its own `"use client"` directive, no manual wrapper required
 - **i18n support** — customize all button labels and step text
 - **Single-element highlights** — one-off "What's new" callouts without a full tour
-- **Custom tooltips** — full render prop API for complete control
+- **Custom tooltips** — full render prop API for complete control, with unique per-instance ARIA ids (`useId`) so multiple tooltips never collide and no `aria-labelledby`/`aria-describedby` reference is left dangling
+- **Interactive targets** — `interactive: true` on a step forwards click events through the overlay to the highlighted element (it does not forward hover, focus, or other event types)
+- **Headless engine primitives** — the state machine, element-waiting, and geometry/clip-path logic are exported separately for building fully custom tour UIs (see below)
+
+## Headless / engine primitives
+
+Most consumers only need `SpotlightProvider`, `SpotlightTour`, and
+`useSpotlight`. If you're building a fully custom tour UI, the underlying
+engine is also exported so you don't have to reimplement it:
+
+```tsx
+import {
+  createTourStateMachine, // drives step/lifecycle state without any UI
+  waitForElement,         // MutationObserver-based "wait for selector" helper
+  resolveTarget,          // resolve a CSS selector or ref to an HTMLElement
+  getTargetRect,          // getBoundingClientRect() as a plain ElementRect
+  measureElement,         // getBoundingClientRect() + padding
+  generateClipPath,       // build the CSS clip-path for a spotlight cutout
+} from 'react-tourlight'
+
+const machine = createTourStateMachine({
+  steps,
+  onComplete: () => console.log('done'),
+})
+
+machine.subscribe((state) => console.log(state.status, state.currentStepIndex))
+await machine.start()
+
+const el = await waitForElement('#lazy-loaded-button', { timeout: 8000 })
+if (el) {
+  const rect = getTargetRect(el)
+  const clipPath = generateClipPath(rect, /* padding */ 8, /* radius */ 8)
+}
+```
+
+These are the same primitives `SpotlightProvider` uses internally — they're
+low-level and framework-agnostic (no React state or rendering), so treat them
+as a building block rather than a drop-in replacement for the components.
 
 ## Comparison
 

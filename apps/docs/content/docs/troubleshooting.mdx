@@ -24,12 +24,12 @@ description: Common issues, browser compatibility, and frequently asked question
 
 ### Tooltip is mispositioned
 
-1. **Install Floating UI** — Without `@floating-ui/react-dom`, positioning falls back to a basic algorithm. Install the optional peer dependency:
+1. **Install Floating UI** — `@floating-ui/react-dom` is a **required** peer dependency; react-tourlight imports it directly and has no positioning fallback without it. If it's missing (or your package manager didn't install peer deps automatically), install it explicitly:
    ```bash
    npm install @floating-ui/react-dom
    ```
 
-2. **Target inside a scroll container** — Floating UI handles this automatically, but the basic fallback may not. Ensure the target element is visible in the viewport.
+2. **Target inside a scroll container** — Floating UI handles this automatically via `autoUpdate`. If positioning still looks wrong, ensure the target element is actually visible in the viewport.
 
 3. **CSS transforms on ancestors** — CSS `transform` on a parent element creates a new containing block, which can offset fixed positioning. This is a browser behavior, not a bug. Floating UI handles this correctly.
 
@@ -81,7 +81,7 @@ No. react-tourlight is for React DOM (web) only. It relies on DOM APIs like `get
 
 ### Can I use it without Floating UI?
 
-Yes. `@floating-ui/react-dom` is an **optional** peer dependency. Without it, tooltip positioning uses a basic algorithm that places the tooltip adjacent to the target element. For most cases this works fine, but you lose smart flip/shift behavior when the tooltip would overflow the viewport.
+No. `@floating-ui/react-dom` is a **required** peer dependency — the tooltip is positioned entirely through Floating UI's `useFloating` hook (flip, shift, and overflow handling included), and there is no built-in fallback positioning algorithm. Installing it alongside react-tourlight is a required step, not an optional enhancement.
 
 ### Does it support multiple simultaneous tours?
 
@@ -105,4 +105,4 @@ Yes. The default styles are in a regular CSS file (`react-tourlight/styles.css`)
 
 ### What's the bundle size?
 
-The core library is **~5KB gzipped** with zero runtime dependencies. If you add `@floating-ui/react-dom`, that adds ~4KB gzipped.
+The core library is **~5KB gzipped** with no bundled runtime dependencies of its own — `@floating-ui/react-dom` is required, but as a peer dependency, so it's installed once and shared instead of duplicated. Floating UI itself adds roughly ~4KB gzipped.
