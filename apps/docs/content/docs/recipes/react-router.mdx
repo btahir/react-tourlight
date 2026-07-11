@@ -1,0 +1,120 @@
+---
+title: React Router
+description: Wire react-tourlight to React Router for multi-page, route-aware tours with persistence.
+---
+
+react-tourlight works with any router. This recipe shows a complete multi-page setup with **React Router** (v6 / v7 / Remix data router APIs).
+
+## Setup
+
+Put `SpotlightProvider` inside your router (so `useNavigate` is available) but above your routes. A layout route is the natural place:
+
+```tsx title="src/routes/root.tsx"
+import { Outlet, useNavigate } from 'react-router-dom'
+import { SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import 'react-tourlight/styles.css'
+
+export function RootLayout() {
+  const navigate = useNavigate()
+
+  return (
+    <SpotlightProvider
+      persist                         // survive full reloads via localStorage
+      navigate={(path) => navigate(path)}
+    >
+      <SpotlightTour
+        id="onboarding"
+        steps={[
+          {
+            target: '#dashboard-header',
+            title: 'Dashboard',
+            content: 'Your home base.',
+            route: '/dashboard',
+          },
+          {
+            target: '#settings-profile',
+            title: 'Profile',
+            content: 'Update your details here.',
+            route: '/settings',
+          },
+        ]}
+      />
+
+      <Outlet />
+    </SpotlightProvider>
+  )
+}
+```
+
+Register the layout as a parent route so it wraps every page:
+
+```tsx title="src/main.tsx"
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { RootLayout } from './routes/root'
+import { Dashboard } from './routes/dashboard'
+import { Settings } from './routes/settings'
+
+const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
+      { path: '/dashboard', element: <Dashboard /> },
+      { path: '/settings', element: <Settings /> },
+    ],
+  },
+])
+
+export function App() {
+  return <RouterProvider router={router} />
+}
+```
+
+That's it. When the tour advances to the `/settings` step while on `/dashboard`, react-tourlight calls `navigate('/settings')` and waits for `#settings-profile` to appear before showing the step.
+
+## Starting the tour
+
+Use `useSpotlight` anywhere inside the provider:
+
+```tsx
+import { useSpotlight } from 'react-tourlight'
+
+function HelpButton() {
+  const { start } = useSpotlight()
+  return <button onClick={() => start('onboarding')}>Take the tour</button>
+}
+```
+
+## Dynamic route segments
+
+React Router path params map cleanly onto the built-in matcher's `:param` syntax:
+
+```tsx
+{
+  target: '#project-settings',
+  title: 'Project settings',
+  content: 'Configure this project.',
+  route: '/projects/:id/settings',
+}
+```
+
+`/projects/:id/settings` matches `/projects/42/settings`, `/projects/abc/settings`, etc. For anything the built-in matcher can't express, pass your own:
+
+```tsx
+import { matchPath } from 'react-router-dom'
+
+<SpotlightProvider
+  isRouteActive={(route, pathname) => matchPath(route, pathname) !== null}
+  navigate={navigate}
+/>
+```
+
+## Surviving a full reload
+
+With `persist` enabled and `resume` on (the default), a tour that's mid-flight when the user reloads the page is automatically restored at the step it left off -- the layout remounts, the persisted state is read, and the tour reappears. No extra code required.
+
+If you'd rather not auto-resume, set `resume={false}` and call `start('onboarding')` yourself when appropriate.
+
+## See also
+
+- [Multi-Page Tours](/docs/multi-page) -- the full route + persistence reference.
+- [Interactive Steps](/docs/interactive) -- advance the tour when the user clicks a real link.

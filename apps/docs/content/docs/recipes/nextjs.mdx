@@ -131,7 +131,50 @@ This keeps the tour code out of the initial JavaScript bundle. The `ssr: false` 
 
 ## Multi-page tours with App Router
 
-For tours that span multiple routes, use `usePathname` with `when` predicates:
+For tours that span multiple routes, wire `router.push` to the provider's `navigate` prop, enable `persist`, and tag each step with the `route` it lives on. Put this in your client wrapper so the whole app is covered:
+
+```tsx title="components/spotlight-wrapper.tsx"
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import 'react-tourlight/styles.css'
+
+export function SpotlightWrapper({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+
+  return (
+    <SpotlightProvider theme="auto" persist navigate={(path) => router.push(path)}>
+      <SpotlightTour
+        id="onboarding"
+        steps={[
+          {
+            target: '#dashboard-nav',
+            title: 'Dashboard',
+            content: 'Your home base.',
+            route: '/dashboard',
+          },
+          {
+            target: '#settings-panel',
+            title: 'Settings',
+            content: 'Configure your workspace.',
+            route: '/settings',
+          },
+        ]}
+      />
+      {children}
+    </SpotlightProvider>
+  )
+}
+```
+
+When the tour advances to the settings step while on `/dashboard`, react-tourlight calls `router.push('/settings')` and waits for `#settings-panel` before showing the step. With `persist`, a full reload mid-tour resumes automatically.
+
+Dynamic segments work too -- `route: '/projects/:id'` matches `/projects/42`.
+
+### Alternative: `when` predicates (no `navigate`)
+
+If you'd rather navigate yourself, you can still use `usePathname()` with `when` predicates and `onHide`:
 
 ```tsx title="components/onboarding-tour.tsx"
 'use client'
@@ -164,4 +207,4 @@ export function OnboardingTour() {
 }
 ```
 
-See the [Multi-Page Tours](/docs/multi-page) guide for a complete persistence setup.
+See the [Multi-Page Tours](/docs/multi-page) guide for the complete route + persistence reference.

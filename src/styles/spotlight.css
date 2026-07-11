@@ -20,6 +20,18 @@
   transition: clip-path var(--spotlight-duration) var(--spotlight-easing);
 }
 
+/* Interactive pass-through: transparent rectangles drawn around the target so
+   the spotlight hole is a genuine gap in the pointer-capture surface. Real
+   pointer/keyboard/focus/scroll events reach the highlighted element, while
+   the rest of the page stays blocked. The visual dimming is still provided by
+   .spotlight-overlay (made pointer-events:none in this mode). */
+.spotlight-overlay-blocker {
+  position: fixed;
+  z-index: var(--spotlight-z-overlay);
+  background: transparent;
+  pointer-events: auto;
+}
+
 /* Dimmed state while the target element is still being resolved (see
    SpotlightProvider) — avoids painting a fully opaque, tooltip-less
    backdrop while we wait for a lazily-rendered target. */

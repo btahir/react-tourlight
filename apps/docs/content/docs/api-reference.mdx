@@ -23,6 +23,12 @@ Props for the `<SpotlightProvider>` component that wraps your application and ma
 | `onStateChange` | `(tourId: string, state: TourState) => void` | -- | Called with tour state for persistence |
 | `initialState` | `Record<string, TourState>` | -- | Initial state for restoring persisted tours |
 | `waitForElementTimeout` | `number` | `5000` | Default max time (ms) to wait for a step's `target` to appear in the DOM before skipping to the next step. Overridable per-step via `SpotlightStep.timeout` |
+| `persist` | `boolean \| SpotlightStorage` | -- | Enable cross-navigation persistence. `true` uses `localStorage`; pass a custom `SpotlightStorage` for other backends. Off by default |
+| `persistKey` | `string` | `'react-tourlight'` | Storage key used when `persist` is enabled |
+| `persistMaxAge` | `number` | -- | Discard persisted state older than this many ms (staleness guard) |
+| `resume` | `boolean` | `true` | Auto-resume a persisted, still-active tour on mount |
+| `navigate` | `(path: string) => void` | -- | Called with a step's `route` when it doesn't match the current location. Plug in your router |
+| `isRouteActive` | `(route: string, pathname: string) => boolean` | built-in | Custom route matcher (overrides the exact / `:param` / `*` default) |
 
 ## SpotlightTourProps
 
@@ -54,7 +60,10 @@ Configuration for a single tour step.
 | `onAfterShow` | `() => void` | -- | Called after the step is visible |
 | `onHide` | `() => void` | -- | Called when the step is hidden |
 | `disableOverlayClose` | `boolean` | `false` | Prevent overlay click from dismissing |
-| `interactive` | `boolean` | `false` | Forward click events through the overlay to the highlighted element. Only click events are forwarded — hover and other interactions on the target still go to the dimmed overlay |
+| `interactive` | `boolean` | `false` | Make the spotlight hole genuinely transparent to all pointer/keyboard/focus events, so the user can interact with the real highlighted element (typing, hovering, dragging, scrolling) |
+| `advanceOn` | `{ event: string; selector?: string }` | -- | Auto-advance the tour when `event` fires on the target (or a descendant matching `selector`). Implies `interactive` |
+| `route` | `string` | -- | The path this step lives on. When advancing to it on a different route, the provider calls `navigate(route)` and waits for the target there. Supports exact, `:param`, and trailing `*` |
+| `onBeforeStep` | `() => void \| Promise<void>` | -- | Escape hatch run before the step's target is resolved (and before `route` navigation). Awaited |
 | `timeout` | `number` | `5000` | Max time (ms) to wait for `target` to appear in the DOM before skipping this step. Overrides `waitForElementTimeout` on the provider |
 
 ## SpotlightHighlightProps
@@ -178,6 +187,38 @@ Persisted state for a tour, provided via the `onStateChange` callback.
 | `seenSteps` | `number[]` | Indices of steps the user has seen |
 | `completedAt` | `number \| undefined` | Timestamp when the tour was completed |
 | `skippedAt` | `{ stepIndex: number; timestamp: number } \| undefined` | Step index and timestamp when the tour was skipped |
+
+## Headless core (`react-tourlight/core`)
+
+The `react-tourlight/core` subpath exports the entire unstyled engine with **no
+CSS, no default tooltip, and no Floating UI**. See the [Headless
+Core](/docs/headless) guide. Key exports:
+
+| Export | Description |
+|--------|-------------|
+| `useTour(options)` | Headless controller hook. Returns `{ status, isActive, currentIndex, totalSteps, step, targetElement, rect, clipPath, isResolving, start, stop, next, previous, skip, goToStep }`. |
+| `isRouteActive` / `getCurrentPath` | Router-agnostic path matcher and current-pathname helper. |
+| `createMemoryStorage` | In-memory `SpotlightStorage` adapter. |
+| `loadPersistedTours` / `savePersistedTour` / `clearPersistedTour` / `isPersistedStateFresh` / `resolveStorage` | Persistence helpers. |
+| `createFocusTrap` / `setInert` / `getStepAriaLabel` / `createKeyboardHandler` / `scrollIntoView` | Focus & a11y utilities. |
+
+All of the engine primitives below (plus `useTour`, `isRouteActive`,
+`getCurrentPath`, and `createMemoryStorage`) are also re-exported from the main
+`react-tourlight` entry for convenience.
+
+### UseTourOptions
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `steps` | `SpotlightStep[]` | -- | Steps to drive through |
+| `onComplete` | `() => void` | -- | Called when the tour finishes |
+| `onSkip` | `(stepIndex: number) => void` | -- | Called when the tour is skipped |
+| `onStateChange` | `(state: TourState) => void` | -- | Called on every transition |
+| `initialState` | `Partial<TourState>` | -- | Seed state, e.g. from persistence |
+| `waitForElementTimeout` | `number` | `5000` | Default wait for a step target |
+| `navigate` | `(path: string) => void` | -- | Route-aware navigation |
+| `isRouteActive` | `(route, pathname) => boolean` | built-in | Custom matcher |
+| `autoScroll` | `boolean` | `true` | Scroll the target into view before showing |
 
 ## Engine primitives
 

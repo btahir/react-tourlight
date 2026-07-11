@@ -1,0 +1,186 @@
+---
+title: Headless Core
+description: Build a fully custom tour UI with react-tourlight/core — the unstyled engine with no CSS and no Floating UI.
+---
+
+Most apps use `SpotlightProvider` + `SpotlightTour` and get a polished, accessible tour out of the box. But if you want to render your **own** overlay and tooltip -- to match a design system exactly, or to avoid shipping the default styles and Floating UI -- import the engine from `react-tourlight/core`.
+
+## What's in `/core`
+
+The `react-tourlight/core` subpath exports the entire unstyled engine, with **no CSS, no default tooltip, and no Floating UI** in its module graph:
+
+- **`useTour`** -- a headless controller hook (the recommended entry point).
+- **State machine** -- `createTourStateMachine`.
+- **Element resolution / measurement** -- `resolveTarget`, `getTargetRect`, `measureElement`, `waitForElement`.
+- **Geometry** -- `generateClipPath`, `generateEmptyClipPath`.
+- **Focus / a11y** -- `createFocusTrap`, `setInert`, `getStepAriaLabel`, `createKeyboardHandler`, `scrollIntoView`.
+- **Route matching** -- `isRouteActive`, `getCurrentPath`.
+- **Persistence** -- `createMemoryStorage`, `loadPersistedTours`, `savePersistedTour`, `clearPersistedTour`, `isPersistedStateFresh`, `resolveStorage`.
+
+```tsx
+import { useTour } from 'react-tourlight/core'
+// note: no `import 'react-tourlight/styles.css'`
+```
+
+<Callout>
+The engine primitives and `useTour` are also re-exported from the main
+`react-tourlight` entry for convenience, but importing from `/core` keeps
+Floating UI and the default stylesheet out of your bundle.
+</Callout>
+
+## The `useTour` hook
+
+`useTour` drives the state machine, resolves and measures each step's target (async waiting, scrolling, and route-aware `navigate` included), and hands you everything needed to render:
+
+```tsx
+import { useTour, type SpotlightStep } from 'react-tourlight/core'
+
+const steps: SpotlightStep[] = [
+  { target: '#search', title: 'Search', content: 'Find anything.' },
+  { target: '#profile', title: 'Profile', content: 'Your account.' },
+]
+
+function CustomTour() {
+  const tour = useTour({ steps })
+
+  if (!tour.isActive) {
+    return <button onClick={tour.start}>Start tour</button>
+  }
+
+  // Still resolving the target (lazy element, navigation, etc.)
+  if (!tour.rect) return null
+
+  return (
+    <>
+      {/* Your overlay — clipPath is generated for you */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          clipPath: tour.clipPath,
+          pointerEvents: 'none',
+        }}
+      />
+
+      {/* Your tooltip, positioned from the measured rect */}
+      <div
+        style={{
+          position: 'fixed',
+          top: tour.rect.y + tour.rect.height + 8,
+          left: tour.rect.x,
+          background: 'white',
+          padding: 16,
+          borderRadius: 8,
+        }}
+      >
+        <h3>{tour.step?.title}</h3>
+        <div>{tour.step?.content}</div>
+        <div>
+          <button onClick={tour.previous}>Back</button>
+          <button onClick={tour.next}>
+            {tour.currentIndex + 1 === tour.totalSteps ? 'Done' : 'Next'}
+          </button>
+          <button onClick={tour.skip}>Skip</button>
+        </div>
+      </div>
+    </>
+  )
+}
+```
+
+### Options
+
+```ts
+interface UseTourOptions {
+  steps: SpotlightStep[]
+  onComplete?: () => void
+  onSkip?: (stepIndex: number) => void
+  onStateChange?: (state: TourState) => void
+  initialState?: Partial<TourState>   // e.g. restored from persistence
+  waitForElementTimeout?: number
+  navigate?: (path: string) => void   // route-aware steps
+  isRouteActive?: (route: string, pathname: string) => boolean
+  autoScroll?: boolean                // default true
+}
+```
+
+### Result
+
+```ts
+interface UseTourResult {
+  status: 'idle' | 'active' | 'completed'
+  isActive: boolean
+  currentIndex: number
+  totalSteps: number
+  step: SpotlightStep | null
+  targetElement: HTMLElement | null
+  rect: ElementRect | null        // measured, padded, viewport-relative
+  clipPath: string                // ready-to-use CSS clip-path
+  isResolving: boolean            // active but target not yet found
+  start(): void
+  stop(): void
+  next(): void
+  previous(): void
+  skip(): void
+  goToStep(index: number): void
+}
+```
+
+## Adding polish yourself
+
+Because you own the DOM, you also own accessibility. The same helpers the styled provider uses are available:
+
+```tsx
+import { createFocusTrap, setInert, getStepAriaLabel } from 'react-tourlight/core'
+
+// Trap Tab focus inside your tooltip while it's open:
+const trap = createFocusTrap(tooltipEl)
+trap.activate()
+// ...later
+trap.deactivate()
+
+// Mark the rest of the page inert (pass the target to keep it interactive):
+const undo = setInert(tooltipEl /*, interactiveTarget */)
+// ...later
+undo()
+```
+
+## Persistence in a headless setup
+
+Seed `useTour` from persisted state and write it back yourself:
+
+```tsx
+import {
+  useTour,
+  createMemoryStorage,
+  loadPersistedTours,
+  savePersistedTour,
+} from 'react-tourlight/core'
+
+const storage = createMemoryStorage() // or window.localStorage
+const persisted = loadPersistedTours(storage, 'my-tours')['onboarding']
+
+const tour = useTour({
+  steps,
+  initialState: persisted,
+  onStateChange: (state) => savePersistedTour(storage, 'my-tours', 'onboarding', state, steps.length),
+})
+```
+
+## Even lower level
+
+Skip `useTour` entirely and drive the state machine directly -- it's framework-agnostic (no React):
+
+```ts
+import { createTourStateMachine, waitForElement, generateClipPath, getTargetRect } from 'react-tourlight/core'
+
+const machine = createTourStateMachine({ steps, onComplete: () => {} })
+machine.subscribe((state) => console.log(state.status, state.currentStepIndex))
+await machine.start()
+
+const el = await waitForElement('#lazy-button', { timeout: 8000 })
+if (el) {
+  const clipPath = generateClipPath(getTargetRect(el), 8, 8)
+}
+```

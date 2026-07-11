@@ -1,128 +1,198 @@
 ---
 title: Multi-Page Tours
-description: Build tours that span multiple routes with state persistence and route-aware step configuration.
+description: Build tours that survive SPA navigation and full page reloads with built-in route-aware steps, navigation, and persistence.
 ---
 
-Some tours need to guide users across multiple pages or routes. react-tourlight supports this through state persistence and route-aware step configuration.
+A tour can guide users across multiple routes -- pausing on one page, navigating to another, and resuming automatically. react-tourlight has this built in: tag steps with the `route` they live on, give the provider a `navigate` callback, and enable `persist`.
 
-## How it works
+## The three pieces
 
-react-tourlight doesn't manage routing. Instead, it provides persistence hooks that let you save and restore tour state across page navigations. You bring your own router -- react-tourlight works with Next.js, React Router, TanStack Router, or any routing solution.
-
-The pattern is:
-
-1. Save tour state on every change via `onStateChange`
-2. Restore tour state on mount via `initialState`
-3. Configure steps per-route, with `when` predicates to skip steps not relevant to the current page
-
-## Persistence with onStateChange
-
-The `onStateChange` callback fires whenever a tour's state changes (start, step change, complete, skip). Use it to persist the state to `localStorage`, a database, or any storage:
+1. **`route` on a step** -- the path this step's target lives on.
+2. **`navigate` on the provider** -- how to change routes (your router's `push`, or `location.assign`).
+3. **`persist` on the provider** -- save tour state so it survives a full page reload, and auto-resume on mount.
 
 ```tsx
-function App() {
-  const [savedState, setSavedState] = useState<Record<string, TourState>>(() => {
-    if (typeof window === 'undefined') return {}
-    const stored = localStorage.getItem('spotlight-state')
-    return stored ? JSON.parse(stored) : {}
-  })
+'use client'
 
-  const handleStateChange = (tourId: string, state: TourState) => {
-    setSavedState((prev) => {
-      const next = { ...prev, [tourId]: state }
-      localStorage.setItem('spotlight-state', JSON.stringify(next))
-      return next
-    })
-  }
+import { useRouter } from 'next/navigation'
+import { SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import 'react-tourlight/styles.css'
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
 
   return (
-    <SpotlightProvider
-      initialState={savedState}
-      onStateChange={handleStateChange}
-    >
-      {/* your app */}
+    <SpotlightProvider persist navigate={(path) => router.push(path)}>
+      <SpotlightTour
+        id="onboarding"
+        steps={[
+          {
+            target: '#dashboard-header',
+            title: 'Dashboard',
+            content: 'This is your home base.',
+            route: '/dashboard',
+          },
+          {
+            // Advancing here calls navigate('/settings'), then waits for the
+            // target to appear on the destination page.
+            target: '#profile-section',
+            title: 'Profile',
+            content: 'Update your details here.',
+            route: '/settings',
+          },
+        ]}
+      />
+      {children}
     </SpotlightProvider>
   )
 }
 ```
 
-## Route-aware steps
+## How `route` works
 
-Define all steps across all routes in a single tour, using `when` predicates to conditionally show steps based on the current route:
+When the tour advances to a step whose `route` doesn't match the current `window.location.pathname`, the provider:
+
+1. Calls `navigate(step.route)`.
+2. Waits (via the built-in `MutationObserver`) for the step's `target` to appear on the new page, up to `waitForElementTimeout`.
+3. Shows the step once the target is found.
+
+For **SPA navigation** the component stays mounted the whole time. For a **full page load** (e.g. `navigate={(p) => location.assign(p)}`), the page unloads and reloads -- persistence takes over (see below).
+
+### Route matching
+
+The default matcher compares `route` against the current pathname and supports:
+
+| Pattern | Matches |
+|---|---|
+| `/settings` | exactly `/settings` |
+| `/app/*` | `/app` and anything under it |
+| `/users/:id` | `/users/42`, `/users/abc` (segment counts must match) |
+
+Need something custom? Override it:
 
 ```tsx
-import { usePathname } from 'next/navigation' // or your router
+<SpotlightProvider
+  isRouteActive={(route, pathname) => myMatcher(route, pathname)}
+/>
+```
 
-function OnboardingTour() {
-  const pathname = usePathname()
+## Persistence & resume
 
-  const steps: SpotlightStep[] = [
-    // Dashboard page steps
-    {
-      target: '#dashboard-header',
-      title: 'Welcome',
-      content: 'This is your dashboard.',
-      when: () => pathname === '/dashboard',
-    },
-    {
-      target: '#metrics-panel',
-      title: 'Metrics',
-      content: 'Your key metrics at a glance.',
-      when: () => pathname === '/dashboard',
-    },
-    // Settings page steps
-    {
-      target: '#profile-section',
-      title: 'Profile',
-      content: 'Update your profile information.',
-      when: () => pathname === '/settings',
-    },
-    {
-      target: '#notifications-toggle',
-      title: 'Notifications',
-      content: 'Configure your notification preferences.',
-      when: () => pathname === '/settings',
-    },
-  ]
+`persist` saves tour state on every change and restores it on mount:
 
-  return (
-    <SpotlightTour
-      id="onboarding"
-      steps={steps}
-      onComplete={() => console.log('Multi-page tour complete!')}
-    />
-  )
+```tsx
+// localStorage (default)
+<SpotlightProvider persist navigate={navigate} />
+
+// custom storage (sessionStorage, memory, remote, ...)
+import { createMemoryStorage } from 'react-tourlight'
+
+<SpotlightProvider persist={createMemoryStorage()} navigate={navigate} />
+```
+
+Any object matching the `SpotlightStorage` shape works -- `window.localStorage` and `window.sessionStorage` qualify as-is:
+
+```ts
+interface SpotlightStorage {
+  getItem: (key: string) => string | null
+  setItem: (key: string, value: string) => void
+  removeItem: (key: string) => void
 }
 ```
 
-## Navigating between pages
+### Auto-resume
 
-Use `onHide` on the last step of a page to navigate the user to the next page, then pick up the tour there:
+With `persist` on, a persisted **still-active** tour is automatically resumed on mount at the exact step it left off (`resume` defaults to `true`). This is what makes a full page reload seamless -- the tour reappears on the destination route. To require an explicit `start()` instead:
 
 ```tsx
-import { useRouter } from 'next/navigation'
+<SpotlightProvider persist resume={false} navigate={navigate} />
+```
+
+### Staleness
+
+Persisted snapshots are discarded when they're no longer safe to restore:
+
+- The tour definition's **step count changed** (you shipped a new version of the tour).
+- The snapshot is older than **`persistMaxAge`** (milliseconds), when set.
+
+```tsx
+<SpotlightProvider persist persistMaxAge={1000 * 60 * 60 * 24} /> // 24h
+```
+
+### Options summary
+
+| Prop | Default | Description |
+|---|---|---|
+| `persist` | `undefined` (off) | `true` for `localStorage`, or a custom `SpotlightStorage` |
+| `persistKey` | `'react-tourlight'` | Storage key |
+| `persistMaxAge` | `undefined` (never) | Discard snapshots older than N ms |
+| `resume` | `true` | Auto-resume a persisted active tour on mount |
+| `navigate` | `undefined` | Called with a step's `route` when it doesn't match |
+| `isRouteActive` | built-in matcher | Custom `(route, pathname) => boolean` |
+
+<Callout>
+Persistence is completely opt-in. Without `persist`, nothing is written to
+storage and behavior is identical to previous versions.
+</Callout>
+
+## Advancing on real navigation
+
+Combine `advanceOn` (see [Interactive Steps](/docs/interactive)) with `route` steps to advance when the user clicks a real link:
+
+```tsx
+const steps = [
+  {
+    target: '#go-to-settings',   // a real <a href="/settings"> link
+    title: 'Open settings',
+    content: 'Click here to continue.',
+    interactive: true,
+    advanceOn: { event: 'click' },
+  },
+  {
+    target: '#profile-section',
+    title: 'Profile',
+    content: 'You made it!',
+    route: '/settings',
+  },
+]
+```
+
+The click navigates the app; the tour advances to the next step, which resumes on `/settings`.
+
+## The `onBeforeStep` escape hatch
+
+For fully custom navigation logic, `onBeforeStep` runs before a step's target is resolved (and before any `route` navigation). It may be async and is awaited:
+
+```tsx
+{
+  target: '#report',
+  title: 'Your report',
+  content: 'Generated just now.',
+  onBeforeStep: async () => {
+    await openReportsDrawer()
+  },
+}
+```
+
+## Escape hatch: `when` predicates (no `navigate`)
+
+If you'd rather not give react-tourlight a `navigate` callback, you can still build multi-page tours the manual way: define all steps up front and use `when` predicates to show only the steps relevant to the current route, navigating yourself via `onHide`. This predates the `route`/`navigate` API and remains fully supported.
+
+```tsx
+import { usePathname, useRouter } from 'next/navigation'
 
 function OnboardingTour() {
-  const router = useRouter()
   const pathname = usePathname()
+  const router = useRouter()
 
-  const steps: SpotlightStep[] = [
-    {
-      target: '#dashboard-header',
-      title: 'Welcome',
-      content: 'Let us show you around.',
-      when: () => pathname === '/dashboard',
-    },
+  const steps = [
     {
       target: '#quick-actions',
       title: 'Quick Actions',
-      content: 'Next, let us show you the settings.',
+      content: 'Next, the settings page.',
       when: () => pathname === '/dashboard',
       onHide: () => {
-        // Navigate to the next page when leaving this step
-        if (pathname === '/dashboard') {
-          router.push('/settings')
-        }
+        if (pathname === '/dashboard') router.push('/settings')
       },
     },
     {
@@ -137,63 +207,14 @@ function OnboardingTour() {
 }
 ```
 
-## Full example with localStorage
-
-Here's a complete multi-page tour setup with persistence:
-
-```tsx
-import { useState } from 'react'
-import {
-  SpotlightProvider,
-  SpotlightTour,
-  useSpotlight,
-} from 'react-tourlight'
-import type { TourState } from 'react-tourlight'
-import 'react-tourlight/styles.css'
-
-function loadState(): Record<string, TourState> {
-  if (typeof window === 'undefined') return {}
-  try {
-    const stored = localStorage.getItem('spotlight-tours')
-    return stored ? JSON.parse(stored) : {}
-  } catch {
-    return {}
-  }
-}
-
-function saveState(state: Record<string, TourState>) {
-  localStorage.setItem('spotlight-tours', JSON.stringify(state))
-}
-
-export function AppProviders({ children }: { children: React.ReactNode }) {
-  const [tourState, setTourState] = useState(loadState)
-
-  const handleStateChange = (tourId: string, state: TourState) => {
-    setTourState((prev) => {
-      const next = { ...prev, [tourId]: state }
-      saveState(next)
-      return next
-    })
-  }
-
-  return (
-    <SpotlightProvider
-      initialState={tourState}
-      onStateChange={handleStateChange}
-    >
-      {children}
-    </SpotlightProvider>
-  )
-}
-```
-
 ## Works with any router
 
-react-tourlight doesn't import or depend on any router. The `when` predicates and `onHide` callbacks are plain functions, so they work with any routing solution:
+react-tourlight never imports a router. Wire `navigate` (and optionally `isRouteActive`) to whatever you use:
 
-- **Next.js App Router** -- use `usePathname()` from `next/navigation`
-- **Next.js Pages Router** -- use `useRouter()` from `next/router`
-- **React Router** -- use `useLocation()` from `react-router-dom`
-- **TanStack Router** -- use `useRouterState()` from `@tanstack/react-router`
+- **Next.js App Router** -- `const router = useRouter()` from `next/navigation`, `navigate={(p) => router.push(p)}`
+- **Next.js Pages Router** -- `useRouter()` from `next/router`
+- **React Router** -- `const navigate = useNavigate()` from `react-router-dom`
+- **TanStack Router** -- `const navigate = useNavigate()` from `@tanstack/react-router`
+- **No router** -- `navigate={(p) => location.assign(p)}` (relies on `persist` + auto-resume)
 
-The only requirement is that the `<SpotlightProvider>` wraps your router's layout, so tour state persists across navigations.
+See the [Next.js](/docs/recipes/nextjs) and [React Router](/docs/recipes/react-router) recipes for complete setups.

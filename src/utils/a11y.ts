@@ -8,6 +8,15 @@ export function getStepAriaLabel(currentIndex: number, totalSteps: number, title
   return `Step ${currentIndex + 1} of ${totalSteps}: ${title}`
 }
 
+function isSkippable(el: Element): boolean {
+  return (
+    !(el instanceof HTMLElement) ||
+    el.tagName === 'SCRIPT' ||
+    el.tagName === 'STYLE' ||
+    el.tagName === 'LINK'
+  )
+}
+
 /**
  * Sets the `inert` attribute on all siblings of the given element's ancestors,
  * effectively trapping user interaction within the element's subtree.
@@ -15,10 +24,42 @@ export function getStepAriaLabel(currentIndex: number, totalSteps: number, title
  * This is used to make the rest of the page inert while a spotlight tooltip
  * is displayed, improving accessibility for screen reader and keyboard users.
  *
+ * When `keepInteractive` is provided (used for interactive / `advanceOn`
+ * steps), that element's ancestor branch is left un-inert and its entire
+ * subtree stays interactive — only the *off-path* siblings within that branch
+ * are inerted. This keeps the spotlighted target keyboard- and
+ * screen-reader-reachable while everything else on the page is blocked.
+ *
  * @returns A cleanup function that removes all `inert` attributes that were set.
  */
-export function setInert(exclude: HTMLElement): () => void {
+export function setInert(exclude: HTMLElement, keepInteractive?: HTMLElement | null): () => void {
   const inertedElements: HTMLElement[] = []
+
+  // The ancestor chain (inclusive) of the element that must stay interactive.
+  const keepPath = new Set<Element>()
+  if (keepInteractive) {
+    let node: Element | null = keepInteractive
+    while (node) {
+      keepPath.add(node)
+      node = node.parentElement
+    }
+  }
+
+  // Walks INTO a node that sits on the keep-path: inert its off-path children,
+  // and recurse through the on-path child. Stops at `keepInteractive` itself so
+  // the target and its whole subtree remain interactive.
+  function inertOffPathChildren(node: Element) {
+    if (node === keepInteractive) return
+    for (const child of Array.from(node.children)) {
+      if (isSkippable(child)) continue
+      if (keepPath.has(child)) {
+        inertOffPathChildren(child)
+      } else if (!(child as HTMLElement).inert) {
+        ;(child as HTMLElement).inert = true
+        inertedElements.push(child as HTMLElement)
+      }
+    }
+  }
 
   let current: HTMLElement | null = exclude
 
@@ -27,20 +68,21 @@ export function setInert(exclude: HTMLElement): () => void {
     if (!parent) break
 
     for (const sibling of Array.from(parent.children)) {
-      if (
-        sibling === current ||
-        !(sibling instanceof HTMLElement) ||
-        sibling.tagName === 'SCRIPT' ||
-        sibling.tagName === 'STYLE' ||
-        sibling.tagName === 'LINK'
-      ) {
+      if (sibling === current || isSkippable(sibling)) {
+        continue
+      }
+
+      if (keepPath.has(sibling)) {
+        // This sibling contains the interactive target — descend instead of
+        // inerting the whole branch.
+        inertOffPathChildren(sibling)
         continue
       }
 
       // Only set inert if it wasn't already inert
-      if (!sibling.inert) {
-        sibling.inert = true
-        inertedElements.push(sibling)
+      if (!(sibling as HTMLElement).inert) {
+        ;(sibling as HTMLElement).inert = true
+        inertedElements.push(sibling as HTMLElement)
       }
     }
 

@@ -1,5 +1,6 @@
 import type React from 'react'
 import type { ElementRect } from '../types.ts'
+import { cn } from '../utils/css.ts'
 import { generateClipPath, generateEmptyClipPath } from './clip-path.ts'
 
 export interface SpotlightOverlayProps {
@@ -22,11 +23,76 @@ export interface SpotlightOverlayProps {
 }
 
 /**
+ * Builds the four transparent "blocker" rectangles that surround the spotlight
+ * hole in interactive mode. They cover everything except the target rect, so
+ * they still capture backdrop clicks (for dismissal) and prevent interaction
+ * with the rest of the page — while the hole itself is left completely
+ * uncovered, letting ALL pointer/keyboard/focus/scroll events reach the target
+ * naturally (no synthesized events, no `elementFromPoint` hit-testing).
+ */
+function buildBlockers(rect: ElementRect, onClick?: () => void): React.ReactElement[] {
+  const base: React.CSSProperties = {
+    position: 'fixed',
+    background: 'transparent',
+    pointerEvents: 'auto',
+  }
+
+  const handleClick = onClick
+    ? (event: React.MouseEvent) => {
+        event.stopPropagation()
+        onClick()
+      }
+    : undefined
+
+  const regions: Record<string, React.CSSProperties> = {
+    top: { ...base, left: 0, top: 0, right: 0, height: Math.max(0, rect.y) },
+    bottom: {
+      ...base,
+      left: 0,
+      right: 0,
+      top: rect.y + rect.height,
+      bottom: 0,
+    },
+    left: {
+      ...base,
+      left: 0,
+      top: rect.y,
+      width: Math.max(0, rect.x),
+      height: rect.height,
+    },
+    right: {
+      ...base,
+      left: rect.x + rect.width,
+      right: 0,
+      top: rect.y,
+      height: rect.height,
+    },
+  }
+
+  return Object.entries(regions).map(([side, style]) => (
+    <div
+      key={side}
+      className="spotlight-overlay-blocker"
+      style={style}
+      onClick={handleClick}
+      aria-hidden="true"
+    />
+  ))
+}
+
+/**
  * Renders the spotlight overlay — a full-viewport div with a clip-path cutout
  * that reveals the target element underneath.
  *
- * The clip-path transition is handled by CSS (see spotlight.css).
- * Inline styles override the transition duration and background color.
+ * In the default (non-interactive) mode this is a single div whose clip-path
+ * (transitioned via CSS, see spotlight.css) creates the rounded cutout, and
+ * clicking it dismisses the tour.
+ *
+ * In interactive mode (target present) the visual div keeps the exact same
+ * clip-path appearance but is made `pointer-events: none`, and four transparent
+ * blocker rectangles are drawn around the target instead. The spotlight hole is
+ * therefore a genuine gap in the pointer-capture surface — real clicks, typing,
+ * hovering, dragging, and scrolling all reach the highlighted element.
  */
 export function SpotlightOverlay({
   targetRect,
@@ -42,55 +108,41 @@ export function SpotlightOverlay({
     ? generateClipPath(targetRect, padding, radius)
     : generateEmptyClipPath()
 
+  // Genuine pass-through only applies once there's a hole to pass through.
+  const passthrough = interactive && targetRect != null
+
   const style: React.CSSProperties = {
     backgroundColor: overlayColor,
     clipPath,
     WebkitClipPath: clipPath,
     transitionDuration: `${transitionDuration}ms`,
-    pointerEvents: 'auto',
+    pointerEvents: passthrough ? 'none' : 'auto',
   }
 
   const handleClick = (event: React.MouseEvent): void => {
-    if (interactive && targetRect) {
-      const withinX =
-        event.clientX >= targetRect.x && event.clientX <= targetRect.x + targetRect.width
-      const withinY =
-        event.clientY >= targetRect.y && event.clientY <= targetRect.y + targetRect.height
-
-      if (withinX && withinY) {
-        const overlay = event.currentTarget
-        const previousPointerEvents = overlay.style.pointerEvents
-        overlay.style.pointerEvents = 'none'
-        const underlying = document.elementFromPoint(event.clientX, event.clientY)
-        overlay.style.pointerEvents = previousPointerEvents
-
-        if (underlying && underlying instanceof HTMLElement) {
-          underlying.dispatchEvent(
-            new MouseEvent('click', {
-              bubbles: true,
-              cancelable: true,
-              clientX: event.clientX,
-              clientY: event.clientY,
-              view: window,
-            }),
-          )
-        }
-        return
-      }
-    }
-
     if (onClick) {
       event.stopPropagation()
       onClick()
     }
   }
 
-  return (
+  const visual = (
     <div
-      className={className ? `spotlight-overlay ${className}` : 'spotlight-overlay'}
+      className={cn('spotlight-overlay', className)}
       style={style}
-      onClick={handleClick}
+      onClick={passthrough ? undefined : handleClick}
       aria-hidden="true"
     />
+  )
+
+  if (!passthrough || !targetRect) {
+    return visual
+  }
+
+  return (
+    <>
+      {visual}
+      {buildBlockers(targetRect, onClick)}
+    </>
   )
 }

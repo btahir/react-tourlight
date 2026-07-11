@@ -118,16 +118,144 @@ function Dashboard() {
 - **React 19 compatible** — built for modern React, no deprecated APIs
 - **Next.js / RSC ready** — ships its own `"use client"` directive, no manual wrapper required
 - **i18n support** — customize all button labels and step text
+- **Multi-page / route-aware tours** — a tour can pause on one route, navigate to another (SPA _or_ full page reload), and resume automatically via pluggable persistence (`localStorage` / custom / memory). Router-agnostic — plug in `next/navigation`, React Router, or `location.assign` (see below)
 - **Single-element highlights** — one-off "What's new" callouts without a full tour
 - **Custom tooltips** — full render prop API for complete control, with unique per-instance ARIA ids (`useId`) so multiple tooltips never collide and no `aria-labelledby`/`aria-describedby` reference is left dangling
-- **Interactive targets** — `interactive: true` on a step forwards click events through the overlay to the highlighted element (it does not forward hover, focus, or other event types)
-- **Headless engine primitives** — the state machine, element-waiting, and geometry/clip-path logic are exported separately for building fully custom tour UIs (see below)
+- **True interactive targets** — `interactive: true` makes the spotlight hole genuinely transparent to _all_ pointer/keyboard/focus events (typing, hovering, dragging, scrolling) — real event pass-through, not synthesized clicks. Add `advanceOn` to auto-advance when the user clicks the real button/link
+- **Headless core** — the entire unstyled engine (state machine, element resolution, clip-path, focus/a11y, and a `useTour` hook) is available from `react-tourlight/core` with **no CSS and no Floating UI**, for fully custom tour UIs (see below)
 
-## Headless / engine primitives
+## Multi-page tours
+
+A tour can span multiple routes and survive both SPA navigation and full page
+reloads. Enable persistence and give the provider a `navigate` callback wired
+to your router, then tag steps with the `route` they live on:
+
+```tsx
+'use client'
+
+import { useRouter } from 'next/navigation'
+import { SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import 'react-tourlight/styles.css'
+
+function Providers({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  return (
+    <SpotlightProvider
+      persist          // localStorage by default; pass a custom storage object if you like
+      navigate={(path) => router.push(path)}
+    >
+      <SpotlightTour
+        id="onboarding"
+        steps={[
+          { target: '#dashboard-header', title: 'Dashboard', content: 'Your home base.', route: '/dashboard' },
+          // Advancing to this step navigates to /settings, then waits for the target there:
+          { target: '#profile-section', title: 'Profile', content: 'Update your details.', route: '/settings' },
+        ]}
+      />
+      {children}
+    </SpotlightProvider>
+  )
+}
+```
+
+How it works:
+
+- **`route`** — when advancing to a step whose `route` doesn't match
+  `window.location.pathname`, the provider calls `navigate(route)` and then
+  waits (via the built-in `MutationObserver`) for the target on the new page.
+- **`persist`** — `true` uses `localStorage`; pass a `SpotlightStorage` object
+  (e.g. `createMemoryStorage()` or `window.sessionStorage`) for other backends.
+  Tour state is saved on every change.
+- **`resume`** (default `true`) — on mount, a persisted, still-active tour is
+  automatically resumed at the exact step it left off, so a **full page
+  reload** picks the tour right back up. Stale snapshots (older than
+  `persistMaxAge`, or from a tour whose step count changed) are ignored.
+- **Router-agnostic** — route matching compares against
+  `window.location.pathname` (exact, `:param`, or trailing `*`). Override it
+  with `isRouteActive={(route, pathname) => ...}` for anything custom. Works
+  with Next.js, React Router, TanStack Router, or `location.assign`.
+
+## Interactive steps
+
+Set `interactive: true` and the spotlight hole becomes a genuine gap in the
+overlay — real clicks, typing, hovering, dragging, and scrolling all reach the
+highlighted element (no synthesized events). Add `advanceOn` to advance the
+tour when the user actually interacts with the target:
+
+```tsx
+<SpotlightTour
+  id="create-flow"
+  steps={[
+    {
+      target: '#new-project-btn',
+      title: 'Create a project',
+      content: 'Click the button to continue.',
+      interactive: true,
+      // Auto-advance when the real button is clicked:
+      advanceOn: { event: 'click' },
+    },
+    {
+      target: '#project-name',
+      title: 'Name it',
+      content: 'Type a name, then press Enter.',
+      interactive: true,
+      advanceOn: { event: 'keydown', selector: 'input' },
+    },
+  ]}
+/>
+```
+
+`advanceOn` composes with `route` steps — clicking a real link that navigates
+advances the tour, and the next step resumes on the destination page.
+
+## Headless core (`react-tourlight/core`)
 
 Most consumers only need `SpotlightProvider`, `SpotlightTour`, and
-`useSpotlight`. If you're building a fully custom tour UI, the underlying
-engine is also exported so you don't have to reimplement it:
+`useSpotlight`. If you want to render your **own** overlay and tooltip, import
+the unstyled engine from `react-tourlight/core` — it ships **no CSS, no default
+tooltip, and no Floating UI** in its graph:
+
+```tsx
+import { useTour, type SpotlightStep } from 'react-tourlight/core'
+// no 'react-tourlight/styles.css' needed
+
+function CustomTour({ steps }: { steps: SpotlightStep[] }) {
+  const tour = useTour({ steps })
+
+  if (!tour.isActive || !tour.rect) {
+    return <button onClick={tour.start}>Start</button>
+  }
+
+  return (
+    <>
+      {/* Your own overlay — clipPath is generated for you */}
+      <div
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          clipPath: tour.clipPath,
+          pointerEvents: 'none',
+        }}
+      />
+      {/* Your own tooltip, positioned however you like */}
+      <div style={{ position: 'fixed', top: tour.rect.y + tour.rect.height + 8, left: tour.rect.x }}>
+        <h3>{tour.step?.title}</h3>
+        <div>{tour.step?.content}</div>
+        <button onClick={tour.previous}>Back</button>
+        <button onClick={tour.next}>
+          {tour.currentIndex + 1 === tour.totalSteps ? 'Done' : 'Next'}
+        </button>
+      </div>
+    </>
+  )
+}
+```
+
+`useTour` drives the state machine, resolves and measures each step's target
+(async waiting, scrolling, and route-aware `navigate` included), and hands you
+`clipPath`, `rect`, `targetElement`, and the current `step`. The lower-level
+building blocks are also exported for even more control:
 
 ```tsx
 import {
@@ -137,26 +265,17 @@ import {
   getTargetRect,          // getBoundingClientRect() as a plain ElementRect
   measureElement,         // getBoundingClientRect() + padding
   generateClipPath,       // build the CSS clip-path for a spotlight cutout
-} from 'react-tourlight'
-
-const machine = createTourStateMachine({
-  steps,
-  onComplete: () => console.log('done'),
-})
-
-machine.subscribe((state) => console.log(state.status, state.currentStepIndex))
-await machine.start()
-
-const el = await waitForElement('#lazy-loaded-button', { timeout: 8000 })
-if (el) {
-  const rect = getTargetRect(el)
-  const clipPath = generateClipPath(rect, /* padding */ 8, /* radius */ 8)
-}
+  isRouteActive,          // router-agnostic path matcher
+  createMemoryStorage,    // in-memory SpotlightStorage adapter
+  createFocusTrap,        // trap Tab focus inside a container
+  setInert,               // mark the rest of the page inert
+} from 'react-tourlight/core'
 ```
 
-These are the same primitives `SpotlightProvider` uses internally — they're
-low-level and framework-agnostic (no React state or rendering), so treat them
-as a building block rather than a drop-in replacement for the components.
+These are the same primitives `SpotlightProvider` uses internally. (For
+convenience, the engine primitives and `useTour` are also re-exported from the
+main `react-tourlight` entry, but importing from `/core` keeps Floating UI and
+the default styles out of your bundle.)
 
 ## Comparison
 
@@ -169,6 +288,8 @@ as a building block rather than a drop-in replacement for the components.
 | **Dark mode** | clip-path | mix-blend breaks | SVG | Yes | Partial |
 | **Accessibility** | WCAG 2.1 AA | Limited | Limited | Limited | Poor |
 | **Focus trap** | Yes | No | No | No | No |
+| **Multi-page tours** | Built-in (persist + resume) | No | Manual | No | No |
+| **Headless core** | Yes (`/core`, no CSS/Floating UI) | No | Partial | No | No |
 | **Zero deps** | No (1 peer: Floating UI) | No | No | Yes | No |
 
 ## Documentation

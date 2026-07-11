@@ -10,6 +10,8 @@
     "accessibility",
     "async-elements",
     "multi-page",
+    "interactive",
+    "headless",
     "---Reference---",
     "api-reference",
     "troubleshooting",

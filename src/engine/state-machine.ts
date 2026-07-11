@@ -110,7 +110,14 @@ export function createTourStateMachine(options: TourStateMachineOptions): TourSt
 
     setStatus('active')
 
-    const firstValid = await findValidStep(0, 1)
+    // Begin at the current index — 0 for a fresh machine, or a restored index
+    // when the machine was seeded with persisted `initialState` (resume). The
+    // next valid step at or after that index is entered.
+    const startIndex =
+      state.currentStepIndex >= 0 && state.currentStepIndex < steps.length
+        ? state.currentStepIndex
+        : 0
+    const firstValid = await findValidStep(startIndex, 1)
     if (firstValid === -1) {
       // No valid steps at all — complete immediately
       setState({

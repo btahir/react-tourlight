@@ -2,6 +2,16 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { waitForElement } from '../engine/element-observer.ts'
 import { createKeyboardHandler } from '../engine/keyboard.ts'
+import {
+  clearPersistedTour,
+  DEFAULT_PERSIST_KEY,
+  isPersistedStateFresh,
+  loadPersistedTours,
+  type PersistedTourState,
+  resolveStorage,
+  savePersistedTour,
+} from '../engine/persistence.ts'
+import { isRouteActive as defaultIsRouteActive, getCurrentPath } from '../engine/route.ts'
 import type { TourStateMachineActions } from '../engine/state-machine.ts'
 import { createTourStateMachine } from '../engine/state-machine.ts'
 import { resolveTarget } from '../engine/step-resolver.ts'
@@ -48,6 +58,12 @@ export function SpotlightProvider({
   onStateChange,
   initialState,
   waitForElementTimeout,
+  persist,
+  persistKey,
+  persistMaxAge,
+  resume = true,
+  navigate,
+  isRouteActive,
 }: SpotlightProviderProps) {
   const [theme, setTheme] = useState<SpotlightTheme>(() => resolveTheme(themeProp))
 
@@ -79,6 +95,20 @@ export function SpotlightProvider({
   const portalRootRef = useRef<HTMLDivElement | null>(null)
   const activeTourIdRef = useRef<string | null>(null)
   const highlightStepRef = useRef<SpotlightStep | null>(null)
+
+  // ---- Cross-navigation persistence ----
+  const storage = useMemo(() => resolveStorage(persist), [persist])
+  const resolvedKey = persistKey ?? DEFAULT_PERSIST_KEY
+  // Snapshot persisted state once at mount (used both to resume a tour and to
+  // seed the state machine's initial state when a tour is (re)started).
+  const [persistedTours] = useState<Record<string, PersistedTourState>>(() =>
+    storage ? loadPersistedTours(storage, resolvedKey) : {},
+  )
+  // Tracks which tours have already been auto-resumed so we only do it once.
+  const resumedRef = useRef<Set<string>>(new Set())
+  // Bumped whenever tours register/unregister so the resume effect re-checks
+  // once a persisted tour's steps become available.
+  const [tourRegistrationTick, setTourRegistrationTick] = useState(0)
 
   const [activeTourId, setActiveTourId] = useState<string | null>(null)
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
@@ -197,6 +227,18 @@ export function SpotlightProvider({
     (tourId: string, state: TourState) => {
       setCurrentStepIndex(state.currentStepIndex)
 
+      // Persist across navigations (best-effort). We keep 'completed' records
+      // so a finished tour isn't auto-resumed on the next mount, but clear
+      // 'idle' (explicitly stopped) records.
+      if (storage) {
+        if (state.status === 'idle') {
+          clearPersistedTour(storage, resolvedKey, tourId)
+        } else {
+          const stepCount = tours.current.get(tourId)?.steps.length ?? state.currentStepIndex + 1
+          savePersistedTour(storage, resolvedKey, tourId, state, stepCount)
+        }
+      }
+
       if (state.status === 'idle' || state.status === 'completed') {
         activeTourIdRef.current = null
         setActiveTourId(null)
@@ -213,7 +255,7 @@ export function SpotlightProvider({
 
       onStateChange?.(tourId, state)
     },
-    [onStateChange],
+    [onStateChange, storage, resolvedKey],
   )
 
   // When step changes, resolve the new target
@@ -230,7 +272,25 @@ export function SpotlightProvider({
     setTargetElement(null)
     setTargetRect(null)
 
-    resolveAndMeasure(step).then((el) => {
+    void (async () => {
+      // Step-level escape hatch — a place to run custom navigation/setup
+      // before the target is resolved.
+      await step.onBeforeStep?.()
+      if (cancelled) return
+
+      // Route-aware navigation: if this step lives on a different route than
+      // the current location, ask the host app to navigate there. For SPA
+      // navigation the component stays mounted and `waitForElement` picks up
+      // the new page's target; for a full page load the page unloads and
+      // persisted state resumes this step on the destination.
+      if (step.route) {
+        const matcher = isRouteActive ?? defaultIsRouteActive
+        if (!matcher(step.route, getCurrentPath())) {
+          navigate?.(step.route)
+        }
+      }
+
+      const el = await resolveAndMeasure(step)
       if (cancelled) return
 
       if (el) {
@@ -246,21 +306,58 @@ export function SpotlightProvider({
       ) {
         void machine.next()
       }
-    })
+    })()
 
     return () => {
       cancelled = true
     }
-  }, [activeTourId, currentStepIndex, resolveAndMeasure])
+  }, [activeTourId, currentStepIndex, resolveAndMeasure, navigate, isRouteActive])
 
-  // Mark the rest of the page inert while spotlight UI is active.
+  // Mark the rest of the page inert while spotlight UI is active. For
+  // interactive / advanceOn steps, keep the spotlighted target reachable so
+  // real pointer/keyboard/focus interaction works.
+  const activeElementForInert = highlightStep ? highlightElement : targetElement
+  const currentStepForInert = getCurrentStep()
+  const keepTargetInteractive =
+    !!currentStepForInert && (!!currentStepForInert.interactive || !!currentStepForInert.advanceOn)
+
   useEffect(() => {
     if (!isActive) return
     const root = portalRootRef.current
     if (!root) return
 
-    return setInert(root)
-  }, [isActive])
+    return setInert(root, keepTargetInteractive ? activeElementForInert : null)
+  }, [isActive, keepTargetInteractive, activeElementForInert])
+
+  // Auto-advance when a step's `advanceOn` event fires on its target.
+  useEffect(() => {
+    if (!activeTourId) return
+    const tour = tours.current.get(activeTourId)
+    const step = tour?.steps[currentStepIndex]
+    const advanceOn = step?.advanceOn
+    if (!advanceOn || !targetElement) return
+
+    const handler = (event: Event) => {
+      if (advanceOn.selector) {
+        const eventTarget = event.target
+        if (!(eventTarget instanceof Element)) return
+        const matched = eventTarget.closest(advanceOn.selector)
+        if (!matched || !targetElement.contains(matched)) return
+      }
+      void machineRef.current?.next()
+    }
+
+    // Capture phase: non-bubbling events (e.g. `focus`, `blur`) still travel
+    // through the capturing phase on their way down to the actual target, so
+    // listening here — rather than the (default) bubble phase — lets
+    // `advanceOn.selector` delegate for those events too, not just ones that
+    // bubble (click, input, submit, ...). `event.target` / `closest()` below
+    // are unaffected by which phase the handler runs in.
+    targetElement.addEventListener(advanceOn.event, handler, true)
+    return () => {
+      targetElement.removeEventListener(advanceOn.event, handler, true)
+    }
+  }, [activeTourId, currentStepIndex, targetElement])
 
   const start = useCallback(
     (tourId: string) => {
@@ -286,9 +383,26 @@ export function SpotlightProvider({
       // Store the element that triggered the tour for focus restoration
       triggerElementRef.current = document.activeElement as HTMLElement | null
 
+      // Prefer a fresh persisted snapshot (resume across reloads) over the
+      // static `initialState` prop; fall back to the prop otherwise. We seed
+      // only the step index + seen steps (status stays 'idle') so `start()`
+      // actually re-enters the persisted step rather than short-circuiting on
+      // an already-'active' status. Only an `'active'` snapshot represents an
+      // in-progress tour to resume — a `'completed'`/`'idle'` (skipped)
+      // snapshot must NOT be resumed here, otherwise calling `start()` again
+      // after a tour finished (e.g. a "Replay tour" button) would jump
+      // straight back to the last step instead of restarting at step 0.
+      const persisted = persistedTours[tourId]
+      const persistedInit =
+        persisted &&
+        persisted.status === 'active' &&
+        isPersistedStateFresh(persisted, tour.steps.length, persistMaxAge)
+          ? { currentStepIndex: persisted.currentStepIndex, seenSteps: persisted.seenSteps }
+          : undefined
+
       const machine = createTourStateMachine({
         steps: tour.steps,
-        initialState: initialState?.[tourId],
+        initialState: persistedInit ?? initialState?.[tourId],
         onComplete: () => {
           tour.onComplete?.()
           onComplete?.(tourId)
@@ -308,7 +422,15 @@ export function SpotlightProvider({
       setTotalSteps(tour.steps.length)
       machine.start()
     },
-    [dismissHighlight, handleStateChange, initialState, onComplete, onSkip],
+    [
+      dismissHighlight,
+      handleStateChange,
+      initialState,
+      onComplete,
+      onSkip,
+      persistedTours,
+      persistMaxAge,
+    ],
   )
 
   const stop = useCallback(() => {
@@ -347,6 +469,9 @@ export function SpotlightProvider({
         onSkip: callbacks?.onSkip,
         renderTooltip: callbacks?.renderTooltip,
       })
+      // Signal the auto-resume effect that a (possibly persisted) tour is now
+      // available to resume.
+      setTourRegistrationTick((t) => t + 1)
     },
     [],
   )
@@ -354,12 +479,33 @@ export function SpotlightProvider({
   const unregisterTour = useCallback(
     (id: string) => {
       tours.current.delete(id)
+      setTourRegistrationTick((t) => t + 1)
       if (activeTourId === id) {
         stop()
       }
     },
     [activeTourId, stop],
   )
+
+  // Auto-resume a persisted, still-active tour once it registers on mount.
+  // `tourRegistrationTick` isn't read in the body — it's an intentional
+  // trigger so this re-runs after a (possibly persisted) tour registers.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: tourRegistrationTick re-triggers the resume check when tours register
+  useEffect(() => {
+    if (!storage || resume === false) return
+    if (activeTourIdRef.current) return
+
+    for (const [tourId, tour] of tours.current) {
+      if (resumedRef.current.has(tourId)) continue
+      const persisted = persistedTours[tourId]
+      if (!persisted || persisted.status !== 'active') continue
+      if (!isPersistedStateFresh(persisted, tour.steps.length, persistMaxAge)) continue
+
+      resumedRef.current.add(tourId)
+      start(tourId)
+      break
+    }
+  }, [tourRegistrationTick, storage, resume, persistMaxAge, persistedTours, start])
 
   const highlight = useCallback(
     (step: SpotlightStep) => {
@@ -453,7 +599,7 @@ export function SpotlightProvider({
               overlayColor={overlayColor ?? theme.overlay.background}
               transitionDuration={transitionDuration}
               onClick={handleOverlayClick}
-              interactive={currentStep.interactive}
+              interactive={currentStep.interactive || !!currentStep.advanceOn}
               className={isResolvingTarget ? 'spotlight-overlay--loading' : undefined}
             />
 

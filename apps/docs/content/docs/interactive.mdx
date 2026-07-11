@@ -1,0 +1,97 @@
+---
+title: Interactive Steps
+description: Let users interact with the real highlighted element and auto-advance the tour when they do.
+---
+
+By default the overlay blocks interaction with the page so users focus on the tooltip. Sometimes you want the opposite: let the user actually click the button, type in the input, or drag the handle you're pointing at -- and advance the tour when they do.
+
+## `interactive: true`
+
+Set `interactive: true` on a step and the spotlight hole becomes a genuine gap in the overlay. **All** pointer, keyboard, focus, and scroll events reach the highlighted element -- clicking, typing, hovering, dragging, and scrolling all work:
+
+```tsx
+{
+  target: '#search-input',
+  title: 'Try searching',
+  content: 'Go ahead — type something.',
+  interactive: true,
+}
+```
+
+<Callout>
+This is real event pass-through, not a synthesized click. Under the hood the
+overlay renders four transparent "blocker" rectangles around the target so the
+hole is a true gap in the pointer-capture surface. The dimmed backdrop and
+rounded spotlight cutout look identical to a normal step.
+</Callout>
+
+Interactive steps also stay keyboard- and screen-reader-reachable: the target's subtree is kept out of the `inert` region that blocks the rest of the page.
+
+## `advanceOn` — advance on real interaction
+
+Pair `interactive` with `advanceOn` to move the tour forward when a real DOM event fires on the target. This powers "click the actual button to continue" walkthroughs:
+
+```tsx
+{
+  target: '#new-project-btn',
+  title: 'Create a project',
+  content: 'Click the button to continue.',
+  interactive: true,
+  advanceOn: { event: 'click' },
+}
+```
+
+`advanceOn` takes:
+
+| Field | Type | Description |
+|---|---|---|
+| `event` | `string` | The DOM event type to listen for on the target, e.g. `'click'`, `'input'`, `'submit'`, `'keydown'`. |
+| `selector` | `string?` | Optional. Only advance when the event originates from an element matching this selector inside the target. |
+
+<Callout type="info">
+A step with `advanceOn` is automatically treated as interactive, so you can
+omit `interactive: true` when you use it.
+</Callout>
+
+### Matching a descendant with `selector`
+
+When the target is a container, use `selector` to require the event to come from a specific child:
+
+```tsx
+{
+  target: '#toolbar',
+  title: 'Add an item',
+  content: 'Press the + button.',
+  advanceOn: { event: 'click', selector: 'button.add' },
+}
+```
+
+Only clicks on a `button.add` inside `#toolbar` advance the tour; clicks elsewhere in the toolbar don't.
+
+## Composing with multi-page tours
+
+`advanceOn` composes with route steps. If the user clicks a real link that navigates to another page, the tour advances and the next step resumes on the destination route:
+
+```tsx
+const steps = [
+  {
+    target: '#go-to-billing',        // a real <a href="/billing">
+    title: 'Open billing',
+    content: 'Click to continue.',
+    interactive: true,
+    advanceOn: { event: 'click' },
+  },
+  {
+    target: '#invoices',
+    title: 'Your invoices',
+    content: 'Here they are.',
+    route: '/billing',
+  },
+]
+```
+
+See [Multi-Page Tours](/docs/multi-page) for the full navigation + persistence story.
+
+## When *not* to use it
+
+For steps that are purely informational, leave `interactive` off. The blocking overlay keeps users on the guided path and prevents accidental clicks that could derail the tour.
