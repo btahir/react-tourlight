@@ -20,6 +20,43 @@
   transition: clip-path var(--spotlight-duration) var(--spotlight-easing);
 }
 
+/* Dimmed state while the target element is still being resolved (see
+   SpotlightProvider) — avoids painting a fully opaque, tooltip-less
+   backdrop while we wait for a lazily-rendered target. */
+.spotlight-overlay--loading {
+  opacity: 0.4;
+  transition:
+    clip-path var(--spotlight-duration) var(--spotlight-easing),
+    opacity var(--spotlight-duration) var(--spotlight-easing);
+}
+
+/* ---- Loading indicator (shown while waiting for a step's target) ---- */
+
+.spotlight-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: var(--spotlight-z-tooltip);
+  pointer-events: none;
+}
+
+.spotlight-loading-spinner {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(128, 128, 128, 0.35);
+  border-top-color: rgba(128, 128, 128, 0.9);
+  animation: spotlight-spin 0.8s linear infinite;
+}
+
+@keyframes spotlight-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* ---- Tooltip ---- */
 
 .spotlight-tooltip {
@@ -103,7 +140,12 @@
 }
 
 .spotlight-close:hover {
-  background: rgba(0, 0, 0, 0.06);
+  /* Themed via CSS custom properties set on .spotlight-tooltip (see
+     SpotlightTooltip) so the hover state stays visible in dark mode instead
+     of the previous hardcoded rgba(0, 0, 0, 0.06), which was invisible
+     against dark backgrounds. */
+  background: var(--spotlight-btn-secondary-hover-bg, rgba(0, 0, 0, 0.06));
+  color: var(--spotlight-close-hover-color, currentColor);
 }
 
 /* ---- Button row ---- */
@@ -128,6 +170,16 @@
 .spotlight-button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
+}
+
+/* Hover backgrounds sourced from the active theme via CSS custom properties
+   set on .spotlight-tooltip (see SpotlightTooltip). */
+.spotlight-button--primary:hover {
+  background: var(--spotlight-btn-hover-bg);
+}
+
+.spotlight-button--secondary:hover {
+  background: var(--spotlight-btn-secondary-hover-bg);
 }
 
 /* ---- Step counter ---- */
@@ -160,5 +212,9 @@
 
   .spotlight-button {
     transition: none;
+  }
+
+  .spotlight-loading-spinner {
+    animation: none;
   }
 }

@@ -14,6 +14,10 @@ export interface TooltipContentProps {
   showProgress?: boolean
   showSkip?: boolean
   labels?: SpotlightLabels
+  /** id applied to the title element, referenced by the tooltip's aria-labelledby */
+  titleId?: string
+  /** id applied to the content element, referenced by the tooltip's aria-describedby */
+  contentId?: string
 }
 
 const DEFAULT_LABELS = {
@@ -39,6 +43,8 @@ export function TooltipContent({
   showProgress = true,
   showSkip = true,
   labels,
+  titleId,
+  contentId,
 }: TooltipContentProps) {
   const isFirst = currentIndex === 0
   const isLast = currentIndex === totalSteps - 1
@@ -81,7 +87,7 @@ export function TooltipContent({
 
       {/* Title */}
       <div
-        id="spotlight-title"
+        id={titleId}
         style={{
           fontSize: theme.title.fontSize,
           fontWeight: theme.title.fontWeight,
@@ -94,7 +100,7 @@ export function TooltipContent({
 
       {/* Content */}
       <div
-        id="spotlight-content"
+        id={contentId}
         style={{
           fontSize: theme.content.fontSize,
           color: theme.content.color,
@@ -108,7 +114,7 @@ export function TooltipContent({
       {step.action && (
         <button
           type="button"
-          className="spotlight-button"
+          className="spotlight-button spotlight-button--primary"
           onClick={step.action.onClick}
           style={{
             background: theme.button.background,
@@ -142,7 +148,7 @@ export function TooltipContent({
         {showSkip && !isLast && (
           <button
             type="button"
-            className="spotlight-button"
+            className="spotlight-button spotlight-button--secondary"
             onClick={onSkip}
             style={{
               background: theme.buttonSecondary.background,
@@ -163,7 +169,7 @@ export function TooltipContent({
         {!isFirst && (
           <button
             type="button"
-            className="spotlight-button"
+            className="spotlight-button spotlight-button--secondary"
             onClick={onPrevious}
             style={{
               background: theme.buttonSecondary.background,
@@ -180,10 +186,12 @@ export function TooltipContent({
           </button>
         )}
 
-        {/* Next / Done button */}
+        {/* Next / Done button — marked as the primary action so the focus
+            trap prefers it as the initial focus target over the close button. */}
         <button
           type="button"
-          className="spotlight-button"
+          className="spotlight-button spotlight-button--primary"
+          data-spotlight-primary="true"
           onClick={onNext}
           style={{
             background: theme.button.background,

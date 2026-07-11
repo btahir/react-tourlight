@@ -32,6 +32,12 @@ export interface SpotlightStep {
   disableOverlayClose?: boolean
   /** Whether the user can interact with the highlighted element */
   interactive?: boolean
+  /**
+   * Maximum time (ms) to wait for `target` to appear in the DOM before
+   * skipping this step. Overrides `waitForElementTimeout` on the provider.
+   * Defaults to 5000ms.
+   */
+  timeout?: number
 }
 
 /** Tour lifecycle state */
@@ -96,6 +102,12 @@ export interface SpotlightProviderProps {
   onStateChange?: (tourId: string, state: TourState) => void
   /** Initial state — for restoring persisted state */
   initialState?: Record<string, TourState>
+  /**
+   * Default maximum time (ms) to wait for a step's target to appear in the
+   * DOM before skipping to the next step. Can be overridden per-step via
+   * `SpotlightStep.timeout`. Defaults to 5000ms.
+   */
+  waitForElementTimeout?: number
 }
 
 /** Tour component props */

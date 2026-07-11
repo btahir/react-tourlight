@@ -1,7 +1,7 @@
 import type { Placement as FloatingPlacement } from '@floating-ui/react-dom'
 import { arrow, autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/react-dom'
 import type React from 'react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import type { SpotlightTheme } from '../themes/types.ts'
 import type { Placement, SpotlightLabels, SpotlightStep, TooltipRenderProps } from '../types.ts'
 import { cn } from '../utils/css.ts'
@@ -99,6 +99,16 @@ export function SpotlightTooltip({
   const tooltipRef = useRef<HTMLDivElement | null>(null)
   const [animationClass, setAnimationClass] = useState('spotlight-tooltip-enter')
 
+  // Unique ids for the default title/content elements. Generated per
+  // instance (via useId) so multiple tooltips on the page never collide,
+  // and only wired up to aria-labelledby/aria-describedby below when the
+  // default TooltipContent is actually rendering those elements — a custom
+  // renderTooltip has no guarantee of producing matching ids, so pointing
+  // aria-labelledby/aria-describedby at ids that don't exist would leave
+  // screen readers with dangling references.
+  const generatedTitleId = useId()
+  const generatedContentId = useId()
+
   const floatingPlacement = toFloatingPlacement(step.placement)
 
   const {
@@ -181,8 +191,18 @@ export function SpotlightTooltip({
       showProgress={showProgress}
       showSkip={showSkip}
       labels={labels}
+      titleId={generatedTitleId}
+      contentId={generatedContentId}
     />
   )
+
+  // Only point aria-labelledby/aria-describedby at the generated ids when
+  // the default TooltipContent (which renders elements with those ids) is
+  // actually being rendered. A custom renderTooltip controls its own markup
+  // and has no obligation to emit matching ids, so referencing them here
+  // would create dangling ARIA refs.
+  const titleId = renderTooltip ? undefined : generatedTitleId
+  const contentId = renderTooltip ? undefined : generatedContentId
 
   return (
     <div
@@ -198,11 +218,17 @@ export function SpotlightTooltip({
           maxWidth: theme.tooltip.maxWidth,
           // Set the CSS custom property so animations respect the configured duration
           '--spotlight-duration': `${transitionDuration}ms`,
+          // Theme-driven hover states, consumed by :hover rules in
+          // spotlight.css. These properties are otherwise dead (defined on
+          // the theme but never applied) without this wiring.
+          '--spotlight-btn-hover-bg': theme.button.hoverBackground,
+          '--spotlight-btn-secondary-hover-bg': theme.buttonSecondary.hoverBackground,
+          '--spotlight-close-hover-color': theme.closeButton.hoverColor,
         } as React.CSSProperties
       }
       role="dialog"
-      aria-labelledby="spotlight-title"
-      aria-describedby="spotlight-content"
+      aria-labelledby={titleId}
+      aria-describedby={contentId}
     >
       {tooltipContent}
 

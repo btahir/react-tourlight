@@ -90,8 +90,14 @@ describe('accessibility', () => {
 
     const dialog = screen.queryByRole('dialog')
     expect(dialog).toBeInTheDocument()
-    expect(dialog).toHaveAttribute('aria-labelledby', 'spotlight-title')
-    expect(dialog).toHaveAttribute('aria-describedby', 'spotlight-content')
+    const labelledBy = dialog?.getAttribute('aria-labelledby')
+    const describedBy = dialog?.getAttribute('aria-describedby')
+    expect(labelledBy).toBeTruthy()
+    expect(describedBy).toBeTruthy()
+    expect(document.getElementById(labelledBy as string)).toHaveTextContent('Accessible Step')
+    expect(document.getElementById(describedBy as string)).toHaveTextContent(
+      'This step should be accessible',
+    )
 
     cleanup()
   })

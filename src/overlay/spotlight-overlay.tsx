@@ -17,6 +17,8 @@ export interface SpotlightOverlayProps {
   onClick?: () => void
   /** If true, the target element beneath the cutout remains interactive */
   interactive?: boolean
+  /** Extra class name(s) appended to the overlay element */
+  className?: string
 }
 
 /**
@@ -34,6 +36,7 @@ export function SpotlightOverlay({
   transitionDuration = 300,
   onClick,
   interactive = false,
+  className,
 }: SpotlightOverlayProps): React.ReactElement {
   const clipPath = targetRect
     ? generateClipPath(targetRect, padding, radius)
@@ -83,6 +86,11 @@ export function SpotlightOverlay({
   }
 
   return (
-    <div className="spotlight-overlay" style={style} onClick={handleClick} aria-hidden="true" />
+    <div
+      className={className ? `spotlight-overlay ${className}` : 'spotlight-overlay'}
+      style={style}
+      onClick={handleClick}
+      aria-hidden="true"
+    />
   )
 }

@@ -1,7 +1,7 @@
 {
   "name": "react-tourlight",
-  "version": "0.1.1",
-  "description": "Beautiful onboarding tours & feature highlights for React. Zero dependencies.",
+  "version": "0.2.0",
+  "description": "Beautiful onboarding tours & feature highlights for React. One small peer dependency (Floating UI).",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -22,7 +22,8 @@
         "default": "./dist/index.mjs"
       }
     },
-    "./styles.css": "./dist/styles/spotlight.css"
+    "./styles.css": "./dist/styles/spotlight.css",
+    "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",

@@ -4,6 +4,8 @@ import { SpotlightProvider } from '../../src/components/spotlight-provider.tsx'
 import { SpotlightTour } from '../../src/components/spotlight-tour.tsx'
 import * as elementObserver from '../../src/engine/element-observer.ts'
 import { useSpotlight } from '../../src/hooks/use-spotlight.ts'
+import { darkTheme } from '../../src/themes/default-dark.ts'
+import { lightTheme } from '../../src/themes/default-light.ts'
 import type { SpotlightContextValue, SpotlightStep } from '../../src/types.ts'
 
 /**
@@ -216,6 +218,69 @@ describe('SpotlightProvider', () => {
     document.body.removeChild(targetEl)
   })
 
+  it('passes a per-step timeout override to waitForElement', async () => {
+    const waitForElementSpy = vi
+      .spyOn(elementObserver, 'waitForElement')
+      .mockResolvedValueOnce(null as never)
+
+    const steps: SpotlightStep[] = [
+      {
+        target: '#missing-with-timeout',
+        title: 'Missing Step',
+        content: 'This target does not exist',
+        timeout: 1234,
+      },
+    ]
+
+    render(
+      <SpotlightProvider>
+        <SpotlightTour id="timeout-tour" steps={steps} />
+        <TourController tourId="timeout-tour" />
+      </SpotlightProvider>,
+    )
+
+    await act(async () => {
+      screen.getByText('Start').click()
+      await Promise.resolve()
+    })
+
+    expect(waitForElementSpy).toHaveBeenCalledWith('#missing-with-timeout', { timeout: 1234 })
+
+    waitForElementSpy.mockRestore()
+  })
+
+  it('passes the provider-level waitForElementTimeout as the default when the step has none', async () => {
+    const waitForElementSpy = vi
+      .spyOn(elementObserver, 'waitForElement')
+      .mockResolvedValueOnce(null as never)
+
+    const steps: SpotlightStep[] = [
+      {
+        target: '#missing-with-provider-timeout',
+        title: 'Missing Step',
+        content: 'This target does not exist',
+      },
+    ]
+
+    render(
+      <SpotlightProvider waitForElementTimeout={9999}>
+        <SpotlightTour id="provider-timeout-tour" steps={steps} />
+        <TourController tourId="provider-timeout-tour" />
+      </SpotlightProvider>,
+    )
+
+    await act(async () => {
+      screen.getByText('Start').click()
+      await Promise.resolve()
+    })
+
+    expect(waitForElementSpy).toHaveBeenCalledWith('#missing-with-provider-timeout', {
+      timeout: 9999,
+    })
+
+    waitForElementSpy.mockRestore()
+  })
+
   it('dismissHighlight calls the step onHide callback', async () => {
     let capturedContext: SpotlightContextValue | null = null
     const targetEl = document.createElement('div')
@@ -252,5 +317,109 @@ describe('SpotlightProvider', () => {
     expect(onHide).toHaveBeenCalledOnce()
 
     document.body.removeChild(targetEl)
+  })
+
+  it('theme="auto" updates live when the OS color scheme preference changes', async () => {
+    let changeHandler: (() => void) | undefined
+
+    const mediaQueryList = {
+      matches: false,
+      media: '(prefers-color-scheme: dark)',
+      addEventListener: (event: string, handler: () => void) => {
+        if (event === 'change') changeHandler = handler
+      },
+      removeEventListener: vi.fn(),
+    }
+
+    const originalMatchMedia = window.matchMedia
+    window.matchMedia = vi
+      .fn()
+      .mockReturnValue(mediaQueryList) as unknown as typeof window.matchMedia
+
+    const targetEl = document.createElement('div')
+    targetEl.id = 'auto-theme-target'
+    document.body.appendChild(targetEl)
+
+    const steps: SpotlightStep[] = [
+      { target: '#auto-theme-target', title: 'Auto Theme Step', content: 'Content' },
+    ]
+
+    render(
+      <SpotlightProvider theme="auto">
+        <SpotlightTour id="auto-theme-tour" steps={steps} />
+        <TourController tourId="auto-theme-tour" />
+      </SpotlightProvider>,
+    )
+
+    await act(async () => {
+      screen.getByText('Start').click()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toHaveStyle({ background: lightTheme.tooltip.background })
+    })
+
+    // Simulate the OS switching to dark mode while the tour is active.
+    mediaQueryList.matches = true
+    await act(async () => {
+      changeHandler?.()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toHaveStyle({ background: darkTheme.tooltip.background })
+    })
+
+    window.matchMedia = originalMatchMedia
+    document.body.removeChild(targetEl)
+  })
+
+  it('shows a dimmed loading overlay instead of a full black screen while the target resolves', async () => {
+    let resolveWait: (el: HTMLElement | null) => void = () => {}
+    const waitForElementSpy = vi.spyOn(elementObserver, 'waitForElement').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveWait = resolve
+        }),
+    )
+
+    const steps: SpotlightStep[] = [
+      { target: '#lazy-target', title: 'Lazy Step', content: 'Content' },
+    ]
+
+    render(
+      <SpotlightProvider>
+        <SpotlightTour id="lazy-tour" steps={steps} />
+        <TourController tourId="lazy-tour" />
+      </SpotlightProvider>,
+    )
+
+    await act(async () => {
+      screen.getByText('Start').click()
+    })
+
+    // While the target is still resolving: dimmed overlay + loading
+    // indicator, and no tooltip dialog (which would otherwise be null,
+    // leaving just a fully opaque black screen).
+    await waitFor(() => {
+      expect(document.querySelector('.spotlight-overlay--loading')).toBeInTheDocument()
+      expect(document.querySelector('.spotlight-loading')).toBeInTheDocument()
+    })
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    const lazyEl = document.createElement('div')
+    lazyEl.id = 'lazy-target'
+    document.body.appendChild(lazyEl)
+
+    await act(async () => {
+      resolveWait(lazyEl)
+    })
+
+    await waitFor(() => {
+      expect(document.querySelector('.spotlight-overlay--loading')).not.toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+
+    waitForElementSpy.mockRestore()
+    document.body.removeChild(lazyEl)
   })
 })

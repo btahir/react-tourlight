@@ -12,6 +12,37 @@ describe('createFocusTrap', () => {
     document.body.removeChild(container)
   })
 
+  it('focuses the element marked data-spotlight-primary instead of the first focusable element', () => {
+    container.innerHTML = `
+      <button id="close">Close</button>
+      <button id="skip">Skip</button>
+      <button id="next" data-spotlight-primary="true">Next</button>
+    `
+
+    const trap = createFocusTrap(container)
+    trap.activate()
+
+    const next = container.querySelector<HTMLElement>('#next')!
+    expect(document.activeElement).toBe(next)
+
+    trap.deactivate()
+  })
+
+  it('falls back to the first focusable element when nothing is marked primary', () => {
+    container.innerHTML = `
+      <button id="close">Close</button>
+      <button id="next">Next</button>
+    `
+
+    const trap = createFocusTrap(container)
+    trap.activate()
+
+    const close = container.querySelector<HTMLElement>('#close')!
+    expect(document.activeElement).toBe(close)
+
+    trap.deactivate()
+  })
+
   it('Tab cycles through focusable elements inside the container', () => {
     container.innerHTML = `
       <button id="btn1">One</button>

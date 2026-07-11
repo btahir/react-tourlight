@@ -8,6 +8,7 @@ import { resolveTarget } from '../engine/step-resolver.ts'
 import { measureElement } from '../overlay/measure.ts'
 import { SpotlightOverlay } from '../overlay/spotlight-overlay.tsx'
 import { resolveTheme } from '../themes/index.ts'
+import type { SpotlightTheme } from '../themes/types.ts'
 import { SpotlightTooltip } from '../tooltip/spotlight-tooltip.tsx'
 import type {
   ElementRect,
@@ -46,8 +47,32 @@ export function SpotlightProvider({
   onSkip,
   onStateChange,
   initialState,
+  waitForElementTimeout,
 }: SpotlightProviderProps) {
-  const theme = useMemo(() => resolveTheme(themeProp), [themeProp])
+  const [theme, setTheme] = useState<SpotlightTheme>(() => resolveTheme(themeProp))
+
+  // Re-resolve the theme whenever `themeProp` changes, and — when it's
+  // 'auto' — keep it in sync with live OS color-scheme changes so the tour
+  // doesn't get stuck on whatever mode was active at mount time.
+  useEffect(() => {
+    setTheme(resolveTheme(themeProp))
+
+    if (themeProp !== 'auto' || typeof window === 'undefined' || !window.matchMedia) {
+      return
+    }
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+    const handleChange = () => setTheme(resolveTheme(themeProp))
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+
+    // Safari <14 fallback
+    mediaQuery.addListener(handleChange)
+    return () => mediaQuery.removeListener(handleChange)
+  }, [themeProp])
   const tours = useRef<Map<string, TourRegistration>>(new Map())
   const machineRef = useRef<TourStateMachineActions | null>(null)
   const triggerElementRef = useRef<HTMLElement | null>(null)
@@ -102,13 +127,17 @@ export function SpotlightProvider({
     async (step: SpotlightStep): Promise<HTMLElement | null> => {
       let el = resolveTarget(step.target)
       if (!el && typeof step.target === 'string') {
-        el = await waitForElement(step.target)
+        const timeout = step.timeout ?? waitForElementTimeout
+        el =
+          timeout !== undefined
+            ? await waitForElement(step.target, { timeout })
+            : await waitForElement(step.target)
       }
       if (!el) return null
       await scrollIntoView(el)
       return el
     },
-    [],
+    [waitForElementTimeout],
   )
 
   // Track target element rect via ResizeObserver + scroll
@@ -403,6 +432,11 @@ export function SpotlightProvider({
   const activeRect = highlightStep ? highlightRect : targetRect
   const activeLabels: SpotlightLabels | undefined = labels
   const activeTour = activeTourId ? tours.current.get(activeTourId) : null
+  // The target hasn't been found/measured yet (e.g. still waiting for a
+  // lazily-rendered element). Avoid painting a fully opaque overlay with no
+  // tooltip and no spotlight cutout in this window — that reads as a broken
+  // black screen. Show a dimmed overlay + loading indicator instead.
+  const isResolvingTarget = !activeElement
 
   return (
     <SpotlightContext.Provider value={contextValue}>
@@ -420,24 +454,45 @@ export function SpotlightProvider({
               transitionDuration={transitionDuration}
               onClick={handleOverlayClick}
               interactive={currentStep.interactive}
+              className={isResolvingTarget ? 'spotlight-overlay--loading' : undefined}
             />
 
-            <SpotlightTooltip
-              targetElement={activeElement}
-              step={currentStep}
-              currentIndex={highlightStep ? 0 : currentStepIndex}
-              totalSteps={highlightStep ? 1 : totalSteps}
-              onNext={highlightStep ? dismissHighlight : next}
-              onPrevious={previous}
-              onSkip={highlightStep ? dismissHighlight : skip}
-              onClose={highlightStep ? dismissHighlight : stop}
-              theme={theme}
-              showProgress={highlightStep ? false : showProgress}
-              showSkip={highlightStep ? false : showSkip}
-              labels={activeLabels}
-              renderTooltip={activeTour?.renderTooltip}
-              transitionDuration={transitionDuration}
-            />
+            {isResolvingTarget ? (
+              // <output> carries an implicit role="status"/aria-live="polite",
+              // so screen readers announce this without extra ARIA plumbing.
+              <output className="spotlight-loading">
+                <span className="spotlight-loading-spinner" aria-hidden="true" />
+                <span
+                  style={{
+                    position: 'absolute',
+                    width: 1,
+                    height: 1,
+                    overflow: 'hidden',
+                    clip: 'rect(0, 0, 0, 0)',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Loading tour step…
+                </span>
+              </output>
+            ) : (
+              <SpotlightTooltip
+                targetElement={activeElement}
+                step={currentStep}
+                currentIndex={highlightStep ? 0 : currentStepIndex}
+                totalSteps={highlightStep ? 1 : totalSteps}
+                onNext={highlightStep ? dismissHighlight : next}
+                onPrevious={previous}
+                onSkip={highlightStep ? dismissHighlight : skip}
+                onClose={highlightStep ? dismissHighlight : stop}
+                theme={theme}
+                showProgress={highlightStep ? false : showProgress}
+                showSkip={highlightStep ? false : showSkip}
+                labels={activeLabels}
+                renderTooltip={activeTour?.renderTooltip}
+                transitionDuration={transitionDuration}
+              />
+            )}
 
             {/* Live region for screen reader step announcements */}
             <div

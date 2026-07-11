@@ -67,11 +67,72 @@ describe('SpotlightTooltip', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 
-  it('has aria-labelledby="spotlight-title" and aria-describedby="spotlight-content"', () => {
+  it('sets aria-labelledby/aria-describedby to the ids of the rendered title/content elements', () => {
     render(<SpotlightTooltip {...defaultProps} targetElement={targetElement} />)
     const dialog = screen.getByRole('dialog')
-    expect(dialog).toHaveAttribute('aria-labelledby', 'spotlight-title')
-    expect(dialog).toHaveAttribute('aria-describedby', 'spotlight-content')
+    const labelledBy = dialog.getAttribute('aria-labelledby')
+    const describedBy = dialog.getAttribute('aria-describedby')
+
+    expect(labelledBy).toBeTruthy()
+    expect(describedBy).toBeTruthy()
+    expect(document.getElementById(labelledBy as string)).toHaveTextContent('Test Title')
+    expect(document.getElementById(describedBy as string)).toHaveTextContent('Test content body')
+  })
+
+  it('omits aria-labelledby/aria-describedby when a custom renderTooltip is used, avoiding dangling refs', () => {
+    const renderTooltip = () => <div data-testid="custom-tooltip">Custom</div>
+
+    render(
+      <SpotlightTooltip
+        {...defaultProps}
+        targetElement={targetElement}
+        renderTooltip={renderTooltip}
+      />,
+    )
+
+    const dialog = screen.getByRole('dialog')
+    expect(dialog).not.toHaveAttribute('aria-labelledby')
+    expect(dialog).not.toHaveAttribute('aria-describedby')
+  })
+
+  it('generates unique title/content ids across simultaneously rendered instances', () => {
+    const targetElement2 = document.createElement('div')
+    targetElement2.id = 'test-target-2'
+    document.body.appendChild(targetElement2)
+
+    render(
+      <>
+        <SpotlightTooltip {...defaultProps} targetElement={targetElement} />
+        <SpotlightTooltip {...defaultProps} targetElement={targetElement2} />
+      </>,
+    )
+
+    const dialogs = screen.getAllByRole('dialog')
+    expect(dialogs).toHaveLength(2)
+
+    const [firstLabelledBy, secondLabelledBy] = dialogs.map((dialog) =>
+      dialog.getAttribute('aria-labelledby'),
+    )
+    expect(firstLabelledBy).toBeTruthy()
+    expect(secondLabelledBy).toBeTruthy()
+    expect(firstLabelledBy).not.toBe(secondLabelledBy)
+
+    document.body.removeChild(targetElement2)
+  })
+
+  it('sets theme hover CSS custom properties on the tooltip element', () => {
+    render(<SpotlightTooltip {...defaultProps} targetElement={targetElement} />)
+    const dialog = screen.getByRole('dialog')
+
+    expect(dialog.style.getPropertyValue('--spotlight-btn-hover-bg')).toBe(
+      lightTheme.button.hoverBackground,
+    )
+    expect(dialog.style.getPropertyValue('--spotlight-btn-secondary-hover-bg')).toBe(
+      lightTheme.buttonSecondary.hoverBackground,
+    )
+    expect(dialog.style.getPropertyValue('--spotlight-close-hover-color')).toBe(
+      lightTheme.closeButton.hoverColor,
+    )
   })
 
   it('renders step title and content', () => {

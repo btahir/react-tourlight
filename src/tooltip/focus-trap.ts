@@ -70,10 +70,17 @@ export function createFocusTrap(container: HTMLElement): FocusTrap {
 
     document.addEventListener('keydown', handleKeyDown, true)
 
-    // Move focus into the container
+    // Move focus into the container. Prefer an element explicitly marked as
+    // the primary action (e.g. the tooltip's Next/Done button) over the
+    // first focusable element in DOM order, which is typically the close
+    // button — landing focus there first is surprising and not the action
+    // most users want to take.
     const focusable = getFocusableElements()
-    if (focusable.length > 0) {
-      focusable[0]?.focus()
+    const primary = container.querySelector<HTMLElement>('[data-spotlight-primary]')
+    const initial = primary && focusable.includes(primary) ? primary : focusable[0]
+
+    if (initial) {
+      initial.focus()
     } else {
       // If no focusable children, make the container itself focusable
       container.setAttribute('tabindex', '-1')

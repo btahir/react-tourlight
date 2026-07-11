@@ -6,7 +6,7 @@
 
 <p align="center">
   Beautiful onboarding tours & feature highlights for React.<br/>
-  Zero dependencies. Looks like 2026, not 2018.
+  One small peer dependency (Floating UI). Looks like 2026, not 2018.
 </p>
 
 <p align="center">
@@ -85,7 +85,7 @@ function Dashboard() {
 |---|---|
 | **Beautiful by default** | Modern, polished tooltips with smooth CSS clip-path spotlight transitions. Light, dark, and custom themes out of the box. |
 | **Accessible** | WCAG 2.1 AA compliant. Focus trap, keyboard navigation, ARIA roles, screen reader announcements. |
-| **Tiny** | ~5KB gzipped core (vs ~30KB for Joyride). Floating UI is an optional peer dependency. |
+| **Tiny** | ~5KB gzipped core (vs ~30KB for Joyride). Floating UI is a required peer dependency for positioning. |
 | **MIT License** | Free for commercial use. No GPL restrictions, no paid tiers. |
 
 ## Features
@@ -112,7 +112,7 @@ function Dashboard() {
 | **Dark mode** | clip-path | mix-blend breaks | SVG | Yes | Partial |
 | **Accessibility** | WCAG 2.1 AA | Limited | Limited | Limited | Poor |
 | **Focus trap** | Yes | No | No | No | No |
-| **Zero deps** | Yes | No | No | Yes | No |
+| **Zero deps** | No (1 peer: Floating UI) | No | No | Yes | No |
 
 ## Documentation
 
