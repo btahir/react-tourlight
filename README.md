@@ -6,7 +6,7 @@
 
 <p align="center">
   Beautiful onboarding tours & feature highlights for React.<br/>
-  One small peer dependency (Floating UI). Looks like 2026, not 2018.
+  Headless core, multi-page tours, real interactive steps, WCAG 2.1 AA. MIT.
 </p>
 
 <p align="center">
@@ -26,15 +26,20 @@
   <img src="assets/readme-hero.gif" alt="react-tourlight spotlight tour demo" width="720" />
 </p>
 
-## The Problem
+## Why another tour library?
 
-<p align="center">
-  <img src="assets/readme-comparison.png" alt="react-tourlight vs React Joyride" width="720" />
-</p>
+Most tour libraries were designed for a different era of React. They render
+into the DOM imperatively, style themselves with `mix-blend-mode` overlays that
+break in dark mode, treat accessibility as an afterthought, and either cost
+money (Shepherd.js Pro, Intro.js commercial) or aren't React-first at all
+(Driver.js, Intro.js). React Joyride is MIT and works on React 19 again as of
+v3.2, but it's still a ~30 kB, class-component-era design without a headless
+mode, multi-page persistence, or true interactive steps.
 
-React Joyride — the most popular tour library — is **broken on React 19**. It uses deprecated APIs (`unmountComponentAtNode`, `unstable_renderSubtreeIntoContainer`) and hasn't been updated in 9+ months. Shepherd.js requires a paid commercial license. Intro.js is GPL. Driver.js has no React bindings. Every developer evaluating tour libraries in 2025–2026 hit the same wall: **nothing modern, free, and React-native exists.**
-
-react-tourlight fills that gap.
+react-tourlight is built for how React apps are written now: hooks, Server
+Components, App Router, strict TypeScript, and design systems that want to own
+the tooltip. You get a polished default UI **and** an unstyled engine you can
+build on — under one MIT license.
 
 ## Install
 
@@ -104,7 +109,9 @@ function Dashboard() {
 |---|---|
 | **Beautiful by default** | Modern, polished tooltips with smooth CSS clip-path spotlight transitions. Light, dark, and custom themes out of the box. |
 | **Accessible** | WCAG 2.1 AA compliant. Focus trap, keyboard navigation, ARIA roles, screen reader announcements. |
-| **Tiny** | ~5KB gzipped core (vs ~30KB for Joyride). Floating UI is a required peer dependency for positioning. |
+| **Small** | ~8 kB gzipped for the headless engine, ~19 kB with the styled tooltip and CSS. Floating UI (~3 kB, peer dependency) handles positioning. |
+| **Headless when you want it** | `react-tourlight/core` gives you the state machine, element resolution, clip-path, and a11y utilities with no CSS and no Floating UI. |
+| **Multi-page & interactive** | Route-aware tours that survive navigation and reloads. Interactive steps with real event pass-through and `advanceOn`. |
 | **MIT License** | Free for commercial use. No GPL restrictions, no paid tiers. |
 
 ## Features
@@ -120,6 +127,10 @@ function Dashboard() {
 - **i18n support** — customize all button labels and step text
 - **Multi-page / route-aware tours** — a tour can pause on one route, navigate to another (SPA _or_ full page reload), and resume automatically via pluggable persistence (`localStorage` / custom / memory). Router-agnostic — plug in `next/navigation`, React Router, or `location.assign` (see below)
 - **Single-element highlights** — one-off "What's new" callouts without a full tour
+- **Beacons / hotspots** — `<SpotlightBeacon>` renders a pulsing dot on any element that starts a tour or a highlight when clicked, so users can opt in instead of being interrupted
+- **Flexible targets** — steps accept a CSS selector, a React ref, **or a resolver function** (`() => element`) for shadow DOM, iframes, and anything `querySelector` can't reach; all three are waited for with `MutationObserver`
+- **Analytics-ready callbacks** — `onStart`, `onStepChange(stepIndex, step)`, `onComplete`, `onSkip` at both tour and provider level
+- **Start anywhere** — `start('tour', { stepIndex: 2 })` for deep links and "resume" buttons; `portalContainer` and `autoScroll` props for apps with custom scroll or stacking contexts
 - **Custom tooltips** — full render prop API for complete control, with unique per-instance ARIA ids (`useId`) so multiple tooltips never collide and no `aria-labelledby`/`aria-describedby` reference is left dangling
 - **True interactive targets** — `interactive: true` makes the spotlight hole genuinely transparent to _all_ pointer/keyboard/focus events (typing, hovering, dragging, scrolling) — real event pass-through, not synthesized clicks. Add `advanceOn` to auto-advance when the user clicks the real button/link
 - **Headless core** — the entire unstyled engine (state machine, element resolution, clip-path, focus/a11y, and a `useTour` hook) is available from `react-tourlight/core` with **no CSS and no Floating UI**, for fully custom tour UIs (see below)
@@ -277,20 +288,47 @@ convenience, the engine primitives and `useTour` are also re-exported from the
 main `react-tourlight` entry, but importing from `/core` keeps Floating UI and
 the default styles out of your bundle.)
 
+## Beacons
+
+Let users opt into a tour instead of interrupting them. A beacon is a pulsing
+dot anchored to any element; clicking it starts a tour (or shows a highlight):
+
+```tsx
+import { SpotlightBeacon } from 'react-tourlight'
+
+<SpotlightBeacon target="#export-button" tour="export-tour" />
+
+// or a one-off "What's new" callout
+<SpotlightBeacon
+  target="#export-button"
+  position="top-left"
+  highlight={{ title: 'New: CSV export', content: 'Download your data any time.' }}
+/>
+```
+
+Beacons hide automatically while a tour is running, follow the target across
+scroll and resize, and respect `prefers-reduced-motion`.
+
 ## Comparison
 
 | Feature | react-tourlight | React Joyride | Shepherd.js | Driver.js | Intro.js |
 |---|---|---|---|---|---|
-| **React 19** | Yes | Broken | Wrapper | No React | No React |
-| **License** | MIT | MIT | Paid commercial | MIT | GPL / Paid |
-| **Bundle size** | ~5KB | ~30KB | ~25KB | ~5KB | ~12KB |
+| **React 19** | Yes | Yes (since v3.2) | Wrapper | No React bindings | No React bindings |
+| **License** | MIT | MIT | Paid for commercial use | MIT | GPL / paid commercial |
 | **React-first** | Yes | Yes | No (vanilla JS) | No (vanilla JS) | No (vanilla JS) |
-| **Dark mode** | clip-path | mix-blend breaks | SVG | Yes | Partial |
-| **Accessibility** | WCAG 2.1 AA | Limited | Limited | Limited | Poor |
-| **Focus trap** | Yes | No | No | No | No |
+| **Headless core** | Yes (`/core`, no CSS / Floating UI) | No | Partial | No | No |
 | **Multi-page tours** | Built-in (persist + resume) | No | Manual | No | No |
-| **Headless core** | Yes (`/core`, no CSS/Floating UI) | No | Partial | No | No |
-| **Zero deps** | No (1 peer: Floating UI) | No | No | Yes | No |
+| **Interactive steps** | Real event pass-through + `advanceOn` | Spotlight clicks only | Yes | Yes | Partial |
+| **Beacons / hotspots** | Yes | Yes | No | No | Hints |
+| **Dark mode overlay** | CSS clip-path | mix-blend-mode | SVG | Yes | Partial |
+| **Focus trap + inert** | Yes | No | No | No | No |
+| **RSC / App Router** | Ships `"use client"` | Manual wrapper | n/a | n/a | n/a |
+| **Runtime deps** | 1 peer (Floating UI) | Several | Several | 0 | 0 |
+
+Bundle sizes change with every release, so we don't list competitors' numbers
+here — check [bundlephobia](https://bundlephobia.com) for current figures.
+react-tourlight is ~8 kB gzipped headless and ~19 kB with the styled tooltip
+and stylesheet.
 
 ## Documentation
 

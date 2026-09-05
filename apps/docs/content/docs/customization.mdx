@@ -128,22 +128,20 @@ For full control over the tooltip UI, use the `renderTooltip` prop on `<Spotligh
 <SpotlightTour
   id="onboarding"
   steps={steps}
-  renderTooltip={({ step, next, previous, skip, currentIndex, totalSteps }) => (
+  renderTooltip={({ step, next, previous, skip, close, currentIndex, totalSteps, isFirst, isLast }) => (
     <div className="my-tooltip">
+      <button onClick={close} aria-label="Close">×</button>
       <h3>{step.title}</h3>
       <p>{step.content}</p>
       <footer>
-        <button onClick={previous} disabled={currentIndex === 0}>
+        <button onClick={previous} disabled={isFirst}>
           Back
         </button>
         <span>
           {currentIndex + 1} / {totalSteps}
         </span>
-        {currentIndex < totalSteps - 1 ? (
-          <button onClick={next}>Next</button>
-        ) : (
-          <button onClick={next}>Done</button>
-        )}
+        {!isLast && <button onClick={skip}>Skip</button>}
+        <button onClick={next}>{isLast ? 'Done' : 'Next'}</button>
       </footer>
     </div>
   )}
@@ -157,7 +155,10 @@ The render function receives a `TooltipRenderProps` object:
 | `step` | `SpotlightStep` | The current step configuration |
 | `next` | `() => void` | Advance to the next step (or complete the tour on the last step) |
 | `previous` | `() => void` | Go back to the previous step |
-| `skip` | `() => void` | Skip the tour |
+| `skip` | `() => void` | Skip the tour (fires `onSkip`) |
+| `close` | `() => void` | Stop the tour without marking it completed or skipped (the "×" action) |
+| `isFirst` | `boolean` | `true` on the first step |
+| `isLast` | `boolean` | `true` on the last step |
 | `currentIndex` | `number` | Zero-based index of the current step |
 | `totalSteps` | `number` | Total number of steps in the tour |
 

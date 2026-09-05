@@ -1,10 +1,10 @@
 import { useCallback } from 'react'
-import type { SpotlightStep } from '../types.ts'
+import type { SpotlightStep, StartOptions } from '../types.ts'
 import { useSpotlight } from './use-spotlight.ts'
 
 export interface SpotlightControl {
-  /** Start a tour by ID */
-  start: (tourId: string) => void
+  /** Start a tour by ID, optionally at a specific step */
+  start: (tourId: string, options?: StartOptions) => void
   /** Stop the currently active tour */
   stop: () => void
   /** Go to the next step */
@@ -40,7 +40,10 @@ export interface SpotlightControl {
 export function useSpotlightControl(): SpotlightControl {
   const ctx = useSpotlight()
 
-  const start = useCallback((tourId: string) => ctx.start(tourId), [ctx])
+  const start = useCallback(
+    (tourId: string, options?: StartOptions) => ctx.start(tourId, options),
+    [ctx],
+  )
   const stop = useCallback(() => ctx.stop(), [ctx])
   const next = useCallback(() => ctx.next(), [ctx])
   const previous = useCallback(() => ctx.previous(), [ctx])

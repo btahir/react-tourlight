@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.4/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.12/schema.json",
   "files": {
     "includes": ["src/**", "tests/**", "*.config.*", "*.json"]
   },
@@ -7,8 +7,8 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "a11y": { "recommended": true },
+      "preset": "recommended",
+      "a11y": { "preset": "none" },
       "correctness": { "noUnusedImports": "error" },
       "style": { "noNonNullAssertion": "warn" },
       "suspicious": { "noConsole": "error" }

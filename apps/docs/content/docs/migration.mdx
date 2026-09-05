@@ -3,11 +3,19 @@ title: Migrating from React Joyride
 description: Step-by-step guide to migrate from React Joyride to react-tourlight.
 ---
 
-If you're coming from React Joyride — especially after hitting React 19 incompatibilities — this guide maps every concept to its react-tourlight equivalent.
+If you're coming from React Joyride, this guide maps every concept to its react-tourlight equivalent.
 
 ## Why migrate?
 
-React Joyride uses deprecated React APIs (`unmountComponentAtNode`, `unstable_renderSubtreeIntoContainer`) that are removed in React 19. react-tourlight is built from the ground up for modern React with zero deprecated APIs.
+React Joyride is a solid, MIT-licensed library and, as of v3.2, works on React 19. People move to react-tourlight for what Joyride doesn't do:
+
+- **Headless core** — build your own tooltip and overlay on `react-tourlight/core` with no CSS and no Floating UI.
+- **Multi-page tours** — steps with a `route`, persisted across navigation and full reloads, resumed automatically.
+- **True interactive steps** — the spotlight hole is a real gap in the pointer surface, so typing, hovering, dragging, and scrolling reach the target. `advanceOn` continues the tour on a real click.
+- **Accessibility** — focus trap, `inert` on the rest of the page, live-region announcements, and focus restoration.
+- **Dark-mode-safe overlay** — a CSS `clip-path` cutout instead of `mix-blend-mode`.
+- **Server Components** — ships its own `"use client"` directive, so you can import it straight into `app/layout.tsx`.
+- **Smaller** — ~8 kB gzipped headless, ~19 kB styled.
 
 ## Concept mapping
 
@@ -108,13 +116,14 @@ const steps = [
     content: 'This is the first step',
     title: 'Step 1',
     placement: 'bottom',
-    // No beacon concept — spotlights start directly
+    // Tours start directly; opt-in beacons are a separate component (see below)
   },
 ]
 ```
 
 Key differences:
-- No `disableBeacon` — react-tourlight doesn't have beacons
+- No `disableBeacon` — tours start on the first step directly. If you want Joyride-style opt-in hotspots, render `<SpotlightBeacon target="..." tour="..." />` next to the element instead
+- `target` also accepts a React ref or a resolver function (`() => element`)
 - `content` accepts `ReactNode`, not just strings
 - `placement` supports `'auto'` for smart positioning
 - Add `spotlightPadding` and `spotlightRadius` per step
@@ -138,6 +147,8 @@ callback={(data) => {
 <SpotlightTour
   id="onboarding"
   steps={steps}
+  onStart={() => { /* started */ }}
+  onStepChange={(stepIndex, step) => { /* step changed */ }}
   onComplete={() => { /* done */ }}
   onSkip={(stepIndex) => { /* skipped at step */ }}
 />
@@ -161,23 +172,33 @@ tooltipComponent={({ step, primaryProps, backProps, skipProps, index, size }) =>
 **After:**
 
 ```tsx
-renderTooltip={({ step, next, previous, skip, currentIndex, totalSteps }) => (
+renderTooltip={({ step, next, previous, skip, close, isFirst, isLast }) => (
   <div>
+    <button onClick={close} aria-label="Close">×</button>
     <h3>{step.title}</h3>
     <p>{step.content}</p>
-    <button onClick={previous} disabled={currentIndex === 0}>Back</button>
-    <button onClick={next}>
-      {currentIndex < totalSteps - 1 ? 'Next' : 'Done'}
-    </button>
+    <button onClick={previous} disabled={isFirst}>Back</button>
+    <button onClick={next}>{isLast ? 'Done' : 'Next'}</button>
   </div>
 )}
+```
+
+### 6. Replace beacons (optional)
+
+Joyride shows a pulsing beacon before each step unless `disableBeacon` is set. react-tourlight separates the two ideas: tours start directly, and `<SpotlightBeacon>` is an explicit, opt-in hotspot you place where you want one:
+
+```tsx
+import { SpotlightBeacon } from 'react-tourlight'
+
+<SpotlightBeacon target="#export-button" tour="onboarding" stepIndex={2} />
 ```
 
 ## What you gain
 
 After migrating, you get:
-- **React 19 compatibility** — no deprecated APIs
-- **Better accessibility** — focus trap, full keyboard nav, ARIA roles, screen reader support
-- **Smaller bundle** — ~5KB vs ~30KB
-- **CSS clip-path overlay** — works perfectly in dark mode (no `mix-blend-mode` hacks)
-- **Async element support** — `MutationObserver`-based waiting for lazy-loaded content
+- **Headless core** — build a fully custom UI on the same engine
+- **Multi-page tours** — persist and resume across routes and reloads
+- **True interactive steps** — real event pass-through and `advanceOn`
+- **Better accessibility** — focus trap, `inert`, full keyboard nav, ARIA roles, screen reader support
+- **CSS clip-path overlay** — works in dark mode (no `mix-blend-mode` hacks)
+- **Async element support** — `MutationObserver`-based waiting for lazy-loaded content, for selectors, refs, and resolver functions

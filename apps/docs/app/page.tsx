@@ -104,8 +104,9 @@ export default function HomePage() {
             className="animate-fade-in-up delay-300 mt-8 max-w-lg text-lg leading-relaxed sm:text-xl"
             style={{ color: 'var(--color-text-secondary)' }}
           >
-            react-tourlight is the modern React tour library. Zero dependencies, WCAG 2.1 AA
-            accessible, under 5 kB gzipped. The one that works with React 19.
+            react-tourlight is the modern React tour library. Headless core, multi-page tours,
+            real interactive steps, WCAG 2.1 AA accessible, MIT. Built for React 18, 19, and the
+            App Router.
           </p>
 
           {/* CTA row */}
@@ -140,8 +141,8 @@ export default function HomePage() {
             style={{ borderColor: 'var(--color-border-subtle)' }}
           >
             {[
-              { value: '~5KB', label: 'gzipped' },
-              { value: '0', label: 'dependencies' },
+              { value: '~8 kB', label: 'gzipped, headless core' },
+              { value: '1', label: 'peer dependency' },
               { value: 'AA', label: 'WCAG 2.1' },
               { value: 'MIT', label: 'licensed' },
             ].map((stat) => (
@@ -180,9 +181,9 @@ export default function HomePage() {
                   className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
                   style={{ color: 'var(--color-text-primary)' }}
                 >
-                  Every tour library
+                  Tour libraries
                   <br />
-                  <em style={{ color: 'var(--color-text-secondary)' }}>is broken.</em>
+                  <em style={{ color: 'var(--color-text-secondary)' }}>stopped evolving.</em>
                 </h2>
               </div>
               <div
@@ -190,20 +191,25 @@ export default function HomePage() {
                 style={{ color: 'var(--color-text-secondary)' }}
               >
                 <p>
-                  React Joyride uses deprecated APIs that are{' '}
+                  The popular options were designed for a different era of React. They render
+                  imperatively, dim the page with{' '}
                   <strong style={{ color: 'var(--color-text-primary)' }}>
-                    removed in React 19
+                    mix-blend-mode hacks that break in dark mode
                   </strong>
-                  . Shepherd.js requires a paid commercial license. Intro.js is GPL. Driver.js has
-                  no React bindings.
+                  , treat accessibility as optional, and have no answer for multi-page flows or
+                  design systems that want to own the tooltip.
                 </p>
                 <p>
-                  Every developer evaluating tour libraries in 2025 hits the same wall:{' '}
+                  Shepherd.js charges for commercial use. Intro.js is GPL. Driver.js has no React
+                  bindings. Joyride is MIT and works on React 19 again, but it is still a
+                  ~30 kB, class-component-era design with{' '}
                   <strong style={{ color: 'var(--color-text-primary)' }}>
-                    nothing modern, free, and React-native exists.
+                    no headless mode, no persistence, and no real interactive steps.
                   </strong>
                 </p>
-                <p style={{ color: 'var(--color-amber-light)' }}>react-tourlight fills that gap.</p>
+                <p style={{ color: 'var(--color-amber-light)' }}>
+                  react-tourlight is built for how React apps are written now.
+                </p>
               </div>
             </div>
           </div>
@@ -248,9 +254,9 @@ export default function HomePage() {
                 detail: 'Focus trap + ARIA + inert',
               },
               {
-                title: 'Under 5 kB',
-                body: 'Zero runtime dependencies. Floating UI is optional. The core is smaller than most icon libraries.',
-                detail: '~5 kB gzip / 0 deps',
+                title: 'Headless or styled',
+                body: 'Import react-tourlight/core for the engine alone — state machine, element resolution, clip-path, a11y — with no CSS and no Floating UI. Or use the polished default UI. ~8 kB headless, ~19 kB styled.',
+                detail: '~8 kB gzip core / 1 peer dep',
               },
               {
                 title: 'MIT licensed',
@@ -507,11 +513,12 @@ export default function HomePage() {
                 </thead>
                 <tbody>
                   {[
-                    ['React 19', 'Fully compatible', 'Broken / wrappers'],
-                    ['Bundle size', '< 5 kB', '15–50 kB'],
-                    ['Dependencies', '0', '5–15+'],
-                    ['Accessibility', 'WCAG 2.1 AA', 'Partial at best'],
-                    ['Focus trap', 'Built-in', 'Not available'],
+                    ['React 19 + App Router', 'Native, ships "use client"', 'Wrappers / manual'],
+                    ['Headless core', 'react-tourlight/core', 'Not available'],
+                    ['Multi-page tours', 'Persist + resume built in', 'Manual or none'],
+                    ['Interactive steps', 'Real event pass-through', 'Synthesized clicks'],
+                    ['Beacons', 'Built-in', 'Some'],
+                    ['Accessibility', 'WCAG 2.1 AA, focus trap, inert', 'Partial at best'],
                     ['Dark mode', 'CSS clip-path', 'mix-blend-mode (breaks)'],
                     ['License', 'MIT', 'GPL / Paid / MIT'],
                   ].map(([feature, ours, theirs], i) => (

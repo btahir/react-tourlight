@@ -1,0 +1,115 @@
+---
+title: Beacons
+description: Pulsing hotspots that let users opt into a tour or a "what's new" callout instead of being interrupted.
+---
+
+A beacon is a small pulsing dot anchored to an element. Clicking it starts a
+tour (or shows a single-element highlight). Use beacons when you'd rather
+invite users into a walkthrough than launch one on page load.
+
+```tsx
+import { SpotlightBeacon, SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import 'react-tourlight/styles.css'
+
+function App() {
+  return (
+    <SpotlightProvider>
+      <SpotlightTour id="export-tour" steps={steps} />
+      <SpotlightBeacon target="#export-button" tour="export-tour" />
+      <Dashboard />
+    </SpotlightProvider>
+  )
+}
+```
+
+Beacons:
+
+- render through a portal, so they're never clipped by `overflow: hidden`
+- follow the target across scroll, resize, and layout changes
+- wait for the target to appear (same `MutationObserver` logic as steps)
+- hide automatically while a tour or highlight is active
+- respect `prefers-reduced-motion`
+
+## Starting at a specific step
+
+Deep-link a beacon into the middle of a tour with `stepIndex`:
+
+```tsx
+<SpotlightBeacon target="#billing-tab" tour="onboarding" stepIndex={3} />
+```
+
+## "What's new" callouts
+
+Skip the tour entirely and show a one-off highlight when the beacon is
+clicked. The highlight's `target` defaults to the beacon's own target:
+
+```tsx
+<SpotlightBeacon
+  target="#export-button"
+  position="top-left"
+  highlight={{
+    title: 'New: CSV export',
+    content: 'Download any table as a CSV from the ⋯ menu.',
+    placement: 'bottom',
+  }}
+/>
+```
+
+## Positioning and styling
+
+```tsx
+<SpotlightBeacon
+  target={settingsRef}          // selector, ref, or () => element
+  tour="settings"
+  position="right"              // top-left | top-right | bottom-left | bottom-right
+                                // top | bottom | left | right | center
+  offset={6}                    // px, pushes the dot outward from the box
+  size={14}                     // px diameter
+  color="#f59e0b"               // any CSS color
+  label="Show me around"        // aria-label
+/>
+```
+
+The dot colour also reads the `--spotlight-beacon-color` CSS variable, so you
+can theme every beacon at once:
+
+```css
+:root {
+  --spotlight-beacon-color: #f59e0b;
+}
+```
+
+Override the classes `.spotlight-beacon` and `.spotlight-beacon-pulse` for
+anything else.
+
+## Showing a beacon once
+
+Beacons don't persist their own state — combine them with your own
+"seen" flag, or with tour persistence:
+
+```tsx
+const [seen, setSeen] = useLocalStorage('export-tour-seen', false)
+
+<SpotlightTour id="export-tour" steps={steps} onComplete={() => setSeen(true)} />
+<SpotlightBeacon target="#export-button" tour="export-tour" active={!seen} />
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `target` | `SpotlightTarget` | -- | CSS selector, React ref, or resolver function |
+| `tour` | `string` | -- | Tour ID to start when clicked |
+| `stepIndex` | `number` | `0` | Step to start `tour` at |
+| `highlight` | `Omit<SpotlightStep, 'target'> & { target?: SpotlightTarget }` | -- | Highlight to show when clicked (used when `tour` is not set) |
+| `onClick` | `() => void` | -- | Extra click handler, runs before starting the tour / highlight |
+| `active` | `boolean` | `true` | Render the beacon |
+| `hideWhileActive` | `boolean` | `true` | Hide while any tour or highlight is running |
+| `position` | `BeaconPosition` | `'top-right'` | Anchor point on the target's bounding box |
+| `offset` | `number` | `0` | Pixel offset pushing the dot outward |
+| `size` | `number` | `12` | Dot diameter in px |
+| `color` | `string` | `--spotlight-beacon-color` / `#3b82f6` | Dot colour |
+| `label` | `string` | `'Start tour'` | Accessible label |
+| `className` | `string` | -- | Extra class names on the button |
+| `container` | `HTMLElement \| (() => HTMLElement \| null) \| null` | `document.body` | Portal container |
+| `timeout` | `number` | `5000` | Max time (ms) to wait for the target |

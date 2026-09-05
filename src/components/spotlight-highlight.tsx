@@ -3,7 +3,7 @@ import type { Placement, SpotlightStep } from '../types.ts'
 import { SpotlightContext } from './spotlight-provider.tsx'
 
 export interface SpotlightHighlightProps {
-  /** CSS selector or React ref for the target element */
+  /** CSS selector, React ref, or resolver function for the target element */
   target: SpotlightStep['target']
   /** Tooltip title */
   title: string

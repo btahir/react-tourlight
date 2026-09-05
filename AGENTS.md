@@ -4,14 +4,16 @@ This file provides guidance to AI coding agents working with this repository.
 
 ## Project Overview
 
-react-tourlight is a modern React library for building onboarding tours and feature highlights. It uses CSS clip-path for GPU-accelerated spotlight transitions, is WCAG 2.1 AA accessible out of the box, ships at ~5KB gzipped with zero runtime dependencies, and is MIT licensed. It targets React 18+ and React 19, filling the gap left by React Joyride (broken on React 19), Shepherd.js (paid), and Intro.js (GPL).
+react-tourlight is a modern React library for building onboarding tours and feature highlights. It uses CSS clip-path for GPU-accelerated spotlight transitions, is WCAG 2.1 AA accessible out of the box, ships a headless `/core` entry (~8 kB gzipped) plus a styled default UI (~19 kB gzipped with CSS), and is MIT licensed. `@floating-ui/react-dom` is its only runtime peer dependency (positioning). It targets React 18+ and React 19 and ships its own `"use client"` directive for Next.js App Router.
+
+Positioning notes for anyone editing docs or marketing copy: do **not** claim React Joyride is "broken on React 19" (it has supported React 19 since v3.2, July 2026) and do **not** claim "~5 kB" or "zero dependencies" — both are out of date. Differentiate on the headless core, multi-page persistence, true interactive steps, beacons, accessibility, and license.
 
 ## Structure
 
 ```
 react-tourlight/
 ├── src/                    # Library source code
-│   ├── components/         # React components (Provider, Tour, Highlight)
+│   ├── components/         # React components (Provider, Tour, Highlight, Beacon)
 │   ├── hooks/              # useSpotlight, useSpotlightControl, useSpotlightTarget
 │   ├── tooltip/            # Tooltip rendering and positioning (Floating UI)
 │   ├── overlay/            # Spotlight overlay and clip-path generation

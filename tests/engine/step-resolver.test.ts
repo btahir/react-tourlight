@@ -89,3 +89,41 @@ describe('getTargetRect', () => {
     document.body.removeChild(el)
   })
 })
+
+describe('resolveTarget — function targets', () => {
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('calls a resolver function and returns its element', () => {
+    const el = document.createElement('div')
+    document.body.appendChild(el)
+    expect(resolveTarget(() => el)).toBe(el)
+  })
+
+  it('returns null when the resolver returns null', () => {
+    expect(resolveTarget(() => null)).toBeNull()
+  })
+
+  it('treats a throwing resolver as "not found" instead of crashing', () => {
+    expect(
+      resolveTarget(() => {
+        throw new Error('shadow root not ready')
+      }),
+    ).toBeNull()
+  })
+
+  it('reaches into a shadow root via a resolver function', () => {
+    const host = document.createElement('div')
+    document.body.appendChild(host)
+    const shadow = host.attachShadow({ mode: 'open' })
+    const inner = document.createElement('button')
+    inner.id = 'inner'
+    shadow.appendChild(inner)
+
+    // Not reachable via document.querySelector…
+    expect(resolveTarget('#inner')).toBeNull()
+    // …but trivially reachable with a resolver.
+    expect(resolveTarget(() => shadow.querySelector<HTMLElement>('#inner'))).toBe(inner)
+  })
+})

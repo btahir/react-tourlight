@@ -194,6 +194,48 @@
   background: var(--spotlight-btn-secondary-hover-bg);
 }
 
+/* ---- Beacon (pulsing hotspot) ---- */
+
+.spotlight-beacon {
+  position: fixed;
+  z-index: var(--spotlight-z-tooltip);
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--spotlight-beacon-color, #3b82f6);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.spotlight-beacon:focus-visible {
+  outline: 2px solid var(--spotlight-beacon-color, #3b82f6);
+  outline-offset: 3px;
+}
+
+.spotlight-beacon-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--spotlight-beacon-color, #3b82f6);
+  opacity: 0.5;
+  animation: spotlight-beacon-pulse 1.8s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes spotlight-beacon-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
 /* ---- Step counter ---- */
 
 .spotlight-step-info {
@@ -228,5 +270,11 @@
 
   .spotlight-loading-spinner {
     animation: none;
+  }
+
+  .spotlight-beacon-pulse {
+    animation: none;
+    opacity: 0.35;
+    transform: scale(1.8);
   }
 }

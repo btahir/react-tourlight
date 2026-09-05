@@ -36,7 +36,7 @@ function Dashboard() {
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `target` | `string \| RefObject<HTMLElement>` | -- | CSS selector or React ref for the target element |
+| `target` | `SpotlightTarget` | -- | CSS selector, React ref, or resolver function for the target element |
 | `title` | `string` | -- | Tooltip title |
 | `content` | `ReactNode` | -- | Tooltip content |
 | `active` | `boolean` | `true` | Whether the highlight is currently visible |
@@ -71,6 +71,18 @@ function FeatureAnnouncement() {
 ```
 
 Dismiss the highlight programmatically with `spotlight.dismissHighlight()`.
+
+## Opt-in callouts with a beacon
+
+To let users discover a callout themselves, anchor a [beacon](/docs/beacons)
+to the element and pass it a `highlight`:
+
+```tsx
+<SpotlightBeacon
+  target="#export-button"
+  highlight={{ title: 'New: CSV Export', content: 'You can now export your data as CSV.' }}
+/>
+```
 
 ### SpotlightControl API
 

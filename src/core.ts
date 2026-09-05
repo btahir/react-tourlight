@@ -51,6 +51,7 @@ export type {
   Placement,
   SpotlightStep,
   SpotlightStorage,
+  SpotlightTarget,
   TourState,
   TourStatus,
 } from './types.ts'

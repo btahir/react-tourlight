@@ -105,4 +105,12 @@ Yes. The default styles are in a regular CSS file (`react-tourlight/styles.css`)
 
 ### What's the bundle size?
 
-The core library is **~5KB gzipped** with no bundled runtime dependencies of its own — `@floating-ui/react-dom` is required, but as a peer dependency, so it's installed once and shared instead of duplicated. Floating UI itself adds roughly ~4KB gzipped.
+Measured on the published build (gzip):
+
+| What you import | Size |
+|---|---|
+| `react-tourlight/core` (headless engine only) | ~8 kB |
+| `react-tourlight` + `react-tourlight/styles.css` (styled default UI) | ~19 kB |
+| `@floating-ui/react-dom` peer dependency | ~3 kB |
+
+The engine chunk is shared between the two entries, so importing both doesn't double-count it. `@floating-ui/react-dom` is a peer dependency so it's installed once and shared with anything else in your app that already uses Floating UI.

@@ -52,7 +52,7 @@ Every step requires `target`, `title`, and `content`. Everything else is optiona
 ```tsx
 const step: SpotlightStep = {
   // Required
-  target: '#my-element',             // CSS selector or React ref
+  target: '#my-element',             // CSS selector, React ref, or () => element
   title: 'Feature Name',
   content: 'Description of the feature.',
 
@@ -107,6 +107,49 @@ function Dashboard() {
   )
 }
 ```
+
+## Using resolver functions as targets
+
+When neither a selector nor a ref can reach the element — shadow DOM, an
+iframe you control, a canvas-backed UI, a third-party widget — pass a
+function that returns the element (or `null` while it doesn't exist yet). It
+is re-run on every DOM mutation until it resolves or the step's `timeout`
+elapses, exactly like a selector:
+
+```tsx
+const steps = [
+  {
+    target: () => document.querySelector('my-widget')?.shadowRoot?.querySelector('#cta') ?? null,
+    title: 'Inside the widget',
+    content: 'Targets can live in shadow roots.',
+  },
+  {
+    target: () => gridApi.getCellElement({ row: 0, col: 'status' }),
+    title: 'Status column',
+    content: 'Or come from a library API.',
+  },
+]
+```
+
+A resolver that throws is treated as "not found yet", so it's safe to chain
+optional lookups.
+
+## Starting at a specific step
+
+`start()` accepts an options object. Use `stepIndex` for deep links, "resume
+where you left off" buttons, or a help-menu entry that jumps straight to the
+relevant part of a tour:
+
+```tsx
+const { start } = useSpotlight()
+
+<button onClick={() => start('onboarding', { stepIndex: 2 })}>
+  Show me the billing tab
+</button>
+```
+
+An explicit `stepIndex` overrides any persisted position for that tour. Out-of-range
+values are ignored and the tour starts from the beginning.
 
 ## Starting and stopping tours
 
@@ -164,10 +207,17 @@ Handle tour completion and skip events at both the provider and tour level:
 <SpotlightTour
   id="onboarding"
   steps={steps}
+  onStart={() => track('tour_started')}
+  onStepChange={(stepIndex, step) => track('tour_step_viewed', { stepIndex, title: step.title })}
   onComplete={() => markOnboardingDone()}
   onSkip={(stepIndex) => trackDropoff(stepIndex)}
 />
 ```
+
+`onStepChange` fires exactly once each time a different step becomes visible
+(including the first), which makes step-level funnels trivial without decoding
+`TourState`. The provider-level equivalents receive the `tourId` as their first
+argument: `onStart(tourId)` and `onStepChange(tourId, stepIndex, step)`.
 
 ## Conditional steps
 

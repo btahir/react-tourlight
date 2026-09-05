@@ -1,19 +1,8 @@
 import { useContext, useEffect } from 'react'
-import type { SpotlightStep, TooltipRenderProps } from '../types.ts'
+import type { SpotlightTourProps } from '../types.ts'
 import { SpotlightContext } from './spotlight-provider.tsx'
 
-export interface SpotlightTourProps {
-  /** Unique tour identifier */
-  id: string
-  /** Steps in this tour */
-  steps: SpotlightStep[]
-  /** Called when this tour completes */
-  onComplete?: () => void
-  /** Called when this tour is skipped */
-  onSkip?: (stepIndex: number) => void
-  /** Custom tooltip render function */
-  renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
-}
+export type { SpotlightTourProps }
 
 /**
  * Registers a tour with the SpotlightProvider.
@@ -26,6 +15,8 @@ export function SpotlightTour({
   steps,
   onComplete,
   onSkip,
+  onStart,
+  onStepChange,
   renderTooltip,
 }: SpotlightTourProps) {
   const context = useContext(SpotlightContext)
@@ -37,9 +28,19 @@ export function SpotlightTour({
   const { registerTour, unregisterTour } = context
 
   useEffect(() => {
-    registerTour(id, steps, { onComplete, onSkip, renderTooltip })
+    registerTour(id, steps, { onComplete, onSkip, onStart, onStepChange, renderTooltip })
     return () => unregisterTour(id)
-  }, [id, steps, onComplete, onSkip, renderTooltip, registerTour, unregisterTour])
+  }, [
+    id,
+    steps,
+    onComplete,
+    onSkip,
+    onStart,
+    onStepChange,
+    renderTooltip,
+    registerTour,
+    unregisterTour,
+  ])
 
   return null
 }

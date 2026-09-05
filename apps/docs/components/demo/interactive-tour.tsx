@@ -82,14 +82,14 @@ const steps = [
     target: '[data-tour="terminal"]',
     title: 'One command to install',
     content:
-      'Zero dependencies. Add the provider, define your steps, ship onboarding in under five minutes.',
+      'One peer dependency. Add the provider, define your steps, ship onboarding in under five minutes.',
     placement: 'right' as const,
   },
   {
     target: '[data-tour="comparison-table"]',
     title: 'See the difference',
     content:
-      'Smaller, faster, more accessible, and MIT licensed. Compare react-tourlight against everything else.',
+      'Headless core, multi-page tours, real interactive steps, MIT licensed. Compare react-tourlight against everything else.',
     placement: 'top' as const,
   },
 ]

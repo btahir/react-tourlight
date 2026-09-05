@@ -2,10 +2,10 @@
 
 const rows = [
   {
-    feature: 'React 19',
+    feature: 'React 19 + App Router',
     spotlight: true,
-    joyride: false,
-    shepherd: false,
+    joyride: true,
+    shepherd: null,
     driver: null,
     intro: null,
   },
@@ -18,15 +18,7 @@ const rows = [
     intro: false,
   },
   {
-    feature: 'Bundle < 10KB',
-    spotlight: true,
-    joyride: false,
-    shepherd: false,
-    driver: true,
-    intro: false,
-  },
-  {
-    feature: 'React-native',
+    feature: 'React-first',
     spotlight: true,
     joyride: true,
     shepherd: false,
@@ -34,7 +26,39 @@ const rows = [
     intro: false,
   },
   {
-    feature: 'Dark mode',
+    feature: 'Headless core',
+    spotlight: true,
+    joyride: false,
+    shepherd: null,
+    driver: false,
+    intro: false,
+  },
+  {
+    feature: 'Multi-page tours (persist + resume)',
+    spotlight: true,
+    joyride: false,
+    shepherd: null,
+    driver: false,
+    intro: false,
+  },
+  {
+    feature: 'Interactive steps (real events)',
+    spotlight: true,
+    joyride: null,
+    shepherd: true,
+    driver: true,
+    intro: null,
+  },
+  {
+    feature: 'Beacons / hotspots',
+    spotlight: true,
+    joyride: true,
+    shepherd: false,
+    driver: false,
+    intro: null,
+  },
+  {
+    feature: 'Dark-mode-safe overlay',
     spotlight: true,
     joyride: false,
     shepherd: true,
@@ -50,7 +74,7 @@ const rows = [
     intro: false,
   },
   {
-    feature: 'Focus trap',
+    feature: 'Focus trap + inert',
     spotlight: true,
     joyride: false,
     shepherd: false,
@@ -72,14 +96,6 @@ const rows = [
     shepherd: null,
     driver: null,
     intro: null,
-  },
-  {
-    feature: 'Zero deps',
-    spotlight: true,
-    joyride: false,
-    shepherd: false,
-    driver: true,
-    intro: false,
   },
 ]
 

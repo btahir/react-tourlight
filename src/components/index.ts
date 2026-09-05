@@ -1,3 +1,5 @@
+export type { BeaconPosition, SpotlightBeaconProps } from './spotlight-beacon.tsx'
+export { SpotlightBeacon } from './spotlight-beacon.tsx'
 export type { SpotlightHighlightProps } from './spotlight-highlight.tsx'
 export { SpotlightHighlight } from './spotlight-highlight.tsx'
 export { SpotlightProvider } from './spotlight-provider.tsx'

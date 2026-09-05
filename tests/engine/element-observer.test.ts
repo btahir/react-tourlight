@@ -97,3 +97,34 @@ describe('waitForElement', () => {
     expect(raceResult).toBe('timer')
   })
 })
+
+describe('waitForElement — non-string targets', () => {
+  afterEach(() => {
+    document.body.innerHTML = ''
+  })
+
+  it('waits for a resolver function to return an element', async () => {
+    const promise = waitForElement(() => document.querySelector<HTMLElement>('.fn-late'), {
+      timeout: 2000,
+    })
+    await new Promise((r) => setTimeout(r, 20))
+    const el = document.createElement('div')
+    el.className = 'fn-late'
+    document.body.appendChild(el)
+    expect(await promise).toBe(el)
+  })
+
+  it('waits for a ref whose current is set later', async () => {
+    const ref = { current: null as HTMLElement | null }
+    const promise = waitForElement(ref, { timeout: 2000 })
+    await new Promise((r) => setTimeout(r, 20))
+    const el = document.createElement('div')
+    ref.current = el
+    document.body.appendChild(el) // any mutation triggers re-resolution
+    expect(await promise).toBe(el)
+  })
+
+  it('times out for a resolver that never returns an element', async () => {
+    expect(await waitForElement(() => null, { timeout: 30 })).toBeNull()
+  })
+})

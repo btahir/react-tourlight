@@ -26,6 +26,7 @@ import type {
   SpotlightLabels,
   SpotlightProviderProps,
   SpotlightStep,
+  StartOptions,
   TooltipRenderProps,
   TourState,
 } from '../types.ts'
@@ -40,7 +41,17 @@ interface TourRegistration {
   steps: SpotlightStep[]
   onComplete?: () => void
   onSkip?: (stepIndex: number) => void
+  onStart?: () => void
+  onStepChange?: (stepIndex: number, step: SpotlightStep) => void
   renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
+}
+
+function resolvePortalContainer(
+  container: SpotlightProviderProps['portalContainer'],
+): HTMLElement | null {
+  if (typeof document === 'undefined') return null
+  if (typeof container === 'function') return container() ?? document.body
+  return container ?? document.body
 }
 
 export function SpotlightProvider({
@@ -55,6 +66,8 @@ export function SpotlightProvider({
   labels,
   onComplete,
   onSkip,
+  onStart,
+  onStepChange,
   onStateChange,
   initialState,
   waitForElementTimeout,
@@ -64,6 +77,8 @@ export function SpotlightProvider({
   resume = true,
   navigate,
   isRouteActive,
+  portalContainer,
+  autoScroll = true,
 }: SpotlightProviderProps) {
   const [theme, setTheme] = useState<SpotlightTheme>(() => resolveTheme(themeProp))
 
@@ -95,6 +110,9 @@ export function SpotlightProvider({
   const portalRootRef = useRef<HTMLDivElement | null>(null)
   const activeTourIdRef = useRef<string | null>(null)
   const highlightStepRef = useRef<SpotlightStep | null>(null)
+  // Last step index reported via onStepChange for the active tour, so the
+  // callback fires exactly once per step entered (state updates can repeat).
+  const lastReportedStepRef = useRef<number | null>(null)
 
   // ---- Cross-navigation persistence ----
   const storage = useMemo(() => resolveStorage(persist), [persist])
@@ -156,7 +174,7 @@ export function SpotlightProvider({
   const resolveAndMeasure = useCallback(
     async (step: SpotlightStep): Promise<HTMLElement | null> => {
       let el = resolveTarget(step.target)
-      if (!el && typeof step.target === 'string') {
+      if (!el) {
         const timeout = step.timeout ?? waitForElementTimeout
         el =
           timeout !== undefined
@@ -164,10 +182,10 @@ export function SpotlightProvider({
             : await waitForElement(step.target)
       }
       if (!el) return null
-      await scrollIntoView(el)
+      if (autoScroll) await scrollIntoView(el)
       return el
     },
-    [waitForElementTimeout],
+    [waitForElementTimeout, autoScroll],
   )
 
   // Track target element rect via ResizeObserver + scroll
@@ -227,6 +245,16 @@ export function SpotlightProvider({
     (tourId: string, state: TourState) => {
       setCurrentStepIndex(state.currentStepIndex)
 
+      if (state.status === 'active' && lastReportedStepRef.current !== state.currentStepIndex) {
+        lastReportedStepRef.current = state.currentStepIndex
+        const tour = tours.current.get(tourId)
+        const step = tour?.steps[state.currentStepIndex]
+        if (step) {
+          tour?.onStepChange?.(state.currentStepIndex, step)
+          onStepChange?.(tourId, state.currentStepIndex, step)
+        }
+      }
+
       // Persist across navigations (best-effort). We keep 'completed' records
       // so a finished tour isn't auto-resumed on the next mount, but clear
       // 'idle' (explicitly stopped) records.
@@ -255,7 +283,7 @@ export function SpotlightProvider({
 
       onStateChange?.(tourId, state)
     },
-    [onStateChange, storage, resolvedKey],
+    [onStateChange, onStepChange, storage, resolvedKey],
   )
 
   // When step changes, resolve the new target
@@ -360,7 +388,7 @@ export function SpotlightProvider({
   }, [activeTourId, currentStepIndex, targetElement])
 
   const start = useCallback(
-    (tourId: string) => {
+    (tourId: string, options?: StartOptions) => {
       const tour = tours.current.get(tourId)
       if (!tour) {
         // biome-ignore lint/suspicious/noConsole: Intentional developer warning for invalid tour ID
@@ -400,9 +428,21 @@ export function SpotlightProvider({
           ? { currentStepIndex: persisted.currentStepIndex, seenSteps: persisted.seenSteps }
           : undefined
 
+      // An explicit `stepIndex` wins over persisted / initial state.
+      const requestedIndex = options?.stepIndex
+      const explicitInit =
+        requestedIndex !== undefined &&
+        Number.isInteger(requestedIndex) &&
+        requestedIndex >= 0 &&
+        requestedIndex < tour.steps.length
+          ? { currentStepIndex: requestedIndex, seenSteps: [] }
+          : undefined
+
+      lastReportedStepRef.current = null
+
       const machine = createTourStateMachine({
         steps: tour.steps,
-        initialState: persistedInit ?? initialState?.[tourId],
+        initialState: explicitInit ?? persistedInit ?? initialState?.[tourId],
         onComplete: () => {
           tour.onComplete?.()
           onComplete?.(tourId)
@@ -420,6 +460,8 @@ export function SpotlightProvider({
       activeTourIdRef.current = tourId
       setActiveTourId(tourId)
       setTotalSteps(tour.steps.length)
+      tour.onStart?.()
+      onStart?.(tourId)
       machine.start()
     },
     [
@@ -428,6 +470,7 @@ export function SpotlightProvider({
       initialState,
       onComplete,
       onSkip,
+      onStart,
       persistedTours,
       persistMaxAge,
     ],
@@ -460,6 +503,8 @@ export function SpotlightProvider({
       callbacks?: {
         onComplete?: () => void
         onSkip?: (stepIndex: number) => void
+        onStart?: () => void
+        onStepChange?: (stepIndex: number, step: SpotlightStep) => void
         renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
       },
     ) => {
@@ -467,6 +512,8 @@ export function SpotlightProvider({
         steps,
         onComplete: callbacks?.onComplete,
         onSkip: callbacks?.onSkip,
+        onStart: callbacks?.onStart,
+        onStepChange: callbacks?.onStepChange,
         renderTooltip: callbacks?.renderTooltip,
       })
       // Signal the auto-resume effect that a (possibly persisted) tour is now
@@ -498,7 +545,7 @@ export function SpotlightProvider({
     for (const [tourId, tour] of tours.current) {
       if (resumedRef.current.has(tourId)) continue
       const persisted = persistedTours[tourId]
-      if (!persisted || persisted.status !== 'active') continue
+      if (persisted?.status !== 'active') continue
       if (!isPersistedStateFresh(persisted, tour.steps.length, persistMaxAge)) continue
 
       resumedRef.current.add(tourId)
@@ -518,10 +565,14 @@ export function SpotlightProvider({
 
       const el = resolveTarget(step.target)
       if (el) {
-        scrollIntoView(el).then(() => setHighlightElement(el))
+        if (autoScroll) {
+          scrollIntoView(el).then(() => setHighlightElement(el))
+        } else {
+          setHighlightElement(el)
+        }
       }
     },
-    [stop],
+    [stop, autoScroll],
   )
 
   const handleOverlayClick = useCallback(() => {
@@ -583,6 +634,7 @@ export function SpotlightProvider({
   // tooltip and no spotlight cutout in this window — that reads as a broken
   // black screen. Show a dimmed overlay + loading indicator instead.
   const isResolvingTarget = !activeElement
+  const container = isActive ? resolvePortalContainer(portalContainer) : null
 
   return (
     <SpotlightContext.Provider value={contextValue}>
@@ -590,6 +642,7 @@ export function SpotlightProvider({
 
       {isActive &&
         currentStep &&
+        container &&
         createPortal(
           <div ref={portalRootRef}>
             <SpotlightOverlay
@@ -661,7 +714,7 @@ export function SpotlightProvider({
                 )}
             </div>
           </div>,
-          document.body,
+          container,
         )}
     </SpotlightContext.Provider>
   )

@@ -2,8 +2,18 @@
 
 // Components
 
-export type { SpotlightHighlightProps, SpotlightTourProps } from './components/index.ts'
-export { SpotlightHighlight, SpotlightProvider, SpotlightTour } from './components/index.ts'
+export type {
+  BeaconPosition,
+  SpotlightBeaconProps,
+  SpotlightHighlightProps,
+  SpotlightTourProps,
+} from './components/index.ts'
+export {
+  SpotlightBeacon,
+  SpotlightHighlight,
+  SpotlightProvider,
+  SpotlightTour,
+} from './components/index.ts'
 // Engine primitives (advanced/low-level API — most consumers won't need
 // these directly, but they're useful for building custom tour UIs).
 export type {
@@ -40,6 +50,8 @@ export type {
   SpotlightProviderProps,
   SpotlightStep,
   SpotlightStorage,
+  SpotlightTarget,
+  StartOptions,
   TooltipRenderProps,
   TourState,
   TourStatus,

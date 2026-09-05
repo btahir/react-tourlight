@@ -109,7 +109,7 @@ export function useTour(options: UseTourOptions): UseTourResult {
       }
 
       let el = resolveTarget(target.target)
-      if (!el && typeof target.target === 'string') {
+      if (!el) {
         const timeout = target.timeout ?? opts.waitForElementTimeout
         el =
           timeout !== undefined

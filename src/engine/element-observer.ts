@@ -1,3 +1,6 @@
+import type { SpotlightTarget } from '../types.ts'
+import { resolveTarget } from './step-resolver.ts'
+
 const DEFAULT_TIMEOUT = 5000
 
 export interface WaitForElementOptions {
@@ -6,27 +9,33 @@ export interface WaitForElementOptions {
 }
 
 /**
- * Waits for an element matching the given CSS selector to appear in the DOM.
+ * Waits for a target to appear in the DOM.
  *
- * Uses a `MutationObserver` on `document.body` to watch for `childList` and
- * `subtree` mutations. On each mutation batch it checks whether the selector
- * matches. The promise resolves with the element once found, or `null` if the
- * timeout expires first.
+ * `target` may be a CSS selector, a React ref, or a resolver function (see
+ * {@link SpotlightTarget}). Uses a `MutationObserver` on `document.body` to
+ * watch for `childList` and `subtree` mutations. On each mutation batch it
+ * re-resolves the target. The promise resolves with the element once found,
+ * or `null` if the timeout expires first.
  *
  * The observer is always cleaned up — whether the element is found, the
  * timeout fires, or the caller no longer needs the result.
  */
 export function waitForElement(
-  target: string,
+  target: SpotlightTarget,
   options?: WaitForElementOptions,
 ): Promise<HTMLElement | null> {
   const timeout = options?.timeout ?? DEFAULT_TIMEOUT
 
   return new Promise<HTMLElement | null>((resolve) => {
     // Check immediately — the element may already exist
-    const existing = document.querySelector<HTMLElement>(target)
+    const existing = resolveTarget(target)
     if (existing) {
       resolve(existing)
+      return
+    }
+
+    if (typeof document === 'undefined' || !document.body) {
+      resolve(null)
       return
     }
 
@@ -34,7 +43,7 @@ export function waitForElement(
     let timeoutId: ReturnType<typeof setTimeout> | undefined
 
     const observer = new MutationObserver(() => {
-      const element = document.querySelector<HTMLElement>(target)
+      const element = resolveTarget(target)
       if (element) {
         cleanup()
         resolve(element)

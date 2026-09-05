@@ -175,8 +175,11 @@ export function SpotlightTooltip({
       next: onNext,
       previous: onPrevious,
       skip: onSkip,
+      close: onClose,
       currentIndex,
       totalSteps,
+      isFirst: currentIndex === 0,
+      isLast: currentIndex === totalSteps - 1,
     })
   ) : (
     <TooltipContent

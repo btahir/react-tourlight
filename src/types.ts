@@ -5,6 +5,20 @@ import type { SpotlightTheme } from './themes/types.ts'
 export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'auto'
 
 /**
+ * How a step (or highlight / beacon) locates its target element:
+ *
+ * - a CSS selector string (`'#search'`, `'[data-tour="sidebar"]'`)
+ * - a React ref (`useRef` / `useSpotlightTarget`)
+ * - a resolver function returning the element (or `null` while it doesn't
+ *   exist yet). Use this for elements inside shadow roots, iframes you control,
+ *   canvas-backed UIs, or anything `document.querySelector` can't reach.
+ *
+ * All three forms are waited for via `MutationObserver` when the element isn't
+ * present yet (see `waitForElementTimeout` / `SpotlightStep.timeout`).
+ */
+export type SpotlightTarget = string | RefObject<HTMLElement | null> | (() => HTMLElement | null)
+
+/**
  * Auto-advance configuration for a step. When set, the tour advances to the
  * next step as soon as the given DOM `event` fires on the step's target (or a
  * descendant matching `selector`). Enables "click this real button to
@@ -24,8 +38,8 @@ export interface AdvanceOn {
 
 /** Configuration for a single tour step */
 export interface SpotlightStep {
-  /** CSS selector or React ref for the target element */
-  target: string | RefObject<HTMLElement | null>
+  /** CSS selector, React ref, or resolver function for the target element */
+  target: SpotlightTarget
   /** Step title — shown in tooltip header */
   title: string
   /** Step content — string or React node */
@@ -147,6 +161,14 @@ export interface SpotlightProviderProps {
   onComplete?: (tourId: string) => void
   /** Called when any tour is skipped */
   onSkip?: (tourId: string, stepIndex: number) => void
+  /** Called when any tour starts (including auto-resume after a reload) */
+  onStart?: (tourId: string) => void
+  /**
+   * Called whenever the visible step of any tour changes. Fires once per step
+   * entered (including the first), which makes it the natural hook for
+   * step-level analytics (`tour_step_viewed`) without decoding `TourState`.
+   */
+  onStepChange?: (tourId: string, stepIndex: number, step: SpotlightStep) => void
   /** Persistence callback — called with tour state for saving */
   onStateChange?: (tourId: string, state: TourState) => void
   /** Initial state — for restoring persisted state */
@@ -192,6 +214,29 @@ export interface SpotlightProviderProps {
    * the built-in matcher (exact / `:param` / trailing `*`).
    */
   isRouteActive?: (route: string, pathname: string) => boolean
+  /**
+   * Where the overlay and tooltip are portalled. Defaults to `document.body`.
+   * Pass an element (or a function returning one) to render inside a specific
+   * container — e.g. a fullscreen element, a modal root, or a shadow root host
+   * where your app's CSS variables and stacking context live.
+   */
+  portalContainer?: HTMLElement | (() => HTMLElement | null) | null
+  /**
+   * Scroll each step's target into view before showing it. Default: `true`.
+   * Set `false` when you manage scrolling yourself (e.g. virtualized lists or
+   * custom scroll containers).
+   */
+  autoScroll?: boolean
+}
+
+/** Options accepted by `start(tourId, options)`. */
+export interface StartOptions {
+  /**
+   * Zero-based step index to start at. Overrides any persisted position for
+   * this tour. Useful for "resume where you left off" buttons, deep links
+   * into a specific step, or restarting a tour from a known point.
+   */
+  stepIndex?: number
 }
 
 /** Tour component props */
@@ -204,6 +249,10 @@ export interface SpotlightTourProps {
   onComplete?: () => void
   /** Called when this tour is skipped */
   onSkip?: (stepIndex: number) => void
+  /** Called when this tour starts */
+  onStart?: () => void
+  /** Called each time this tour shows a different step (including the first) */
+  onStepChange?: (stepIndex: number, step: SpotlightStep) => void
   /** Custom tooltip render function */
   renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
 }
@@ -214,14 +263,20 @@ export interface TooltipRenderProps {
   next: () => void
   previous: () => void
   skip: () => void
+  /** Stop the tour without marking it completed or skipped (the "×" action) */
+  close: () => void
   currentIndex: number
   totalSteps: number
+  /** `true` on the first step */
+  isFirst: boolean
+  /** `true` on the last step */
+  isLast: boolean
 }
 
 /** Spotlight context value for consumers */
 export interface SpotlightContextValue {
-  /** Start a tour by ID */
-  start: (tourId: string) => void
+  /** Start a tour by ID, optionally at a specific step */
+  start: (tourId: string, options?: StartOptions) => void
   /** Stop the currently active tour */
   stop: () => void
   /** Go to the next step */
@@ -247,6 +302,8 @@ export interface SpotlightContextValue {
     callbacks?: {
       onComplete?: () => void
       onSkip?: (stepIndex: number) => void
+      onStart?: () => void
+      onStepChange?: (stepIndex: number, step: SpotlightStep) => void
       renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
     },
   ) => void

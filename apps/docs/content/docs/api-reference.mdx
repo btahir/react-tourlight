@@ -20,6 +20,8 @@ Props for the `<SpotlightProvider>` component that wraps your application and ma
 | `labels` | `SpotlightLabels` | -- | Custom labels for i18n |
 | `onComplete` | `(tourId: string) => void` | -- | Called when any tour completes |
 | `onSkip` | `(tourId: string, stepIndex: number) => void` | -- | Called when any tour is skipped |
+| `onStart` | `(tourId: string) => void` | -- | Called when any tour starts (including auto-resume) |
+| `onStepChange` | `(tourId: string, stepIndex: number, step: SpotlightStep) => void` | -- | Called once each time a different step becomes visible |
 | `onStateChange` | `(tourId: string, state: TourState) => void` | -- | Called with tour state for persistence |
 | `initialState` | `Record<string, TourState>` | -- | Initial state for restoring persisted tours |
 | `waitForElementTimeout` | `number` | `5000` | Default max time (ms) to wait for a step's `target` to appear in the DOM before skipping to the next step. Overridable per-step via `SpotlightStep.timeout` |
@@ -29,6 +31,8 @@ Props for the `<SpotlightProvider>` component that wraps your application and ma
 | `resume` | `boolean` | `true` | Auto-resume a persisted, still-active tour on mount |
 | `navigate` | `(path: string) => void` | -- | Called with a step's `route` when it doesn't match the current location. Plug in your router |
 | `isRouteActive` | `(route: string, pathname: string) => boolean` | built-in | Custom route matcher (overrides the exact / `:param` / `*` default) |
+| `portalContainer` | `HTMLElement \| (() => HTMLElement \| null) \| null` | `document.body` | Where the overlay and tooltip are portalled |
+| `autoScroll` | `boolean` | `true` | Scroll each step's target into view before showing it |
 
 ## SpotlightTourProps
 
@@ -40,7 +44,39 @@ Props for the `<SpotlightTour>` component that registers a tour's steps with the
 | `steps` | `SpotlightStep[]` | -- | Array of step configurations |
 | `onComplete` | `() => void` | -- | Called when this tour completes |
 | `onSkip` | `(stepIndex: number) => void` | -- | Called when this tour is skipped |
+| `onStart` | `() => void` | -- | Called when this tour starts |
+| `onStepChange` | `(stepIndex: number, step: SpotlightStep) => void` | -- | Called once each time a different step becomes visible |
 | `renderTooltip` | `(props: TooltipRenderProps) => ReactNode` | -- | Custom tooltip render function |
+
+## SpotlightBeaconProps
+
+Props for `<SpotlightBeacon>`, a pulsing hotspot that starts a tour or highlight when clicked. See the [Beacons](/docs/beacons) guide for the full table and examples.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `target` | `SpotlightTarget` | -- | Element to anchor the beacon to |
+| `tour` | `string` | -- | Tour ID to start when clicked |
+| `stepIndex` | `number` | `0` | Step to start `tour` at |
+| `highlight` | `Omit<SpotlightStep, 'target'> & { target?: SpotlightTarget }` | -- | Highlight to show when clicked instead of a tour |
+| `position` | `BeaconPosition` | `'top-right'` | Anchor point on the target's box |
+| `active` / `hideWhileActive` | `boolean` | `true` / `true` | Visibility controls |
+| `offset` / `size` / `color` / `label` / `className` / `container` / `timeout` | -- | -- | Appearance and behaviour (see guide) |
+
+## SpotlightTarget
+
+```ts
+type SpotlightTarget = string | RefObject<HTMLElement | null> | (() => HTMLElement | null)
+```
+
+A CSS selector, a React ref, or a resolver function. All three are waited for via `MutationObserver` when the element isn't present yet. Use a function for shadow DOM, iframes, or elements only reachable through a library API. A resolver that throws is treated as "not found yet".
+
+## StartOptions
+
+Options accepted by `start(tourId, options)`.
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `stepIndex` | `number` | Zero-based step to start at. Overrides a persisted position. Out-of-range values are ignored |
 
 ## SpotlightStep
 
@@ -48,7 +84,7 @@ Configuration for a single tour step.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `target` | `string \| RefObject<HTMLElement \| null>` | -- | CSS selector or React ref for the target element |
+| `target` | `SpotlightTarget` | -- | CSS selector, React ref, or resolver function for the target element |
 | `title` | `string` | -- | Step title shown in the tooltip header |
 | `content` | `ReactNode` | -- | Step content -- string or React element |
 | `placement` | `'top' \| 'bottom' \| 'left' \| 'right' \| 'auto'` | `'auto'` | Tooltip placement relative to target |
@@ -72,7 +108,7 @@ Props for the `<SpotlightHighlight>` component for single-element highlights.
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `target` | `string \| RefObject<HTMLElement \| null>` | -- | CSS selector or React ref for the target element |
+| `target` | `SpotlightTarget` | -- | CSS selector, React ref, or resolver function for the target element |
 | `title` | `string` | -- | Tooltip title |
 | `content` | `ReactNode` | -- | Tooltip content |
 | `active` | `boolean` | `true` | Whether the highlight is currently visible |
@@ -93,7 +129,7 @@ const spotlight = useSpotlight()
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `start` | `(tourId: string) => void` | Start a tour by its ID |
+| `start` | `(tourId: string, options?: StartOptions) => void` | Start a tour by its ID, optionally at `options.stepIndex` |
 | `stop` | `() => void` | Stop the currently active tour |
 | `next` | `() => void` | Advance to the next step |
 | `previous` | `() => void` | Go back to the previous step |
@@ -120,7 +156,7 @@ const spotlight = useSpotlightControl()
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `start` | `(tourId: string) => void` | Start a tour by its ID |
+| `start` | `(tourId: string, options?: StartOptions) => void` | Start a tour by its ID, optionally at `options.stepIndex` |
 | `stop` | `() => void` | Stop the currently active tour |
 | `next` | `() => void` | Advance to the next step |
 | `previous` | `() => void` | Go back to the previous step |
@@ -173,8 +209,11 @@ Props passed to the `renderTooltip` function on `<SpotlightTour>`.
 | `next` | `() => void` | Advance to the next step or complete the tour |
 | `previous` | `() => void` | Go back to the previous step |
 | `skip` | `() => void` | Skip the tour |
+| `close` | `() => void` | Stop the tour without completing or skipping it |
 | `currentIndex` | `number` | Zero-based index of the current step |
 | `totalSteps` | `number` | Total number of steps |
+| `isFirst` | `boolean` | `true` on the first step |
+| `isLast` | `boolean` | `true` on the last step |
 
 ## TourState
 
@@ -229,8 +268,8 @@ consumers won't need these directly — `SpotlightProvider` and
 | Export | Signature | Description |
 |--------|-----------|-------------|
 | `createTourStateMachine` | `(options: TourStateMachineOptions) => TourStateMachineActions` | Closure-based state machine driving step/lifecycle transitions (`start`, `stop`, `next`, `previous`, `skip`, `goToStep`, `getState`, `subscribe`). No UI or DOM access. |
-| `waitForElement` | `(target: string, options?: WaitForElementOptions) => Promise<HTMLElement \| null>` | Waits for a CSS selector to match an element in the DOM via `MutationObserver`. Resolves with the element, or `null` after `options.timeout` (default `5000`ms) elapses. |
-| `resolveTarget` | `(target: string \| RefObject<HTMLElement \| null>) => HTMLElement \| null` | Resolves a step's `target` (CSS selector or ref) to a DOM element, or `null` if not found. |
+| `waitForElement` | `(target: SpotlightTarget, options?: WaitForElementOptions) => Promise<HTMLElement \| null>` | Waits for a target (selector, ref, or resolver function) to resolve via `MutationObserver`. Resolves with the element, or `null` after `options.timeout` (default `5000`ms) elapses. |
+| `resolveTarget` | `(target: SpotlightTarget) => HTMLElement \| null` | Resolves a step's `target` (selector, ref, or resolver function) to a DOM element, or `null` if not found. |
 | `getTargetRect` | `(element: HTMLElement) => ElementRect` | Returns an element's `getBoundingClientRect()` as a plain `{ x, y, width, height }` object. |
 | `measureElement` | `(element: HTMLElement, padding?: number) => ElementRect` | Like `getTargetRect`, but expands the rect by `padding` pixels on all sides. |
 | `generateClipPath` | `(rect: ElementRect, padding: number, radius: number) => string` | Builds the `clip-path: path(evenodd, ...)` value used for the spotlight cutout around `rect`. |

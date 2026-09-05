@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     template: '%s | react-tourlight',
   },
   description:
-    'Beautiful onboarding tours & feature highlights for React. Zero dependencies, fully accessible, ~5KB gzipped. MIT licensed.',
+    'Beautiful onboarding tours & feature highlights for React. Headless core, multi-page tours, interactive steps, beacons, WCAG 2.1 AA. MIT licensed.',
   keywords: [
     'react',
     'spotlight',
@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     'highlight',
     'react 19',
     'accessible',
+    'react joyride alternative',
+    'headless',
+    'beacon',
   ],
   authors: [{ name: 'Bilal Tahir', url: 'https://github.com/bilaltahir' }],
   openGraph: {
@@ -31,14 +34,14 @@ export const metadata: Metadata = {
     siteName: 'react-tourlight',
     title: 'react-tourlight — Beautiful onboarding tours for React',
     description:
-      'Zero dependencies, fully accessible, ~5KB gzipped. The modern alternative to React Joyride.',
+      'Headless core, multi-page tours, interactive steps, WCAG 2.1 AA. The modern React tour library.',
     images: [{ url: '/og.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'react-tourlight — Beautiful onboarding tours for React',
     description:
-      'Zero dependencies, fully accessible, ~5KB gzipped. The modern alternative to React Joyride.',
+      'Headless core, multi-page tours, interactive steps, WCAG 2.1 AA. The modern React tour library.',
     images: ['/og.png'],
   },
   icons: {
