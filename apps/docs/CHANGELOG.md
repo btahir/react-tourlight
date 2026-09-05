@@ -1,5 +1,12 @@
 # react-tourlight-docs
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies [bef5f39]
+  - react-tourlight@0.4.0
+
 ## 0.0.2
 
 ### Patch Changes
