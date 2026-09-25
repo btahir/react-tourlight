@@ -17,7 +17,8 @@
 </p>
 
 <p align="center">
-  <a href="assets/launch-video.mp4">Watch the launch video</a>
+  <a href="assets/launch-video.mp4">Watch the launch video</a> ·
+  <a href="#support-tourlight">Support Tourlight</a>
 </p>
 
 ---
@@ -388,6 +389,20 @@ Visit **[react-tourlight.vercel.app](https://react-tourlight.vercel.app)** for t
 ## Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, project structure, and PR workflow.
+
+## Support Tourlight
+
+Help keep Tourlight free. Voluntary support funds maintenance, documentation,
+and new features. The player, Studio, and agent tools remain free under MIT;
+sponsorship includes no exclusive features or dedicated support.
+
+- **[Give once](https://buy.stripe.com/fZu14m0FO3v050PfqP3ks00):** choose your amount; $20 suggested.
+- **Support monthly (USD):** [$5](https://buy.stripe.com/9B68wOewEaXsgJxdiH3ks01) · [$15](https://buy.stripe.com/7sYbJ088g3v0gJx4Mb3ks02) · [$50](https://buy.stripe.com/28EeVc88g5D80Kz2E33ks03) · [$100 company sponsorship](https://buy.stripe.com/00w14m6088PkbpdceD3ks04).
+- **[Manage your sponsorship](https://billing.stripe.com/p/login/fZu14m0FO3v050PfqP3ks00):** update your card, view invoices, or cancel renewal. Monthly payments renew automatically until canceled; cancellation takes effect at the end of the billing period.
+
+Stripe processes contributions through our existing **GPT Hotline** account.
+That name and logo appear at checkout alongside your Tourlight contribution.
+Bug reports, documentation, code contributions, and sharing the project help too.
 
 ## License
 

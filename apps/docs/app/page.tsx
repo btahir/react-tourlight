@@ -24,6 +24,7 @@ export default function HomePage() {
         </Link>
         <nav aria-label="Main navigation">
           <Link href="/docs">Documentation</Link>
+          <Link href="/support">Support</Link>
           <a className="tl-nav-github" href={repository}>
             GitHub <Arrow />
           </a>
@@ -337,6 +338,13 @@ export default function HomePage() {
         </Link>
         <p>No account. No credit card. Just a guide waiting to happen.</p>
       </section>
+      <aside className="tl-support-callout tl-container" aria-label="Support Tourlight">
+        <div>
+          <h2>Help keep Tourlight free.</h2>
+          <p>Support maintenance, documentation, and new features. Give once or sponsor monthly.</p>
+        </div>
+        <Link className="tl-button tl-button-small" href="/support">Support Tourlight ↗</Link>
+      </aside>
       <footer className="tl-footer tl-container">
         <Link className="tl-brand" href="/">
           tourlight<span className="tl-brand-react">for React</span>
@@ -347,6 +355,7 @@ export default function HomePage() {
             Source <Arrow />
           </a>
           <Link href="/docs">Docs</Link>
+          <Link href="/support">Support</Link>
           <a href={`${repository}/issues`}>
             Feedback <Arrow />
           </a>

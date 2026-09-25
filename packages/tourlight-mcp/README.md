@@ -41,3 +41,11 @@ Every tool is read-only and deterministic. Validation does not check live select
 - The portable `skills/tourlight` workflow can be installed in [Claude Code](https://code.claude.com/docs/en/skills), [Codex](https://learn.chatgpt.com/docs/build-skills), or [OpenClaw](https://docs.openclaw.ai/tools/skills) using each host's documented skill directory. A copied skill is not a verified marketplace integration.
 
 SDK reference: [MCP TypeScript SDK v2](https://ts.sdk.modelcontextprotocol.io/v2/), protocol 2026-07-28. SDK 2.1.0 is the verified baseline.
+
+## Support Tourlight
+
+This server and the Tourlight package are free under MIT. You can
+[give once](https://buy.stripe.com/fZu14m0FO3v050PfqP3ks00) or explore
+[monthly sponsorship](https://react-tourlight.vercel.app/support) to support maintenance,
+documentation, and new features. Sponsorship does not unlock additional tools or dedicated support.
+Stripe checkout uses our existing GPT Hotline account name and logo.

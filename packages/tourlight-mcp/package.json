@@ -4,6 +4,10 @@
   "description": "Local MCP tools for authoring, validating, and testing portable Tourlight documents",
   "type": "module",
   "license": "MIT",
+  "funding": {
+    "type": "individual",
+    "url": "https://react-tourlight.vercel.app/support"
+  },
   "engines": { "node": ">=20" },
   "bin": { "react-tourlight-mcp": "./index.mjs" },
   "files": ["index.mjs", "server.mjs", "README.md"],

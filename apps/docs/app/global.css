@@ -517,6 +517,12 @@
   .tl-site *, .tl-site *::before, .tl-site *::after { transition: none !important; scroll-behavior: auto !important; }
 }
 
+.tl-support-callout { display:flex; align-items:center; justify-content:space-between; gap:24px; border-top:1px solid var(--tl-line); padding-block:32px; }
+.tl-support-callout h2 { font-size:34px; margin-bottom:10px; }
+.tl-support-callout p { color:var(--tl-muted); font-size:13px; max-width:560px; }
+@media(max-width:700px) { .tl-support-callout { flex-direction:column; align-items:flex-start; } }
+@media(max-width:600px) { .tl-nav { flex-wrap:wrap; padding-block:18px; gap:16px; } .tl-nav nav { flex-wrap:wrap; } }
+
 .tl-guidance-page { min-height: 100vh; }
 .tl-guidance-intro { padding-block: 52px 40px; }
 .tl-guidance-intro h1 { font:400 clamp(48px, 5vw, 76px)/1.04 var(--font-display); letter-spacing:-2px; margin:22px 0; }

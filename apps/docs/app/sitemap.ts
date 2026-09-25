@@ -22,6 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     { url: `${BASE_URL}/studio`, changeFrequency: 'weekly', priority: 0.9 },
     { url: `${BASE_URL}/guidance`, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${BASE_URL}/support`, changeFrequency: 'monthly', priority: 0.5 },
     ...docEntries,
   ]
 }

@@ -1,0 +1,33 @@
+.page { min-height: 100vh; }
+.intro { padding-block: 64px 42px; }
+.intro h1 { font: 400 clamp(52px, 6vw, 86px)/1.04 var(--font-display); letter-spacing: -2px; margin: 24px 0; }
+.intro > p { max-width: 610px; color: var(--tl-muted); font-size: 16px; }
+.intro .promise { font-size: 13px; color: var(--tl-ink); margin-top: 16px; }
+.options { padding-bottom: 38px; scroll-margin-top: 24px; }
+.once { display: flex; justify-content: space-between; align-items: center; gap: 32px; background: #eee9db; border: 1px solid var(--tl-line); border-radius: 10px; padding: 34px; }
+.once h2 { font-size: 42px; margin-block: 14px; }
+.once p, .monthlyHeading p, .manage p, .footer p { color: var(--tl-muted); font-size: 14px; }
+.monthlyHeading { padding-block: 38px 24px; }
+.monthlyHeading h2 { font-size: 38px; margin-bottom: 10px; }
+.tiers { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.tier { padding: 26px 22px; border: 1px solid var(--tl-line); border-radius: 10px; background: #fffdf6; }
+.tier h3 { font-size: 13px; font-weight: 600; }
+.tier .price { font: 400 48px/1.3 var(--font-display); margin-block: 14px 24px; }
+.price span { font: 400 12px var(--font-body); color: var(--tl-muted); }
+.tier a { width: 100%; }
+.terms, .notice { font-size: 12px; color: var(--tl-muted); margin-top: 24px; max-width: 850px; }
+.notice { padding-left: 16px; border-left: 2px solid var(--tl-orange); }
+.manage { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 32px; border-top: 1px solid var(--tl-line); border-bottom: 1px solid var(--tl-line); }
+.manage h2 { font-size: 32px; margin-bottom: 10px; }
+.footer { display: flex; justify-content: space-between; gap: 24px; padding-block: 30px; }
+@media (max-width: 1000px) { .tiers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .intro { padding-block: 42px 30px; }
+  .intro h1 { font-size: 54px; }
+  .once, .manage, .footer { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .once { padding: 24px; }
+  .once h2 { font-size: 36px; }
+  .tiers { grid-template-columns: 1fr; }
+  .tier { padding: 24px; }
+  .tier .price { margin-block: 10px 20px; }
+}

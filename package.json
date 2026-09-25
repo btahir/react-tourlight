@@ -11,6 +11,10 @@
     "url": "https://github.com/btahir/react-tourlight/issues"
   },
   "homepage": "https://react-tourlight.vercel.app",
+  "funding": {
+    "type": "individual",
+    "url": "https://react-tourlight.vercel.app/support"
+  },
   "engines": {
     "node": ">=18.0.0"
   },

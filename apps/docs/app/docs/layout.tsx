@@ -4,7 +4,11 @@ import { source } from '@/lib/source'
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <DocsLayout tree={source.pageTree} nav={{ title: 'react-tourlight' }}>
+    <DocsLayout
+      tree={source.pageTree}
+      nav={{ title: 'react-tourlight' }}
+      links={[{ text: 'Support Tourlight', url: '/support' }]}
+    >
       {children}
     </DocsLayout>
   )

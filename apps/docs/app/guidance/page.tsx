@@ -45,6 +45,7 @@ export default function GuidancePage() {
         <Link className="tl-text-link" href="/docs/guidance">
           Add these components to your app ↗
         </Link>
+        <Link className="tl-text-link" href="/support">Support Tourlight ↗</Link>
       </footer>
     </main>
   )
