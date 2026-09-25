@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="react-tourlight" width="120" />
+  <img src="https://raw.githubusercontent.com/btahir/react-tourlight/main/assets/logo.svg" alt="react-tourlight" width="120" />
 </p>
 
 <h1 align="center">react-tourlight</h1>
@@ -17,14 +17,14 @@
 </p>
 
 <p align="center">
-  <a href="assets/launch-video.mp4">Watch the launch video</a> ·
+  <a href="https://github.com/btahir/react-tourlight/blob/main/assets/launch-video.mp4">Watch the launch video</a> ·
   <a href="#support-tourlight">Support Tourlight</a>
 </p>
 
 ---
 
 <p align="center">
-  <img src="assets/readme-hero.gif" alt="react-tourlight spotlight tour demo" width="720" />
+  <img src="https://raw.githubusercontent.com/btahir/react-tourlight/main/assets/readme-hero.gif" alt="react-tourlight spotlight tour demo" width="720" />
 </p>
 
 ## Build a guide together
@@ -42,11 +42,11 @@ validated JSON document. Everything stays in your application and your files.
 - **React runtime:** themed or headless, interactive steps, multi-page guides,
   highlights, beacons, and explicit control over when guidance appears.
 
-**Release status:** Studio, documents, and agent tools are new in this source
-checkout. Until a release containing them is published, build the checkout to
-try these additions; installing the existing npm release does not include them.
+**Version requirement:** Studio, portable documents, guidance components, and the
+CLI require `react-tourlight` **0.5.0 or later**. See the
+[changelog](https://github.com/btahir/react-tourlight/blob/main/CHANGELOG.md) for release details.
 
-### Try this checkout locally
+### Run the demo from source
 
 ```bash
 pnpm install
@@ -56,12 +56,12 @@ pnpm --filter react-tourlight-docs dev
 
 Open the local URL printed by Next.js and visit `/studio`. It demonstrates a
 sample application; embed Studio in your own app to pick its real elements.
-No Tourlight account or backend is required. See the [Studio guide](apps/docs/content/docs/studio.mdx).
+No Tourlight account or backend is required. See the [Studio guide](https://react-tourlight.vercel.app/docs/studio).
 
 ## Install
 
 ```bash
-npm install react-tourlight @floating-ui/react-dom
+npm install react-tourlight@^0.5.0 @floating-ui/react-dom
 ```
 
 `@floating-ui/react-dom` is a **required peer dependency** — it powers tooltip
@@ -71,10 +71,10 @@ something else in your app already depends on it.
 
 ```bash
 # yarn
-yarn add react-tourlight @floating-ui/react-dom
+yarn add react-tourlight@^0.5.0 @floating-ui/react-dom
 
 # pnpm
-pnpm add react-tourlight @floating-ui/react-dom
+pnpm add react-tourlight@^0.5.0 @floating-ui/react-dom
 ```
 
 **Next.js App Router:** as of v0.2.0 the package ships its own `"use client"`
@@ -364,23 +364,24 @@ DOM; it cannot inspect unrelated websites merely by entering their URLs.
 Browser drafts remain local. Export a document to hand work to another person,
 then integrate it using your own release process.
 
-From a built checkout:
+After installing the package in your project:
 
 ```bash
-node scripts/tourlight.mjs validate welcome.tour.json
-node scripts/tourlight.mjs inspect welcome.tour.json
-node scripts/tourlight.mjs test welcome.tour.json --base-url http://localhost:3000
+npx --no-install tourlight validate welcome.tour.json
+npx --no-install tourlight inspect welcome.tour.json
+npx --no-install tourlight test welcome.tour.json --base-url http://localhost:3000
 ```
 
 The last command prints Playwright target smoke-check source. It does not run
 a browser or prove that the user's task completed. Configure your application's
 actual authentication, setup, interactions, and outcome assertions.
 
-The [agent skill](skills/tourlight/SKILL.md) guides coding agents through this
-workflow. A separate MCP server is in `packages/tourlight-mcp`; it accepts guide
+The [agent skill](https://github.com/btahir/react-tourlight/blob/main/skills/tourlight/SKILL.md) guides coding agents through this
+workflow and is included at `node_modules/react-tourlight/skills/tourlight/SKILL.md`.
+The separate `react-tourlight-mcp` package accepts guide
 documents and returns schemas, validation, summaries, and generated test source.
-It does not read app files or publish guides. See the [agent guide](apps/docs/content/docs/agents.mdx)
-and [testing guide](apps/docs/content/docs/testing.mdx).
+It does not read app files or publish guides. See the [agent guide](https://react-tourlight.vercel.app/docs/agents)
+and [testing guide](https://react-tourlight.vercel.app/docs/testing).
 
 ## Documentation
 
@@ -388,7 +389,7 @@ Visit **[react-tourlight.vercel.app](https://react-tourlight.vercel.app)** for t
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, project structure, and PR workflow.
+We welcome contributions! See [CONTRIBUTING.md](https://github.com/btahir/react-tourlight/blob/main/CONTRIBUTING.md) for development setup, project structure, and PR workflow.
 
 ## Support Tourlight
 
@@ -406,4 +407,4 @@ Bug reports, documentation, code contributions, and sharing the project help too
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/btahir/react-tourlight/blob/main/LICENSE)

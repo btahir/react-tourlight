@@ -21,7 +21,7 @@ One versioned TourDocument travels between visual authoring, code review, agent 
 
 ## Boundaries
 
-A standalone site cannot inspect arbitrary third-party websites. Live picking runs inside the app where Studio is mounted. JSON never executes code; handlers are registered explicitly by the application. Browser target checks do not prove activation or conversion. A generated Playwright spec is not a test result. MCP integration is a protocol implementation, not a claim of vendor certification. Sponsorship payment setup and a managed hosted service are deferred.
+A standalone site cannot inspect arbitrary third-party websites. Live picking runs inside the app where Studio is mounted. JSON never executes code; handlers are registered explicitly by the application. Browser target checks do not prove activation or conversion. A generated Playwright spec is not a test result. MCP integration is a protocol implementation, not a claim of vendor certification. Voluntary sponsorship uses Stripe-hosted links and a customer portal. All features remain free; a managed hosted service is deferred.
 
 ## Design
 

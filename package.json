@@ -1,7 +1,7 @@
 {
   "name": "react-tourlight",
-  "version": "0.4.0",
-  "description": "Beautiful onboarding tours & feature highlights for React. One small peer dependency (Floating UI).",
+  "version": "0.5.0",
+  "description": "React product tours, a visual guide editor, portable JSON documents, and agent tools. Free and MIT licensed.",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -67,6 +67,7 @@
   "files": [
     "dist",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "scripts/tourlight.mjs",
     "schema",

@@ -6,11 +6,12 @@ import { createTourDocument, formatTourDocument, generateTourTest, inspectTourDo
 
 const annotations = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false }
 const require = createRequire(import.meta.url)
+const { version } = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'))
 const documentInput = z.object({ document: z.unknown().describe('A Tourlight schemaVersion 1 JSON object. Content is plain text; callbacks are registered names, never code.') })
 const output = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value, null, 2) }], structuredContent: value })
 
 export function createTourlightServer() {
-  const server = new McpServer({ name: 'react-tourlight', version: '0.1.0' }, {
+  const server = new McpServer({ name: 'react-tourlight', version }, {
     instructions: 'Author source-owned Tourlight JSON documents. These tools only transform input and return results. They do not read project files, inspect a browser, execute handlers, save changes, or publish. Obtain actual selectors from the user application. Validate documents and verify the live journey before describing a tour as working.',
   })
   const register = (name, description, inputSchema, run) => server.registerTool(name, { description, inputSchema, annotations }, async (args) => {

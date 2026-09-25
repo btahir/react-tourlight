@@ -4,6 +4,19 @@ Local tools for authoring portable Tourlight documents. MIT licensed. Requires N
 
 The server accepts JSON and returns JSON or generated source. It never reads application files, writes changes, executes callbacks, opens a browser, or sends data to a model provider. The MCP host supplies the model and any file/browser access.
 
+## Install and run
+
+Requires `react-tourlight` 0.5.0 or later, installed automatically as a dependency.
+For the 0.1.1 release, configure your preferred client with:
+
+```sh
+claude mcp add --transport stdio tourlight -- npx -y react-tourlight-mcp@0.1.1
+codex mcp add tourlight -- npx -y react-tourlight-mcp@0.1.1
+```
+
+Use one command for your chosen client. These commands require the corresponding
+npm releases to be published; for an unreleased checkout use the source setup below.
+
 ## Run from this repository
 
 After `pnpm install` and `pnpm build` at the repository root:
@@ -19,7 +32,7 @@ claude mcp add --transport stdio tourlight -- node /absolute/path/to/react-tourl
 codex mcp add tourlight -- node /absolute/path/to/react-tourlight/packages/tourlight-mcp/index.mjs
 ```
 
-The commands are alternative client configurations, not prerequisites for each other. Stdio intentionally prints protocol messages only; the process waits for a client connection. This workspace package is release-ready source, not evidence that its npm release or directory listing exists.
+The commands are alternative client configurations, not prerequisites for each other. Stdio intentionally prints protocol messages only; the process waits for a client connection.
 
 ## Tools
 

@@ -1,21 +1,43 @@
 {
   "name": "react-tourlight-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Local MCP tools for authoring, validating, and testing portable Tourlight documents",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/btahir/react-tourlight.git",
+    "directory": "packages/tourlight-mcp"
+  },
+  "homepage": "https://react-tourlight.vercel.app/docs/agents",
+  "bugs": { "url": "https://github.com/btahir/react-tourlight/issues" },
+  "publishConfig": { "access": "public" },
   "funding": {
     "type": "individual",
     "url": "https://react-tourlight.vercel.app/support"
   },
-  "engines": { "node": ">=20" },
-  "bin": { "react-tourlight-mcp": "./index.mjs" },
-  "files": ["index.mjs", "server.mjs", "README.md"],
-  "scripts": { "test": "node --test protocol.test.mjs" },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "react-tourlight-mcp": "./index.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "server.mjs",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test protocol.test.mjs"
+  },
   "dependencies": {
     "@modelcontextprotocol/server": "^2.1.0",
     "react-tourlight": "workspace:*",
     "zod": "^4.6.5"
   },
-  "devDependencies": { "@modelcontextprotocol/client": "^2.1.0" }
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.1.0"
+  }
 }
