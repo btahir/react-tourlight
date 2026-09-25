@@ -15,7 +15,7 @@ pnpm test:e2e
 pnpm --filter react-tourlight-docs build
 ```
 
-For an installed Google Chrome instead of the Playwright browser download, use `PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e`. Tests start the docs consumer on port 4317. CI uses bundled Chromium, Firefox, and WebKit. The package remains compatible with its advertised Node 18+ runtime; workspace tooling uses newer Node.
+For an installed Google Chrome instead of the Playwright browser download, use `PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e`. Tests start the docs consumer on port 4317. The default browser suite uses bundled Chromium, Firefox, and WebKit. The package remains compatible with its advertised Node 18+ runtime; workspace tooling uses newer Node.
 
 ## Evidence boundaries
 
@@ -43,6 +43,6 @@ See the final validation record below for the actual results of this implementat
 
 ### Remaining boundaries
 
-Docker recipe is provided but container execution was not tested because the local Docker daemon was unavailable. Standalone Node hosting was verified. Route gating uses a simulated history transition in the browser fixture, while reload/resume is a real browser reload; this is not certification of every router adapter. Cross-origin frames and shadow-root focus are not advertised as supported Studio surfaces. Local MCP is protocol-tested; no hosted ChatGPT transport or marketplace listing is claimed. Remote CI, npm publication, website deployment, sponsorship checkout, and demand validation have not occurred.
+Docker recipe is provided but container execution was not tested because the local Docker daemon was unavailable. Standalone Node hosting was verified. Route gating uses a simulated history transition in the browser fixture, while reload/resume is a real browser reload; this is not certification of every router adapter. Cross-origin frames and shadow-root focus are not advertised as supported Studio surfaces. Local MCP is protocol-tested; no hosted ChatGPT transport or marketplace listing is claimed. npm publication, website deployment, sponsorship checkout, and demand validation have not occurred.
 
-All task-started servers and temporary browser/test artifacts were stopped or removed after recording these results. Editable source, tests, documentation, CI configuration, and release changeset are retained.
+All task-started servers and temporary browser/test artifacts were stopped or removed after recording these results. Editable source, tests, documentation, and release changeset are retained.
