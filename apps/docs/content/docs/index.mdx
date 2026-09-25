@@ -1,7 +1,23 @@
 ---
 title: Introduction
-description: Install react-tourlight and build your first onboarding tour in under 5 minutes.
+description: Choose visual authoring, portable documents, or the React API to build your first guide.
 ---
+
+Tourlight includes a React player, a [visual Studio](/docs/studio), and
+[portable documents](/docs/documents) that your teammates and agents can edit.
+Use the player directly, or start with the [Studio playground](/studio).
+
+The Studio and agent additions are available in this source checkout. Until a
+release containing them is published, use the repository's local setup to try
+them. The npm installation below provides the published package version.
+
+```bash
+pnpm install
+pnpm build
+pnpm --filter react-tourlight-docs dev
+```
+
+Run these from the repository root, then visit `/studio` on the local URL.
 
 ## Installation
 
@@ -152,6 +168,10 @@ function Dashboard() {
 
 ## Next steps
 
+- [Visual Studio](/docs/studio) -- author guides in your integrated app
+- [Tour Documents](/docs/documents) -- a shared JSON artifact for your team
+- [Build with Agents](/docs/agents) -- skill, CLI, and MCP setup
+- [Testing & Diagnostics](/docs/testing) -- check targets and real journeys
 - [Multi-Step Tours](/docs/tour) -- step configuration, lifecycle hooks, and conditional steps
 - [Single-Element Highlights](/docs/highlight) -- one-off "what's new" callouts
 - [Customization](/docs/customization) -- themes, custom tooltips, and i18n

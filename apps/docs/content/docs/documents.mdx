@@ -1,0 +1,117 @@
+---
+title: Tour documents
+description: One portable guide format for product people, developers, and agents.
+---
+
+Tour documents are data-only JSON. Studio, the CLI, and agent tools use the same format; your application compiles it into regular `SpotlightStep` objects. The original React API remains available when you need React nodes, refs, or inline functions.
+
+## A guide you can keep in Git
+
+```json
+{
+  "schemaVersion": 1,
+  "id": "getting-started",
+  "name": "Getting started",
+  "steps": [
+    {
+      "id": "create-project",
+      "target": "[data-tour=\"create-project\"]",
+      "title": "Make a little room for your idea",
+      "content": "Create a project to bring your work together.",
+      "placement": "bottom"
+    }
+  ]
+}
+```
+
+Document and step IDs are stable identifiers, not array positions. Keep them when changing copy or reordering steps. `schemaVersion` describes the file format, rather than a published revision of your guide.
+
+Prefer an app-owned target such as `data-tour="create-project"`. Generated class names and deeply nested selectors are likely to change when you redesign the page.
+
+## Use a document in React
+
+```tsx
+'use client'
+
+import { SpotlightProvider, SpotlightTour, useSpotlight } from 'react-tourlight'
+import { compileTourDocument, parseTourDocument } from 'react-tourlight/document'
+import 'react-tourlight/styles.css'
+import guideJson from './getting-started.json'
+
+const guide = parseTourDocument(guideJson)
+const steps = compileTourDocument(guide)
+
+function StartGuide() {
+  const { start } = useSpotlight()
+  return <button onClick={() => start(guide.id)}>Show me around</button>
+}
+
+export function App() {
+  return (
+    <SpotlightProvider>
+      <SpotlightTour id={guide.id} steps={steps} />
+      <button data-tour="create-project">Create a project</button>
+      <StartGuide />
+    </SpotlightProvider>
+  )
+}
+```
+
+`parseTourDocument` accepts JSON text or an unknown JavaScript value, validates it, and returns a `TourDocument`. Invalid input throws `TourDocumentError`, whose `issues` contain a path, code, message, and severity. Use `validateTourDocument(value)` for a non-throwing `{ valid, issues }` result.
+
+`formatTourDocument(document)` produces stable formatted JSON for export and review. `createTourDocument({ id, name })` provides a starting document.
+
+Documents must fit within 4,000,000 UTF-8 bytes, both on import and when formatted for export. Formatting and escaped characters count toward the limit. The runtime validator also checks unique step IDs; JSON Schema validation alone does not cover every document invariant.
+
+## Connect application behavior by name
+
+A JSON file cannot carry your React callbacks. Give it names that the application resolves through a registry:
+
+```tsx
+import { compileTourDocument, type TourRegistry } from 'react-tourlight/document'
+
+const registry: TourRegistry = {
+  actions: {
+    openSettings: () => { setSettingsOpen(true) },
+  },
+  conditions: {
+    isWorkspaceOwner: () => currentUser.role === 'owner',
+  },
+}
+
+const steps = compileTourDocument(guide, registry)
+```
+
+The functions in this example belong inside your application, where `setSettingsOpen` and `currentUser` are defined. Reference their names in a step:
+
+```json
+{
+  "id": "workspace-settings",
+  "target": "[data-tour=\"settings-heading\"]",
+  "title": "Make it your own",
+  "content": "Your workspace settings live here.",
+  "condition": "isWorkspaceOwner",
+  "beforeStep": "openSettings"
+}
+```
+
+`condition` resolves from `registry.conditions`. `beforeStep`, `beforeShow`, `afterShow`, `onHide`, and `action.handler` resolve from `registry.actions`. Missing registry entries are reported during compilation. Your app decides which capabilities are available; imported JSON does not execute JavaScript or HTML.
+
+## Supported step fields
+
+Every step requires `id`, `target`, `title`, and `content`. Content is plain text. Optional fields include:
+
+| Field | Purpose |
+| --- | --- |
+| `placement` | `top`, `bottom`, `left`, `right`, or `auto` |
+| `route` | Route used by the existing navigation integration |
+| `interactive` | Allow interaction with the target |
+| `advanceOn` | Advance on a real DOM event; `{ "event": "click" }` |
+| `timeout` | Target waiting timeout |
+| `spotlightPadding`, `spotlightRadius` | Adjust the highlight |
+| `disableOverlayClose` | Keep backdrop clicks from closing the step |
+| `action` | Button `{ "label": "Open settings", "handler": "openSettings" }` |
+| `condition` | Named condition that determines whether to show the step |
+| `beforeStep`, `beforeShow`, `afterShow`, `onHide` | Named lifecycle callbacks |
+
+See [multi-page tours](/docs/multi-page) for router configuration, and [testing](/docs/testing) for the distinction between a valid document and a working journey.

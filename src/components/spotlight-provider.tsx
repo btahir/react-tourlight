@@ -15,7 +15,7 @@ import { isRouteActive as defaultIsRouteActive, getCurrentPath } from '../engine
 import type { TourStateMachineActions } from '../engine/state-machine.ts'
 import { createTourStateMachine } from '../engine/state-machine.ts'
 import { resolveTarget } from '../engine/step-resolver.ts'
-import { measureElement } from '../overlay/measure.ts'
+import { trackTarget } from '../engine/target-tracker.ts'
 import { SpotlightOverlay } from '../overlay/spotlight-overlay.tsx'
 import { resolveTheme } from '../themes/index.ts'
 import type { SpotlightTheme } from '../themes/types.ts'
@@ -31,6 +31,7 @@ import type {
   TourState,
 } from '../types.ts'
 import { getStepAriaLabel, setInert } from '../utils/a11y.ts'
+import { runCallback } from '../utils/callback.ts'
 import { scrollIntoView } from '../utils/scroll-into-view.ts'
 
 const SpotlightContext = React.createContext<SpotlightContextValue | null>(null)
@@ -44,6 +45,12 @@ interface TourRegistration {
   onStart?: () => void
   onStepChange?: (stepIndex: number, step: SpotlightStep) => void
   renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
+}
+
+function stableStepIds(steps: SpotlightStep[]): string[] | undefined {
+  return steps.every((step) => typeof step.id === 'string')
+    ? steps.map((step) => step.id as string)
+    : undefined
 }
 
 function resolvePortalContainer(
@@ -69,6 +76,7 @@ export function SpotlightProvider({
   onStart,
   onStepChange,
   onStateChange,
+  onError,
   initialState,
   waitForElementTimeout,
   persist,
@@ -104,6 +112,11 @@ export function SpotlightProvider({
     mediaQuery.addListener(handleChange)
     return () => mediaQuery.removeListener(handleChange)
   }, [themeProp])
+  const callbacksRef = useRef({ onComplete, onSkip, onStart, onStepChange, onStateChange, onError })
+  callbacksRef.current = { onComplete, onSkip, onStart, onStepChange, onStateChange, onError }
+  const mountedRef = useRef(true)
+  const highlightGeneration = useRef(0)
+  const highlightAbortRef = useRef<AbortController | null>(null)
   const tours = useRef<Map<string, TourRegistration>>(new Map())
   const machineRef = useRef<TourStateMachineActions | null>(null)
   const triggerElementRef = useRef<HTMLElement | null>(null)
@@ -113,14 +126,16 @@ export function SpotlightProvider({
   // Last step index reported via onStepChange for the active tour, so the
   // callback fires exactly once per step entered (state updates can repeat).
   const lastReportedStepRef = useRef<number | null>(null)
+  const resolvedStepRef = useRef<number | null>(null)
 
   // ---- Cross-navigation persistence ----
   const storage = useMemo(() => resolveStorage(persist), [persist])
   const resolvedKey = persistKey ?? DEFAULT_PERSIST_KEY
   // Snapshot persisted state once at mount (used both to resume a tour and to
   // seed the state machine's initial state when a tour is (re)started).
-  const [persistedTours] = useState<Record<string, PersistedTourState>>(() =>
-    storage ? loadPersistedTours(storage, resolvedKey) : {},
+  const persistedTours = useMemo<Record<string, PersistedTourState>>(
+    () => (storage ? loadPersistedTours(storage, resolvedKey) : {}),
+    [storage, resolvedKey],
   )
   // Tracks which tours have already been auto-resumed so we only do it once.
   const resumedRef = useRef<Set<string>>(new Set())
@@ -141,14 +156,6 @@ export function SpotlightProvider({
 
   const isActive = activeTourId !== null || highlightStep !== null
 
-  useEffect(() => {
-    activeTourIdRef.current = activeTourId
-  }, [activeTourId])
-
-  useEffect(() => {
-    highlightStepRef.current = highlightStep
-  }, [highlightStep])
-
   // Get the current step from active tour
   const getCurrentStep = useCallback((): SpotlightStep | null => {
     if (highlightStep) return highlightStep
@@ -157,68 +164,51 @@ export function SpotlightProvider({
     return tour?.steps[currentStepIndex] ?? null
   }, [activeTourId, currentStepIndex, highlightStep])
 
+  const restoreFocus = useCallback(() => {
+    const trigger = triggerElementRef.current
+    triggerElementRef.current = null
+    // The page is still inert while state updates commit. Restore after the
+    // overlay's cleanup, otherwise native browsers reject the focus request.
+    requestAnimationFrame(() => {
+      if (!activeTourIdRef.current && !highlightStepRef.current && trigger?.isConnected)
+        trigger.focus()
+    })
+  }, [])
+
   const dismissHighlight = useCallback(() => {
-    highlightStepRef.current?.onHide?.()
+    highlightGeneration.current++
+    highlightAbortRef.current?.abort()
+    runCallback(highlightStepRef.current?.onHide, (error) =>
+      callbacksRef.current.onError?.(error, null),
+    )
     highlightStepRef.current = null
     setHighlightStep(null)
     setHighlightElement(null)
     setHighlightRect(null)
 
-    if (triggerElementRef.current) {
-      triggerElementRef.current.focus()
-      triggerElementRef.current = null
-    }
-  }, [])
+    restoreFocus()
+  }, [restoreFocus])
 
   // Resolve target element and measure it
   const resolveAndMeasure = useCallback(
-    async (step: SpotlightStep): Promise<HTMLElement | null> => {
-      let el = resolveTarget(step.target)
-      if (!el) {
-        const timeout = step.timeout ?? waitForElementTimeout
-        el =
-          timeout !== undefined
-            ? await waitForElement(step.target, { timeout })
-            : await waitForElement(step.target)
-      }
+    async (step: SpotlightStep, signal: AbortSignal): Promise<HTMLElement | null> => {
+      const target = step.route
+        ? () =>
+            (isRouteActive ?? defaultIsRouteActive)(step.route as string, getCurrentPath())
+              ? resolveTarget(step.target)
+              : null
+        : step.target
+      const el = await waitForElement(target, {
+        timeout: step.timeout ?? waitForElementTimeout,
+        signal,
+        requireVisible: true,
+      })
       if (!el) return null
       if (autoScroll) await scrollIntoView(el)
-      return el
+      return signal.aborted ? null : el
     },
-    [waitForElementTimeout, autoScroll],
+    [waitForElementTimeout, autoScroll, isRouteActive],
   )
-
-  // Track target element rect via ResizeObserver + scroll
-  useEffect(() => {
-    const el = targetElement ?? highlightElement
-    if (!el) {
-      setTargetRect(null)
-      setHighlightRect(null)
-      return
-    }
-
-    const update = () => {
-      const step = getCurrentStep()
-      const padding = step?.spotlightPadding ?? 8
-      const rect = measureElement(el, padding)
-      if (activeTourId) setTargetRect(rect)
-      if (highlightStep) setHighlightRect(rect)
-    }
-
-    update()
-
-    const resizeObserver = new ResizeObserver(update)
-    resizeObserver.observe(el)
-
-    window.addEventListener('scroll', update, true)
-    window.addEventListener('resize', update)
-
-    return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener('scroll', update, true)
-      window.removeEventListener('resize', update)
-    }
-  }, [targetElement, highlightElement, activeTourId, highlightStep, getCurrentStep])
 
   // Keyboard handler
   useEffect(() => {
@@ -243,17 +233,7 @@ export function SpotlightProvider({
 
   const handleStateChange = useCallback(
     (tourId: string, state: TourState) => {
-      setCurrentStepIndex(state.currentStepIndex)
-
-      if (state.status === 'active' && lastReportedStepRef.current !== state.currentStepIndex) {
-        lastReportedStepRef.current = state.currentStepIndex
-        const tour = tours.current.get(tourId)
-        const step = tour?.steps[state.currentStepIndex]
-        if (step) {
-          tour?.onStepChange?.(state.currentStepIndex, step)
-          onStepChange?.(tourId, state.currentStepIndex, step)
-        }
-      }
+      if (!state.isTransitioning) setCurrentStepIndex(state.currentStepIndex)
 
       // Persist across navigations (best-effort). We keep 'completed' records
       // so a finished tour isn't auto-resumed on the next mount, but clear
@@ -263,7 +243,14 @@ export function SpotlightProvider({
           clearPersistedTour(storage, resolvedKey, tourId)
         } else {
           const stepCount = tours.current.get(tourId)?.steps.length ?? state.currentStepIndex + 1
-          savePersistedTour(storage, resolvedKey, tourId, state, stepCount)
+          savePersistedTour(
+            storage,
+            resolvedKey,
+            tourId,
+            state,
+            stepCount,
+            stableStepIds(tours.current.get(tourId)?.steps ?? []),
+          )
         }
       }
 
@@ -275,27 +262,28 @@ export function SpotlightProvider({
         machineRef.current = null
 
         // Restore focus to trigger element
-        if (triggerElementRef.current) {
-          triggerElementRef.current.focus()
-          triggerElementRef.current = null
-        }
+        restoreFocus()
       }
 
-      onStateChange?.(tourId, state)
+      callbacksRef.current.onStateChange?.(tourId, state)
     },
-    [onStateChange, onStepChange, storage, resolvedKey],
+    [storage, resolvedKey, restoreFocus],
   )
+
+  const currentTarget = getCurrentStep()?.target
 
   // When step changes, resolve the new target
   useEffect(() => {
     if (!activeTourId) return
     const tour = tours.current.get(activeTourId)
     const step = tour?.steps[currentStepIndex]
-    if (!step) return
+    if (!step || currentTarget === undefined) return
 
+    const controller = new AbortController()
     let cancelled = false
     const expectedIndex = currentStepIndex
 
+    resolvedStepRef.current = null
     // Reset current target while the next step target is being resolved.
     setTargetElement(null)
     setTargetRect(null)
@@ -318,28 +306,63 @@ export function SpotlightProvider({
         }
       }
 
-      const el = await resolveAndMeasure(step)
+      const el = await resolveAndMeasure(step, controller.signal)
       if (cancelled) return
 
-      if (el) {
-        setTargetElement(el)
+      const skipUnavailable = () => {
+        const machine = machineRef.current
+        if (
+          !cancelled &&
+          machine &&
+          machine.getState().status === 'active' &&
+          machine.getState().currentStepIndex === expectedIndex
+        )
+          void machine.next()
+      }
+      if (!el) {
+        skipUnavailable()
         return
       }
-
-      const machine = machineRef.current
-      if (
-        machine &&
-        machine.getState().status === 'active' &&
-        machine.getState().currentStepIndex === expectedIndex
-      ) {
-        void machine.next()
+      const resolver = () => {
+        const latestStep = tours.current.get(activeTourId)?.steps[expectedIndex]
+        if (!latestStep) return null
+        if (
+          latestStep.route &&
+          !(isRouteActive ?? defaultIsRouteActive)(latestStep.route, getCurrentPath())
+        )
+          return null
+        return resolveTarget(latestStep.target)
       }
-    })()
+      trackTarget(resolver, el, {
+        signal: controller.signal,
+        timeout: step.timeout ?? waitForElementTimeout,
+        padding: () => tours.current.get(activeTourId)?.steps[expectedIndex]?.spotlightPadding ?? 8,
+        onChange: (element, rect) => {
+          resolvedStepRef.current = element ? expectedIndex : null
+          setTargetElement(element)
+          setTargetRect(rect)
+        },
+        onTimeout: skipUnavailable,
+      })
+    })().catch((error: unknown) => {
+      if (cancelled) return
+      machineRef.current?.stop()
+      callbacksRef.current.onError?.(error, activeTourId)
+    })
 
     return () => {
       cancelled = true
+      controller.abort()
     }
-  }, [activeTourId, currentStepIndex, resolveAndMeasure, navigate, isRouteActive])
+  }, [
+    activeTourId,
+    currentStepIndex,
+    currentTarget,
+    resolveAndMeasure,
+    navigate,
+    isRouteActive,
+    waitForElementTimeout,
+  ])
 
   // Mark the rest of the page inert while spotlight UI is active. For
   // interactive / advanceOn steps, keep the spotlighted target reachable so
@@ -369,7 +392,12 @@ export function SpotlightProvider({
       if (advanceOn.selector) {
         const eventTarget = event.target
         if (!(eventTarget instanceof Element)) return
-        const matched = eventTarget.closest(advanceOn.selector)
+        let matched: Element | null
+        try {
+          matched = eventTarget.closest(advanceOn.selector)
+        } catch {
+          return
+        }
         if (!matched || !targetElement.contains(matched)) return
       }
       void machineRef.current?.next()
@@ -420,11 +448,16 @@ export function SpotlightProvider({
       // snapshot must NOT be resumed here, otherwise calling `start()` again
       // after a tour finished (e.g. a "Replay tour" button) would jump
       // straight back to the last step instead of restarting at step 0.
-      const persisted = persistedTours[tourId]
+      const persisted = storage ? loadPersistedTours(storage, resolvedKey)[tourId] : undefined
       const persistedInit =
         persisted &&
         persisted.status === 'active' &&
-        isPersistedStateFresh(persisted, tour.steps.length, persistMaxAge)
+        isPersistedStateFresh(
+          persisted,
+          tour.steps.length,
+          persistMaxAge,
+          stableStepIds(tour.steps),
+        )
           ? { currentStepIndex: persisted.currentStepIndex, seenSteps: persisted.seenSteps }
           : undefined
 
@@ -442,38 +475,36 @@ export function SpotlightProvider({
 
       const machine = createTourStateMachine({
         steps: tour.steps,
-        initialState: explicitInit ?? persistedInit ?? initialState?.[tourId],
+        getSteps: () => tours.current.get(tourId)?.steps ?? tour.steps,
+        deferAfterShow: true,
+        onError: (error) => callbacksRef.current.onError?.(error, tourId),
+        initialState: {
+          ...(explicitInit ?? persistedInit ?? initialState?.[tourId]),
+          status: 'idle',
+        },
         onComplete: () => {
-          tour.onComplete?.()
-          onComplete?.(tourId)
+          tours.current.get(tourId)?.onComplete?.()
+          callbacksRef.current.onComplete?.(tourId)
         },
         onSkip: (stepIndex) => {
-          tour.onSkip?.(stepIndex)
-          onSkip?.(tourId, stepIndex)
+          tours.current.get(tourId)?.onSkip?.(stepIndex)
+          callbacksRef.current.onSkip?.(tourId, stepIndex)
         },
         onStateChange: (state) => {
-          handleStateChange(tourId, state)
+          if (machineRef.current === machine && mountedRef.current) handleStateChange(tourId, state)
         },
       })
 
       machineRef.current = machine
       activeTourIdRef.current = tourId
+      setCurrentStepIndex(-1)
       setActiveTourId(tourId)
       setTotalSteps(tour.steps.length)
       tour.onStart?.()
-      onStart?.(tourId)
-      machine.start()
+      callbacksRef.current.onStart?.(tourId)
+      void machine.start()
     },
-    [
-      dismissHighlight,
-      handleStateChange,
-      initialState,
-      onComplete,
-      onSkip,
-      onStart,
-      persistedTours,
-      persistMaxAge,
-    ],
+    [dismissHighlight, handleStateChange, initialState, storage, resolvedKey, persistMaxAge],
   )
 
   const stop = useCallback(() => {
@@ -508,6 +539,12 @@ export function SpotlightProvider({
         renderTooltip?: (props: TooltipRenderProps) => React.ReactNode
       },
     ) => {
+      if (activeTourIdRef.current === id) {
+        setTotalSteps(steps.length)
+        if (machineRef.current && machineRef.current.getState().currentStepIndex >= steps.length) {
+          machineRef.current.stop()
+        }
+      }
       tours.current.set(id, {
         steps,
         onComplete: callbacks?.onComplete,
@@ -525,14 +562,56 @@ export function SpotlightProvider({
 
   const unregisterTour = useCallback(
     (id: string) => {
-      tours.current.delete(id)
-      setTourRegistrationTick((t) => t + 1)
-      if (activeTourId === id) {
-        stop()
-      }
+      const registration = tours.current.get(id)
+      // React StrictMode may immediately register again. Defer removal so a
+      // real unmount can be distinguished without destroying resumed progress.
+      queueMicrotask(() => {
+        if (tours.current.get(id) !== registration) return
+        tours.current.delete(id)
+        if (!mountedRef.current) return
+        setTourRegistrationTick((tick) => tick + 1)
+        if (activeTourIdRef.current === id) stop()
+      })
     },
-    [activeTourId, stop],
+    [stop],
   )
+
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+      machineRef.current?.dispose()
+      highlightGeneration.current++
+      highlightAbortRef.current?.abort()
+    }
+  }, [])
+
+  // A viewed event means a target was found and measured, not merely requested.
+  useEffect(() => {
+    if (
+      !activeTourId ||
+      !targetElement ||
+      !targetRect ||
+      resolvedStepRef.current !== currentStepIndex ||
+      lastReportedStepRef.current === currentStepIndex
+    )
+      return
+    lastReportedStepRef.current = currentStepIndex
+    const tour = tours.current.get(activeTourId)
+    const step = tour?.steps[currentStepIndex]
+    if (!step) return
+    const originatingMachine = machineRef.current
+    const report = (error: unknown) => {
+      if (machineRef.current === originatingMachine) originatingMachine?.stop()
+      callbacksRef.current.onError?.(error, activeTourId)
+    }
+    runCallback(step.onAfterShow, report)
+    runCallback(() => tour?.onStepChange?.(currentStepIndex, step), report)
+    runCallback(
+      () => callbacksRef.current.onStepChange?.(activeTourId, currentStepIndex, step),
+      report,
+    )
+  }, [activeTourId, currentStepIndex, targetElement, targetRect])
 
   // Auto-resume a persisted, still-active tour once it registers on mount.
   // `tourRegistrationTick` isn't read in the body — it's an intentional
@@ -546,7 +625,15 @@ export function SpotlightProvider({
       if (resumedRef.current.has(tourId)) continue
       const persisted = persistedTours[tourId]
       if (persisted?.status !== 'active') continue
-      if (!isPersistedStateFresh(persisted, tour.steps.length, persistMaxAge)) continue
+      if (
+        !isPersistedStateFresh(
+          persisted,
+          tour.steps.length,
+          persistMaxAge,
+          stableStepIds(tour.steps),
+        )
+      )
+        continue
 
       resumedRef.current.add(tourId)
       start(tourId)
@@ -563,16 +650,37 @@ export function SpotlightProvider({
       highlightStepRef.current = step
       setHighlightStep(step)
 
-      const el = resolveTarget(step.target)
-      if (el) {
-        if (autoScroll) {
-          scrollIntoView(el).then(() => setHighlightElement(el))
-        } else {
-          setHighlightElement(el)
-        }
-      }
+      const generation = ++highlightGeneration.current
+      setHighlightElement(null)
+      setHighlightRect(null)
+      highlightAbortRef.current?.abort()
+      const controller = new AbortController()
+      highlightAbortRef.current = controller
+      void resolveAndMeasure(step, controller.signal)
+        .then((el) => {
+          if (generation !== highlightGeneration.current || !mountedRef.current) return
+          if (!el) {
+            dismissHighlight()
+            return
+          }
+          trackTarget(step.target, el, {
+            signal: controller.signal,
+            timeout: step.timeout ?? waitForElementTimeout,
+            padding: () => step.spotlightPadding ?? 8,
+            onChange: (element, rect) => {
+              setHighlightElement(element)
+              setHighlightRect(rect)
+            },
+            onTimeout: dismissHighlight,
+          })
+        })
+        .catch((error: unknown) => {
+          if (generation !== highlightGeneration.current) return
+          dismissHighlight()
+          callbacksRef.current.onError?.(error, null)
+        })
     },
-    [stop, autoScroll],
+    [stop, resolveAndMeasure, dismissHighlight, waitForElementTimeout],
   )
 
   const handleOverlayClick = useCallback(() => {
@@ -625,6 +733,8 @@ export function SpotlightProvider({
 
   // Determine current display state
   const currentStep = getCurrentStep()
+  const renderedMachine = machineRef.current
+  const renderedHighlightGeneration = highlightGeneration.current
   const activeElement = highlightStep ? highlightElement : targetElement
   const activeRect = highlightStep ? highlightRect : targetRect
   const activeLabels: SpotlightLabels | undefined = labels
@@ -684,6 +794,13 @@ export function SpotlightProvider({
                 onPrevious={previous}
                 onSkip={highlightStep ? dismissHighlight : skip}
                 onClose={highlightStep ? dismissHighlight : stop}
+                onError={(error) => {
+                  if (highlightStep) {
+                    if (highlightGeneration.current === renderedHighlightGeneration)
+                      dismissHighlight()
+                  } else if (machineRef.current === renderedMachine) renderedMachine?.stop()
+                  callbacksRef.current.onError?.(error, activeTourId)
+                }}
                 theme={theme}
                 showProgress={highlightStep ? false : showProgress}
                 showSkip={highlightStep ? false : showSkip}
@@ -707,6 +824,7 @@ export function SpotlightProvider({
               }}
             >
               {currentStep.title &&
+                activeElement &&
                 getStepAriaLabel(
                   highlightStep ? 0 : currentStepIndex,
                   highlightStep ? 1 : totalSteps,

@@ -30,6 +30,23 @@ export function createKeyboardHandler(options: KeyboardHandlerOptions): Keyboard
   const { onNext, onPrevious, onDismiss, escToDismiss = true } = options
 
   function handleKeyDown(event: KeyboardEvent) {
+    if (
+      event.defaultPrevented ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.isComposing
+    )
+      return
+    const target = event.target
+    if (
+      event.key !== 'Escape' &&
+      target instanceof Element &&
+      target.closest(
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="slider"], [role="spinbutton"], [role="combobox"], [role="listbox"], [role="menu"], [role="tablist"], [role="tree"], [role="grid"]',
+      )
+    )
+      return
     switch (event.key) {
       case 'ArrowRight':
         event.preventDefault()

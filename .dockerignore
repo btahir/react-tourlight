@@ -1,0 +1,9 @@
+.git
+**/node_modules
+**/.next
+**/.source
+**/dist
+**/coverage
+**/test-results
+**/*.tsbuildinfo
+.env*

@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import type { SpotlightTheme } from './themes/types.ts'
+import type { SpotlightThemeInput } from './themes/types.ts'
 
 /** Tooltip placement relative to the target element */
 export type Placement = 'top' | 'bottom' | 'left' | 'right' | 'auto'
@@ -38,6 +38,8 @@ export interface AdvanceOn {
 
 /** Configuration for a single tour step */
 export interface SpotlightStep {
+  /** Stable document step identifier; used to invalidate reordered persisted tours. */
+  id?: string
   /** CSS selector, React ref, or resolver function for the target element */
   target: SpotlightTarget
   /** Step title — shown in tooltip header */
@@ -51,15 +53,15 @@ export interface SpotlightStep {
   /** Border radius of the spotlight cutout (px) */
   spotlightRadius?: number
   /** Optional CTA button inside the tooltip */
-  action?: { label: string; onClick: () => void }
+  action?: { label: string; onClick: () => void | Promise<void> }
   /** Condition — step is skipped if this returns false */
   when?: () => boolean | Promise<boolean>
   /** Called before this step is shown */
   onBeforeShow?: () => void | Promise<void>
   /** Called after this step is shown */
-  onAfterShow?: () => void
+  onAfterShow?: () => void | Promise<void>
   /** Called when this step is hidden */
-  onHide?: () => void
+  onHide?: () => void | Promise<void>
   /** Whether clicking the overlay dismisses the tour */
   disableOverlayClose?: boolean
   /** Whether the user can interact with the highlighted element */
@@ -98,6 +100,8 @@ export type TourStatus = 'idle' | 'active' | 'completed'
 export interface TourState {
   /** Current status of the tour */
   status: TourStatus
+  /** True while the initial step is being prepared. */
+  isTransitioning?: boolean
   /** Index of the current step (when active) */
   currentStepIndex: number
   /** Indices of steps the user has seen */
@@ -142,7 +146,7 @@ export interface SpotlightLabels {
 export interface SpotlightProviderProps {
   children: React.ReactNode
   /** Theme: 'light' | 'dark' | 'auto' | custom theme object */
-  theme?: 'light' | 'dark' | 'auto' | SpotlightTheme
+  theme?: 'light' | 'dark' | 'auto' | SpotlightThemeInput
   /** Overlay color (with alpha). Default: 'rgba(0, 0, 0, 0.5)' */
   overlayColor?: string
   /** Transition duration in ms. Default: 300 */
@@ -169,6 +173,8 @@ export interface SpotlightProviderProps {
    * step-level analytics (`tour_step_viewed`) without decoding `TourState`.
    */
   onStepChange?: (tourId: string, stepIndex: number, step: SpotlightStep) => void
+  /** Called when an async lifecycle hook fails. The tour stops safely. */
+  onError?: (error: unknown, tourId: string | null) => void
   /** Persistence callback — called with tour state for saving */
   onStateChange?: (tourId: string, state: TourState) => void
   /** Initial state — for restoring persisted state */

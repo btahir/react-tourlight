@@ -1,4 +1,8 @@
 import type { SpotlightTarget } from '../types.ts'
+import { isElementVisible } from '../utils/visibility.ts'
+
+export { isElementVisible } from '../utils/visibility.ts'
+
 import { resolveTarget } from './step-resolver.ts'
 
 const DEFAULT_TIMEOUT = 5000
@@ -6,67 +10,49 @@ const DEFAULT_TIMEOUT = 5000
 export interface WaitForElementOptions {
   /** Maximum time to wait in milliseconds. Defaults to 5000. */
   timeout?: number
+  /** Cancels observation immediately when the host changes step or unmounts. */
+  signal?: AbortSignal
+  /** Wait for a connected, visible target with a nonzero layout box. */
+  requireVisible?: boolean
 }
 
-/**
- * Waits for a target to appear in the DOM.
- *
- * `target` may be a CSS selector, a React ref, or a resolver function (see
- * {@link SpotlightTarget}). Uses a `MutationObserver` on `document.body` to
- * watch for `childList` and `subtree` mutations. On each mutation batch it
- * re-resolves the target. The promise resolves with the element once found,
- * or `null` if the timeout expires first.
- *
- * The observer is always cleaned up — whether the element is found, the
- * timeout fires, or the caller no longer needs the result.
- */
+/** Wait for a target, including ref changes, CSS visibility and layout updates. */
 export function waitForElement(
   target: SpotlightTarget,
-  options?: WaitForElementOptions,
+  options: WaitForElementOptions = {},
 ): Promise<HTMLElement | null> {
-  const timeout = options?.timeout ?? DEFAULT_TIMEOUT
-
-  return new Promise<HTMLElement | null>((resolve) => {
-    // Check immediately — the element may already exist
-    const existing = resolveTarget(target)
-    if (existing) {
-      resolve(existing)
-      return
-    }
-
-    if (typeof document === 'undefined' || !document.body) {
+  const { signal, requireVisible = false } = options
+  const timeout = options.timeout ?? DEFAULT_TIMEOUT
+  return new Promise((resolve) => {
+    if (signal?.aborted || typeof document === 'undefined' || !document.body) {
       resolve(null)
       return
     }
-
     let settled = false
-    let timeoutId: ReturnType<typeof setTimeout> | undefined
-
-    const observer = new MutationObserver(() => {
-      const element = resolveTarget(target)
-      if (element) {
-        cleanup()
-        resolve(element)
-      }
-    })
-
-    function cleanup() {
+    let observer: MutationObserver | undefined
+    let timer: ReturnType<typeof setTimeout> | undefined
+    let poll: ReturnType<typeof setInterval> | undefined
+    const finish = (element: HTMLElement | null) => {
       if (settled) return
       settled = true
-      observer.disconnect()
-      if (timeoutId !== undefined) {
-        clearTimeout(timeoutId)
-      }
+      observer?.disconnect()
+      clearTimeout(timer)
+      clearInterval(poll)
+      signal?.removeEventListener('abort', abort)
+      resolve(element)
     }
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    })
-
-    timeoutId = setTimeout(() => {
-      cleanup()
-      resolve(null)
-    }, timeout)
+    const abort = () => finish(null)
+    const check = () => {
+      const element = resolveTarget(target)
+      if (element && (!requireVisible || isElementVisible(element))) finish(element)
+    }
+    check()
+    if (settled) return
+    signal?.addEventListener('abort', abort, { once: true })
+    observer = new MutationObserver(check)
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true })
+    // Ref-only changes and CSS animation/layout changes need not mutate the DOM.
+    poll = setInterval(check, 50)
+    timer = setTimeout(() => finish(null), Math.max(0, timeout))
   })
 }

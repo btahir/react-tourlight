@@ -1,646 +1,356 @@
 import Link from 'next/link'
-import { AnimateOnScroll } from '@/components/animate-on-scroll'
-import { InteractiveTour, TourTriggerButton } from '@/components/demo/interactive-tour'
+import { GuidePlayground } from '@/components/landing/guide-playground'
+
+const repository = 'https://github.com/btahir/react-tourlight'
+
+function Arrow() {
+  return <span aria-hidden="true">↗</span>
+}
 
 export default function HomePage() {
   return (
-    <main
-      className="font-body flex min-h-screen flex-col"
-      style={{ fontFamily: 'var(--font-body)', background: 'var(--color-surface)' }}
-    >
-      {/* ─── NAV ─── */}
-      <nav
-        className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 backdrop-blur-md sm:px-12 lg:px-24"
-        style={{
-          background: 'rgba(12, 12, 14, 0.8)',
-          borderBottom: '1px solid var(--color-border-subtle)',
-        }}
-      >
-        <Link
-          href="/"
-          className="font-display text-lg tracking-tight"
-          style={{ color: 'var(--color-text-primary)' }}
-        >
-          react-tourlight
+    <main className="tl-site">
+      <a className="tl-skip" href="#main-content">
+        Skip to content
+      </a>
+      <header className="tl-nav tl-container">
+        <Link className="tl-brand" href="/" aria-label="React Tourlight home">
+          <span className="tl-brand-mark" aria-hidden="true">
+            t
+          </span>
+          <span>
+            tourlight<span className="tl-brand-react">for React</span>
+          </span>
         </Link>
-        <div className="flex items-center gap-6">
-          <Link
-            href="/docs"
-            className="text-sm transition-colors hover:text-white"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            Docs
+        <nav aria-label="Main navigation">
+          <Link href="/docs">Documentation</Link>
+          <a className="tl-nav-github" href={repository}>
+            GitHub <Arrow />
+          </a>
+          <Link className="tl-button tl-button-small" href="/studio">
+            Open Studio <Arrow />
           </Link>
-          <a
-            href="https://github.com/btahir/react-tourlight"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm transition-colors hover:text-white"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            GitHub
-          </a>
-          <TourTriggerButton
-            className="rounded-md px-4 py-1.5 text-sm font-medium transition-all hover:brightness-110"
-            style={{
-              background: 'var(--color-amber)',
-              color: 'var(--color-surface)',
-            }}
-          />
+        </nav>
+      </header>
+
+      <section className="tl-hero tl-container" id="main-content">
+        <div className="tl-eyebrow">
+          <span className="tl-status-dot" /> THE OPEN-SOURCE GUIDE STUDIO
         </div>
-      </nav>
-
-      {/* ─── HERO ─── */}
-      <section
-        data-tour="hero"
-        className="grain relative flex flex-col items-start overflow-hidden px-6 pb-24 pt-20 sm:px-12 lg:px-24"
-      >
-        {/* Warm radial glow — top right */}
-        <div
-          className="absolute -right-40 -top-40 h-[600px] w-[600px] rounded-full opacity-20 blur-3xl"
-          style={{ background: 'radial-gradient(circle, var(--color-amber) 0%, transparent 70%)' }}
-        />
-        {/* Subtle cool glow — bottom left */}
-        <div
-          className="absolute -bottom-60 -left-40 h-[500px] w-[500px] rounded-full opacity-10 blur-3xl"
-          style={{ background: 'radial-gradient(circle, #60a5fa 0%, transparent 70%)' }}
-        />
-
-        <div className="relative z-10 mx-auto w-full max-w-6xl">
-          {/* Version pill */}
-          <div
-            className="animate-fade-in mb-8 inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs"
-            style={{
-              border: '1px solid var(--color-border-accent)',
-              color: 'var(--color-amber-light)',
-              background: 'rgba(245, 158, 11, 0.06)',
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: 'var(--color-amber)' }}
-            />
-            Now available on npm
-          </div>
-
-          {/* Headline — Instrument Serif, oversized, italic accent */}
-          <h1 data-tour="headline" className="animate-fade-in-up delay-100 max-w-4xl leading-[0.95]">
-            <span
-              className="font-display block text-6xl tracking-tight sm:text-8xl lg:text-9xl"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Onboarding tours
-            </span>
-            <span
-              className="font-display mt-1 block text-6xl italic tracking-tight sm:text-8xl lg:text-9xl"
-              style={{ color: 'var(--color-amber)' }}
-            >
-              that ship.
-            </span>
+        <div className="tl-hero-heading">
+          <h1>
+            A little guidance.
+            <br />
+            <em>A lot of possibility.</em>
           </h1>
-
-          {/* Subhead */}
-          <p
-            className="animate-fade-in-up delay-300 mt-8 max-w-lg text-lg leading-relaxed sm:text-xl"
-            style={{ color: 'var(--color-text-secondary)' }}
-          >
-            react-tourlight is the modern React tour library. Headless core, multi-page tours,
-            real interactive steps, WCAG 2.1 AA accessible, MIT. Built for React 18, 19, and the
-            App Router.
-          </p>
-
-          {/* CTA row */}
-          <div className="animate-fade-in-up delay-400 mt-10 flex flex-wrap items-center gap-4">
-            <TourTriggerButton
-              className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-semibold transition-all duration-200 hover:brightness-110"
-              style={{
-                background: 'var(--color-amber)',
-                color: 'var(--color-surface)',
-              }}
-            />
-            <a
-              href="https://github.com/btahir/react-tourlight"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 rounded-lg px-7 py-3.5 text-sm font-medium transition-colors duration-200 hover:bg-white/5"
-              style={{
-                border: '1px solid var(--color-border-subtle)',
-                color: 'var(--color-text-secondary)',
-              }}
-            >
-              GitHub
-            </a>
-          </div>
-
-          {/* Interactive tour (no visible UI — listens for trigger events) */}
-          <InteractiveTour />
-
-          {/* Stats strip */}
-          <div
-            className="animate-fade-in-up delay-600 mt-16 flex flex-wrap gap-12 border-t pt-8"
-            style={{ borderColor: 'var(--color-border-subtle)' }}
-          >
-            {[
-              { value: '~8 kB', label: 'gzipped, headless core' },
-              { value: '1', label: 'peer dependency' },
-              { value: 'AA', label: 'WCAG 2.1' },
-              { value: 'MIT', label: 'licensed' },
-            ].map((stat) => (
-              <div key={stat.label} className="flex items-baseline gap-2">
-                <span
-                  className="font-display text-3xl tracking-tight"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
-                  {stat.value}
-                </span>
-                <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  {stat.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── THE PROBLEM ─── */}
-      <AnimateOnScroll>
-        <section
-          className="relative px-6 py-24 sm:px-12 lg:px-24"
-          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
-        >
-          <div className="mx-auto max-w-6xl">
-            <div className="grid gap-16 lg:grid-cols-[1fr_1.2fr]">
-              <div>
-                <span
-                  className="font-mono text-xs font-medium uppercase tracking-widest"
-                  style={{ color: 'var(--color-amber)' }}
-                >
-                  The Problem
-                </span>
-                <h2
-                  className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
-                  Tour libraries
-                  <br />
-                  <em style={{ color: 'var(--color-text-secondary)' }}>stopped evolving.</em>
-                </h2>
-              </div>
-              <div
-                className="space-y-6 text-base leading-relaxed"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                <p>
-                  The popular options were designed for a different era of React. They render
-                  imperatively, dim the page with{' '}
-                  <strong style={{ color: 'var(--color-text-primary)' }}>
-                    mix-blend-mode hacks that break in dark mode
-                  </strong>
-                  , treat accessibility as optional, and have no answer for multi-page flows or
-                  design systems that want to own the tooltip.
-                </p>
-                <p>
-                  Shepherd.js charges for commercial use. Intro.js is GPL. Driver.js has no React
-                  bindings. Joyride is MIT and works on React 19 again, but it is still a
-                  ~30 kB, class-component-era design with{' '}
-                  <strong style={{ color: 'var(--color-text-primary)' }}>
-                    no headless mode, no persistence, and no real interactive steps.
-                  </strong>
-                </p>
-                <p style={{ color: 'var(--color-amber-light)' }}>
-                  react-tourlight is built for how React apps are written now.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimateOnScroll>
-
-      {/* ─── FEATURES ─── */}
-      <section
-        data-tour="features"
-        className="px-6 py-24 sm:px-12 lg:px-24"
-        style={{ borderTop: '1px solid var(--color-border-subtle)' }}
-      >
-        <div className="mx-auto max-w-6xl">
-          <AnimateOnScroll>
-            <span
-              className="font-mono text-xs font-medium uppercase tracking-widest"
-              style={{ color: 'var(--color-amber)' }}
-            >
-              Why react-tourlight
-            </span>
-            <h2
-              className="font-display mt-4 max-w-xl text-4xl leading-tight tracking-tight sm:text-5xl"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Built different.
-            </h2>
-          </AnimateOnScroll>
-
-          <div
-            className="mt-16 grid gap-px overflow-hidden rounded-2xl sm:grid-cols-2"
-            style={{ background: 'var(--color-border-subtle)' }}
-          >
-            {[
-              {
-                title: 'Beautiful by default',
-                body: 'Smooth CSS clip-path spotlight transitions. Light, dark, and custom themes. GPU-accelerated animations that never break in dark mode.',
-                detail: 'clip-path > mix-blend-mode',
-              },
-              {
-                title: 'Fully accessible',
-                body: 'WCAG 2.1 AA compliant out of the box. Focus trap, keyboard navigation, ARIA roles, and screen reader announcements.',
-                detail: 'Focus trap + ARIA + inert',
-              },
-              {
-                title: 'Headless or styled',
-                body: 'Import react-tourlight/core for the engine alone — state machine, element resolution, clip-path, a11y — with no CSS and no Floating UI. Or use the polished default UI. ~8 kB headless, ~19 kB styled.',
-                detail: '~8 kB gzip core / 1 peer dep',
-              },
-              {
-                title: 'MIT licensed',
-                body: 'Free for commercial use. No GPL restrictions, no paid tiers, no "enterprise" upsell. Open source forever.',
-                detail: 'Free forever',
-              },
-            ].map((feature, i) => (
-              <AnimateOnScroll key={feature.title} delay={i * 80}>
-                <div
-                  {...(i === 0 ? { 'data-tour': 'feature-card' } : {})}
-                  className="group relative flex flex-col justify-between p-8 transition-colors duration-300 hover:brightness-125 sm:p-10"
-                  style={{ background: 'var(--color-surface-raised)' }}
-                >
-                  <div>
-                    <h3
-                      className="text-lg font-semibold"
-                      style={{ color: 'var(--color-text-primary)' }}
-                    >
-                      {feature.title}
-                    </h3>
-                    <p
-                      className="mt-3 text-sm leading-relaxed"
-                      style={{ color: 'var(--color-text-secondary)' }}
-                    >
-                      {feature.body}
-                    </p>
-                  </div>
-                  <div
-                    className="font-mono mt-6 text-xs font-medium"
-                    style={{ color: 'var(--color-amber)' }}
-                  >
-                    {feature.detail}
-                  </div>
-                </div>
-              </AnimateOnScroll>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── INSTALL + CODE ─── */}
-      <AnimateOnScroll>
-        <section
-          data-tour="install"
-          className="px-6 py-24 sm:px-12 lg:px-24"
-          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
-        >
-          <div className="mx-auto max-w-6xl">
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
-              {/* Install */}
-              <div>
-                <span
-                  className="font-mono text-xs font-medium uppercase tracking-widest"
-                  style={{ color: 'var(--color-amber)' }}
-                >
-                  Quick Start
-                </span>
-                <h2
-                  className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
-                  style={{ color: 'var(--color-text-primary)' }}
-                >
-                  One command.
-                </h2>
-                <p
-                  className="mt-4 text-base leading-relaxed"
-                  style={{ color: 'var(--color-text-secondary)' }}
-                >
-                  Install the package, wrap your app, define your steps. That's it. You're shipping
-                  onboarding in under five minutes.
-                </p>
-
-                {/* Terminal block */}
-                <div
-                  data-tour="terminal"
-                  className="mt-8 overflow-hidden rounded-xl"
-                  style={{
-                    border: '1px solid var(--color-border-subtle)',
-                    background: 'var(--color-surface-raised)',
-                  }}
-                >
-                  <div
-                    className="font-mono flex items-center gap-2 px-4 py-2.5 text-xs"
-                    style={{
-                      borderBottom: '1px solid var(--color-border-subtle)',
-                      color: 'var(--color-text-secondary)',
-                    }}
-                  >
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#ef4444' }} />
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#eab308' }} />
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#22c55e' }} />
-                    <span className="ml-2">terminal</span>
-                  </div>
-                  <pre
-                    className="overflow-x-auto p-5 text-sm"
-                    style={{ fontFamily: 'var(--font-mono)' }}
-                  >
-                    <code>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>$ </span>
-                      <span style={{ color: 'var(--color-text-primary)' }}>
-                        npm install react-tourlight @floating-ui/react-dom
-                      </span>
-                    </code>
-                  </pre>
-                </div>
-              </div>
-
-              {/* Code example */}
-              <div>
-                <div
-                  className="overflow-hidden rounded-xl"
-                  style={{
-                    border: '1px solid var(--color-border-subtle)',
-                    background: 'var(--color-surface-raised)',
-                  }}
-                >
-                  <div
-                    className="font-mono flex items-center gap-2 px-4 py-2.5 text-xs"
-                    style={{
-                      borderBottom: '1px solid var(--color-border-subtle)',
-                      color: 'var(--color-text-secondary)',
-                    }}
-                  >
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#ef4444' }} />
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#eab308' }} />
-                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: '#22c55e' }} />
-                    <span className="ml-2">App.tsx</span>
-                  </div>
-                  <pre
-                    className="overflow-x-auto p-5 text-[13px] leading-relaxed"
-                    style={{ fontFamily: 'var(--font-mono)' }}
-                  >
-                    <code>
-                      <span style={{ color: '#c084fc' }}>import</span>
-                      {' { '}
-                      <span style={{ color: 'var(--color-text-primary)' }}>SpotlightProvider</span>
-                      {', '}
-                      <span style={{ color: 'var(--color-text-primary)' }}>SpotlightTour</span>
-                      {' }\n'}
-                      <span style={{ color: '#c084fc' }}> from</span>{' '}
-                      <span style={{ color: '#86efac' }}>{"'react-tourlight'"}</span>
-                      {'\n'}
-                      <span style={{ color: '#c084fc' }}>import</span>{' '}
-                      <span style={{ color: '#86efac' }}>{"'react-tourlight/styles.css'"}</span>
-                      {'\n\n'}
-                      <span style={{ color: '#c084fc' }}>const</span>
-                      <span style={{ color: 'var(--color-text-primary)' }}> steps</span>
-                      {' = [\n'}
-                      {'  { '}
-                      <span style={{ color: '#93c5fd' }}>target</span>
-                      {': '}
-                      <span style={{ color: '#86efac' }}>{"'#welcome'"}</span>
-                      {', '}
-                      <span style={{ color: '#93c5fd' }}>title</span>
-                      {': '}
-                      <span style={{ color: '#86efac' }}>{"'Welcome'"}</span>
-                      {' },\n'}
-                      {'  { '}
-                      <span style={{ color: '#93c5fd' }}>target</span>
-                      {': '}
-                      <span style={{ color: '#86efac' }}>{"'#features'"}</span>
-                      {', '}
-                      <span style={{ color: '#93c5fd' }}>title</span>
-                      {': '}
-                      <span style={{ color: '#86efac' }}>{"'Features'"}</span>
-                      {' },\n]\n\n'}
-                      <span style={{ color: '#c084fc' }}>function</span>{' '}
-                      <span style={{ color: 'var(--color-amber-light)' }}>App</span>
-                      {'() {\n  '}
-                      <span style={{ color: '#c084fc' }}>return</span>
-                      {' (\n    '}
-                      <span style={{ color: '#93c5fd' }}>{'<SpotlightProvider>'}</span>
-                      {'\n      '}
-                      <span style={{ color: '#93c5fd' }}>{'<SpotlightTour'}</span>
-                      {'\n        '}
-                      <span style={{ color: '#93c5fd' }}>id</span>
-                      {'='}
-                      <span style={{ color: '#86efac' }}>{'"onboarding"'}</span>
-                      {'\n        '}
-                      <span style={{ color: '#93c5fd' }}>steps</span>
-                      {'={steps}\n      '}
-                      <span style={{ color: '#93c5fd' }}>{'/>'}</span>
-                      {'\n      '}
-                      <span style={{ color: '#93c5fd' }}>{'<YourApp />'}</span>
-                      {'\n    '}
-                      <span style={{ color: '#93c5fd' }}>{'</SpotlightProvider>'}</span>
-                      {'\n  )\n}'}
-                    </code>
-                  </pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </AnimateOnScroll>
-
-      {/* ─── COMPARISON ─── */}
-      <AnimateOnScroll>
-        <section
-          data-tour="comparison"
-          className="px-6 py-24 sm:px-12 lg:px-24"
-          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
-        >
-          <div className="mx-auto max-w-6xl">
-            <span
-              className="font-mono text-xs font-medium uppercase tracking-widest"
-              style={{ color: 'var(--color-amber)' }}
-            >
-              Comparison
-            </span>
-            <h2
-              className="font-display mt-4 text-4xl leading-tight tracking-tight sm:text-5xl"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              See the difference.
-            </h2>
-
-            <div
-              className="mt-12 overflow-hidden rounded-xl"
-              style={{
-                border: '1px solid var(--color-border-subtle)',
-              }}
-            >
-              <table data-tour="comparison-table" className="w-full text-left text-sm">
-                <thead>
-                  <tr style={{ background: 'var(--color-surface-overlay)' }}>
-                    <th
-                      className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
-                      style={{
-                        color: 'var(--color-text-secondary)',
-                        borderBottom: '1px solid var(--color-border-subtle)',
-                      }}
-                    >
-                      Feature
-                    </th>
-                    <th
-                      className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
-                      style={{
-                        color: 'var(--color-amber)',
-                        borderBottom: '1px solid var(--color-border-accent)',
-                      }}
-                    >
-                      react-tourlight
-                    </th>
-                    <th
-                      className="px-6 py-4 text-xs font-medium uppercase tracking-wider"
-                      style={{
-                        color: 'var(--color-text-secondary)',
-                        borderBottom: '1px solid var(--color-border-subtle)',
-                      }}
-                    >
-                      Others
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ['React 19 + App Router', 'Native, ships "use client"', 'Wrappers / manual'],
-                    ['Headless core', 'react-tourlight/core', 'Not available'],
-                    ['Multi-page tours', 'Persist + resume built in', 'Manual or none'],
-                    ['Interactive steps', 'Real event pass-through', 'Synthesized clicks'],
-                    ['Beacons', 'Built-in', 'Some'],
-                    ['Accessibility', 'WCAG 2.1 AA, focus trap, inert', 'Partial at best'],
-                    ['Dark mode', 'CSS clip-path', 'mix-blend-mode (breaks)'],
-                    ['License', 'MIT', 'GPL / Paid / MIT'],
-                  ].map(([feature, ours, theirs], i) => (
-                    <tr
-                      key={feature}
-                      style={{
-                        background:
-                          i % 2 === 0 ? 'var(--color-surface-raised)' : 'var(--color-surface)',
-                        borderBottom: '1px solid var(--color-border-subtle)',
-                      }}
-                    >
-                      <td
-                        className="px-6 py-4 font-medium"
-                        style={{ color: 'var(--color-text-primary)' }}
-                      >
-                        {feature}
-                      </td>
-                      <td className="px-6 py-4" style={{ color: 'var(--color-amber-light)' }}>
-                        {ours}
-                      </td>
-                      <td className="px-6 py-4" style={{ color: 'var(--color-text-secondary)' }}>
-                        {theirs}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      </AnimateOnScroll>
-
-      {/* ─── CTA ─── */}
-      <AnimateOnScroll>
-        <section
-          className="px-6 py-32 sm:px-12 lg:px-24"
-          style={{ borderTop: '1px solid var(--color-border-subtle)' }}
-        >
-          <div className="mx-auto max-w-3xl text-center">
-            <h2
-              className="font-display text-5xl leading-tight tracking-tight sm:text-6xl lg:text-7xl"
-              style={{ color: 'var(--color-text-primary)' }}
-            >
-              Ship onboarding
-              <br />
-              <em style={{ color: 'var(--color-amber)' }}>that converts.</em>
-            </h2>
-            <p
-              className="mx-auto mt-6 max-w-md text-lg leading-relaxed"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              Five minutes to integrate. Beautiful by default. The tour library React has been
-              waiting for.
+          <div className="tl-hero-aside">
+            <p>
+              Make your product easier to find your way around. Build beautiful React tours with
+              your team, your code, and your favorite agent.
             </p>
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link
-                href="/docs"
-                className="inline-flex items-center gap-2 rounded-lg px-8 py-4 text-sm font-semibold transition-all duration-200 hover:brightness-110"
-                style={{
-                  background: 'var(--color-amber)',
-                  color: 'var(--color-surface)',
-                }}
-              >
-                Read the Docs
-                <svg
-                  aria-hidden="true"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14" />
-                  <path d="m12 5 7 7-7 7" />
-                </svg>
-              </Link>
-              <code
-                className="font-mono rounded-lg px-5 py-4 text-sm"
-                style={{
-                  border: '1px solid var(--color-border-subtle)',
-                  color: 'var(--color-text-secondary)',
-                  background: 'var(--color-surface-raised)',
-                }}
-              >
-                npm install react-tourlight
-              </code>
+            <Link className="tl-button" href="/studio">
+              Make your first guide <Arrow />
+            </Link>
+            <span className="tl-small-note">Free to build. Yours to keep. MIT licensed.</span>
+          </div>
+        </div>
+        <GuidePlayground />
+        <div className="tl-proof-strip" aria-label="Package capabilities">
+          <span>React 18 + 19</span>
+          <span>Visual editor included</span>
+          <span>Local drafts · JSON export</span>
+          <span>Headless when you want it</span>
+        </div>
+      </section>
+
+      <section className="tl-section tl-container" id="workflow">
+        <div className="tl-section-heading">
+          <span className="tl-eyebrow">01 / ONE SHARED LANGUAGE</span>
+          <h2>
+            Great guides happen
+            <br />
+            <em>between disciplines.</em>
+          </h2>
+          <p>
+            Product knows the journey. Engineering knows the application. Your agent helps connect
+            the dots. Everyone works on the same guide document.
+          </p>
+        </div>
+        <div className="tl-workflow">
+          <article>
+            <span className="tl-workflow-number">01</span>
+            <span className="tl-role">FOR PRODUCT PEOPLE</span>
+            <h3>See it. Shape it.</h3>
+            <p>
+              Pick an element in your app, give it a little context, and preview the journey. Edit
+              the words and order without rewriting the integration.
+            </p>
+            <Link href="/docs/studio">
+              Meet the editor <Arrow />
+            </Link>
+          </article>
+          <article>
+            <span className="tl-workflow-number">02</span>
+            <span className="tl-role">FOR DEVELOPERS</span>
+            <h3>Your app. Your rules.</h3>
+            <p>
+              Keep guides beside your code. Bring your own components, routes, and application
+              logic. Import the editor only where you need it.
+            </p>
+            <Link href="/docs/documents">
+              Explore tour documents <Arrow />
+            </Link>
+          </article>
+          <article>
+            <span className="tl-workflow-number">03</span>
+            <span className="tl-role">FOR YOUR AGENT</span>
+            <h3>Make the handoff tiny.</h3>
+            <p>
+              Give your agent a schema, a skill, and useful validation errors. Draft a guide, review
+              it visually, and keep iterating together.
+            </p>
+            <Link href="/docs/agents">
+              Build with an agent <Arrow />
+            </Link>
+          </article>
+        </div>
+        <div className="tl-artifact-line">
+          <span>Visual editor</span>
+          <span aria-hidden="true">↔</span>
+          <code>tour.json</code>
+          <span aria-hidden="true">↔</span>
+          <span>Your code &amp; agents</span>
+        </div>
+      </section>
+
+      <section className="tl-capabilities">
+        <div className="tl-container tl-capabilities-inner">
+          <div className="tl-capabilities-intro">
+            <span className="tl-eyebrow">02 / SMALL DETAILS. REAL DIFFERENCE.</span>
+            <h2>
+              Made for the
+              <br />
+              <em>actual application.</em>
+            </h2>
+            <p>
+              A guide should work where your users work: through navigation, late-loading elements,
+              and the moment they click the real button.
+            </p>
+            <Link className="tl-text-link" href="/docs">
+              See what’s inside <Arrow />
+            </Link>
+            <div className="tl-orbit" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <i>t</i>
             </div>
           </div>
-        </section>
-      </AnimateOnScroll>
+          <div className="tl-feature-list">
+            <article>
+              <span>01</span>
+              <div>
+                <h3>Let people do the thing.</h3>
+                <p>
+                  Interactive steps let users click, type, and learn in your real UI. Advance on an
+                  event, or connect the guide to your application logic.
+                </p>
+                <Link href="/docs/interactive">
+                  Interactive steps <Arrow />
+                </Link>
+              </div>
+            </article>
+            <article>
+              <span>02</span>
+              <div>
+                <h3>Follow the whole journey.</h3>
+                <p>
+                  Continue across routes. Wait for an element to be ready. Persist progress and give
+                  people a way back into the guide.
+                </p>
+                <Link href="/docs/multi-page">
+                  Multi-page tours <Arrow />
+                </Link>
+              </div>
+            </article>
+            <article>
+              <span>03</span>
+              <div>
+                <h3>Look like you belong.</h3>
+                <p>
+                  Start with the included tooltip, adapt the theme, or bring your design system with
+                  custom rendering and the headless core.
+                </p>
+                <Link href="/docs/customization">
+                  Make it yours <Arrow />
+                </Link>
+              </div>
+            </article>
+            <article>
+              <span>04</span>
+              <div>
+                <h3>Check before you ship.</h3>
+                <p>
+                  Validate guide documents and inspect targets. Add real browser checks for the
+                  routes, roles, and states your users encounter.
+                </p>
+                <Link href="/docs/testing">
+                  Testing &amp; diagnostics <Arrow />
+                </Link>
+              </div>
+            </article>
+            <article>
+              <span>05</span>
+              <div>
+                <h3>Help people find their own way.</h3>
+                <p>
+                  Offer an onboarding checklist and a searchable guide library. Let people choose
+                  what helps, and keep task completion connected to your app.
+                </p>
+                <Link href="/guidance">
+                  Try the companion components <Arrow />
+                </Link>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
 
-      {/* ─── FOOTER ─── */}
-      <footer
-        className="px-6 py-8 text-center text-sm sm:px-12"
-        style={{
-          borderTop: '1px solid var(--color-border-subtle)',
-          color: 'var(--color-text-secondary)',
-        }}
-      >
-        <p>
-          MIT License &middot;{' '}
-          <a
-            href="https://github.com/btahir/react-tourlight"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline transition-colors hover:text-white"
-          >
-            GitHub
-          </a>{' '}
-          &middot; Built with{' '}
-          <a
-            href="https://fumadocs.vercel.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline transition-colors hover:text-white"
-          >
-            Fumadocs
+      <section className="tl-section tl-container tl-start-section" id="start">
+        <div>
+          <span className="tl-eyebrow">03 / TAKE IT WITH YOU</span>
+          <h2>
+            A package.
+            <br />
+            An editor.
+            <br />
+            <em>Entirely yours.</em>
+          </h2>
+          <p>
+            Use the React API directly, or add Studio to an app you control. Save the document,
+            review it in Git, and serve it from your own infrastructure.
+          </p>
+          <div className="tl-start-links">
+            <Link className="tl-button" href="/docs">
+              Start building <Arrow />
+            </Link>
+            <Link className="tl-text-link" href="/docs/studio">
+              How Studio fits in <Arrow />
+            </Link>
+          </div>
+        </div>
+        <div className="tl-code-window">
+          <div className="tl-code-title">
+            <span className="tl-status-dot" /> YOUR TERMINAL
+          </div>
+          <pre>
+            <code>
+              <span className="tl-code-muted">$ </span>npm install react-tourlight {'\\'}{'\n'}{' '}
+              @floating-ui/react-dom
+            </code>
+          </pre>
+          <div className="tl-code-title tl-code-divider">YOUR APP.TSX</div>
+          <pre>
+            <code>
+              <span className="tl-code-muted">// The code-first path is always here.</span>
+              {'\n'}
+              <span className="tl-code-keyword">import</span>{' '}
+              {'{ SpotlightProvider,\n  SpotlightTour, useSpotlight }'}
+              {'\n'} <span className="tl-code-keyword">from</span>{' '}
+              <span className="tl-code-string">'react-tourlight'</span>
+              {'\n\n'}
+              <span className="tl-code-keyword">import</span>{' '}
+              <span className="tl-code-string">'react-tourlight/styles.css'</span>
+              {'\n\n'}
+              {
+                '<SpotlightProvider>\n  <SpotlightTour\n    id="welcome"\n    steps={yourSteps}\n  />\n  <YourApp />\n</SpotlightProvider>'
+              }
+            </code>
+          </pre>
+          <div className="tl-code-foot">
+            Call <code>useSpotlight().start('welcome')</code> from your app.
+          </div>
+        </div>
+      </section>
+
+      <section className="tl-faq tl-container" aria-labelledby="faq-title">
+        <div>
+          <span className="tl-eyebrow">A FEW GOOD QUESTIONS</span>
+          <h2 id="faq-title">
+            Before you
+            <br />
+            <em>jump in.</em>
+          </h2>
+        </div>
+        <div className="tl-faq-list">
+          <details>
+            <summary>Is the visual editor really free?</summary>
+            <p>
+              Yes. Studio and the library are part of the MIT-licensed project. There is no
+              Tourlight account or usage-based bill required to create and run your guides.
+            </p>
+          </details>
+          <details>
+            <summary>Does a product person need to write code?</summary>
+            <p>
+              A developer integrates Tourlight and makes Studio available in the application. After
+              that, product teammates can edit supported guide content visually and export a
+              document. Application-specific behavior still belongs to your application.
+            </p>
+          </details>
+          <details>
+            <summary>Can I use it with my coding agent?</summary>
+            <p>
+              Yes. The document schema, CLI, and skill give agents a concrete format to work with.
+              You can inspect their output in Studio and validate it before integration. See the{' '}
+              <Link href="/docs/agents">agent guide</Link> for setup and client-specific boundaries.
+            </p>
+          </details>
+          <details>
+            <summary>Can Studio edit any website from a URL?</summary>
+            <p>
+              The live element picker works in an application where Studio is integrated. The
+              standalone playground demonstrates the workflow; it does not bypass browser security
+              or inspect unrelated websites.
+            </p>
+          </details>
+          <details>
+            <summary>Do I have to use Studio?</summary>
+            <p>
+              No. Keep using React components, refs, custom content, and lifecycle hooks directly.
+              Documents and Studio are an additional way to author guides. The headless entry is
+              available when you want to build your own UI.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section className="tl-closing tl-container">
+        <span className="tl-eyebrow">A BETTER WAY TO SHOW THE WAY</span>
+        <h2>
+          Let’s make
+          <br />
+          <em>something clear.</em>
+        </h2>
+        <Link className="tl-button" href="/studio">
+          Open Tourlight Studio <Arrow />
+        </Link>
+        <p>No account. No credit card. Just a guide waiting to happen.</p>
+      </section>
+      <footer className="tl-footer tl-container">
+        <Link className="tl-brand" href="/">
+          tourlight<span className="tl-brand-react">for React</span>
+        </Link>
+        <p>Open source. Built with care. MIT licensed.</p>
+        <nav aria-label="Footer navigation">
+          <a href={repository}>
+            Source <Arrow />
           </a>
-        </p>
+          <Link href="/docs">Docs</Link>
+          <a href={`${repository}/issues`}>
+            Feedback <Arrow />
+          </a>
+        </nav>
       </footer>
     </main>
   )

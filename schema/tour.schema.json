@@ -1,0 +1,180 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://react-tourlight.vercel.app/tour.schema.json",
+  "title": "Tourlight document",
+  "description": "Data-only tours for visual authoring and agents. Content is plain text. Handler names resolve only against the application registry. validateTourDocument additionally requires unique step ids and limits formatted JSON to 4,000,000 UTF-8 bytes, including whitespace and escaping. Imported JSON has the same byte limit.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "name",
+    "steps"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "maxLength": 2048,
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "maxLength": 128,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 200,
+      "minLength": 1,
+      "pattern": "\\S"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "target",
+          "title",
+          "content"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+          },
+          "target": {
+            "type": "string",
+            "maxLength": 2048,
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 300,
+            "minLength": 1,
+            "pattern": "\\S"
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "placement": {
+            "enum": [
+              "top",
+              "bottom",
+              "left",
+              "right",
+              "auto"
+            ]
+          },
+          "route": {
+            "type": "string",
+            "maxLength": 2048,
+            "pattern": "^/(?!/)[^\\\\\\u0000-\\u0020]*(?![\\s\\S])"
+          },
+          "interactive": {
+            "type": "boolean"
+          },
+          "disableOverlayClose": {
+            "type": "boolean"
+          },
+          "timeout": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 120000
+          },
+          "spotlightPadding": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 200
+          },
+          "spotlightRadius": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "action": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "label",
+              "handler"
+            ],
+            "properties": {
+              "label": {
+                "type": "string",
+                "maxLength": 100,
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "handler": {
+                "type": "string",
+                "maxLength": 128,
+                "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+              }
+            }
+          },
+          "advanceOn": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "event"
+            ],
+            "properties": {
+              "event": {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": "\\S"
+              },
+              "selector": {
+                "type": "string",
+                "maxLength": 2048,
+                "minLength": 1,
+                "pattern": "\\S"
+              }
+            }
+          },
+          "condition": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+          },
+          "beforeShow": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+          },
+          "beforeStep": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+          },
+          "afterShow": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+          },
+          "onHide": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*(?![\\s\\S])"
+          }
+        }
+      }
+    }
+  }
+}

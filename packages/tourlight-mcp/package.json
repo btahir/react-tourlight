@@ -1,0 +1,17 @@
+{
+  "name": "react-tourlight-mcp",
+  "version": "0.1.0",
+  "description": "Local MCP tools for authoring, validating, and testing portable Tourlight documents",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "bin": { "react-tourlight-mcp": "./index.mjs" },
+  "files": ["index.mjs", "server.mjs", "README.md"],
+  "scripts": { "test": "node --test protocol.test.mjs" },
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.1.0",
+    "react-tourlight": "workspace:*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": { "@modelcontextprotocol/client": "^2.1.0" }
+}

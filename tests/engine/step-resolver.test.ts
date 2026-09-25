@@ -77,7 +77,8 @@ describe('getTargetRect', () => {
     const el = document.createElement('div')
     document.body.appendChild(el)
 
-    // jsdom getBoundingClientRect returns all zeros by default
+    // Explicitly simulate an element that has no layout box.
+    el.getBoundingClientRect = () => DOMRect.fromRect({ width: 0, height: 0 })
     const rect = getTargetRect(el)
     expect(rect).toEqual({
       x: 0,

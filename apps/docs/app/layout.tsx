@@ -6,11 +6,11 @@ import type { ReactNode } from 'react'
 export const metadata: Metadata = {
   metadataBase: new URL('https://react-tourlight.vercel.app'),
   title: {
-    default: 'react-tourlight — Beautiful onboarding tours for React',
+    default: 'Tourlight — Guides for people. Tools for builders.',
     template: '%s | react-tourlight',
   },
   description:
-    'Beautiful onboarding tours & feature highlights for React. Headless core, multi-page tours, interactive steps, beacons, WCAG 2.1 AA. MIT licensed.',
+    'Create React product guides with a free visual editor, portable documents, and agent tooling. Local drafts, interactive tours, headless core. MIT licensed.',
   keywords: [
     'react',
     'spotlight',
@@ -32,16 +32,16 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://react-tourlight.vercel.app',
     siteName: 'react-tourlight',
-    title: 'react-tourlight — Beautiful onboarding tours for React',
+    title: 'Tourlight — Guides for people. Tools for builders.',
     description:
-      'Headless core, multi-page tours, interactive steps, WCAG 2.1 AA. The modern React tour library.',
+      'A free visual studio and React library for guides your team, code, and agents can build together. MIT licensed.',
     images: [{ url: '/og.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'react-tourlight — Beautiful onboarding tours for React',
+    title: 'Tourlight — Guides for people. Tools for builders.',
     description:
-      'Headless core, multi-page tours, interactive steps, WCAG 2.1 AA. The modern React tour library.',
+      'A free visual studio and React library for guides your team, code, and agents can build together. MIT licensed.',
     images: ['/og.png'],
   },
   icons: {
@@ -57,24 +57,17 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
           rel="stylesheet"
         />
       </head>
-      <body style={{ colorScheme: 'dark' }}>
+      <body>
         <RootProvider
           theme={{
-            defaultTheme: 'dark',
+            defaultTheme: 'light',
           }}
         >
           {children}

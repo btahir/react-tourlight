@@ -1,4 +1,5 @@
-import type { SpotlightStep, TourState, TourStatus } from '../types.ts'
+import type { SpotlightStep, TourState } from '../types.ts'
+import { runCallback } from '../utils/callback.ts'
 
 /** Listener callback for state changes */
 type StateListener = (state: TourState) => void
@@ -13,6 +14,8 @@ export interface TourStateMachineActions {
   goToStep: (index: number) => Promise<void>
   getState: () => TourState
   subscribe: (listener: StateListener) => () => void
+  /** Cancel pending work without emitting a stop (for host unmounts). */
+  dispose: () => void
 }
 
 /** Options for creating a tour state machine */
@@ -22,6 +25,11 @@ export interface TourStateMachineOptions {
   onComplete?: () => void
   onSkip?: (stepIndex: number) => void
   onStateChange?: (state: TourState) => void
+  /** Read the latest definitions without recreating an active machine. */
+  getSteps?: () => SpotlightStep[]
+  onError?: (error: unknown) => void
+  /** UI adapters fire onAfterShow once the target is actually visible. */
+  deferAfterShow?: boolean
 }
 
 function createInitialState(overrides?: Partial<TourState>): TourState {
@@ -38,7 +46,11 @@ function createInitialState(overrides?: Partial<TourState>): TourState {
  * Handles step transitions, async `when` predicates, and lifecycle callbacks.
  */
 export function createTourStateMachine(options: TourStateMachineOptions): TourStateMachineActions {
-  const { steps, onComplete, onSkip, onStateChange } = options
+  const { onComplete, onSkip, onStateChange } = options
+  const getSteps = () => options.getSteps?.() ?? options.steps
+  let generation = 0
+  let transitioning = false
+  let entered = false
 
   let state = createInitialState(options.initialState)
   const listeners = new Set<StateListener>()
@@ -49,10 +61,6 @@ export function createTourStateMachine(options: TourStateMachineOptions): TourSt
     for (const listener of listeners) {
       listener(state)
     }
-  }
-
-  function setStatus(status: TourStatus) {
-    setState({ status })
   }
 
   /**
@@ -68,25 +76,29 @@ export function createTourStateMachine(options: TourStateMachineOptions): TourSt
    * Fires lifecycle callbacks for entering a step:
    * onBeforeShow (async) -> mark seen -> onAfterShow
    */
-  async function enterStep(index: number) {
-    const step = steps[index]
+  async function enterStep(index: number, token: number) {
+    const step = getSteps()[index]
     if (!step) return
 
     await step.onBeforeShow?.()
+    if (token !== generation || state.status !== 'active') return
 
     const seenSteps = state.seenSteps.includes(index)
       ? state.seenSteps
       : [...state.seenSteps, index]
 
-    setState({ currentStepIndex: index, seenSteps })
+    entered = true
+    setState({ currentStepIndex: index, seenSteps, isTransitioning: false })
 
-    step.onAfterShow?.()
+    if (!options.deferAfterShow) await step.onAfterShow?.()
   }
 
   /** Fires the onHide callback for the current step */
   function leaveCurrentStep() {
-    const step = steps[state.currentStepIndex]
-    step?.onHide?.()
+    if (!entered) return
+    entered = false
+    const step = getSteps()[state.currentStepIndex]
+    runCallback(step?.onHide, (error) => options.onError?.(error))
   }
 
   /**
@@ -94,10 +106,13 @@ export function createTourStateMachine(options: TourStateMachineOptions): TourSt
    * Skips steps whose `when` predicate returns false.
    * Returns -1 if no valid step is found.
    */
-  async function findValidStep(from: number, direction: 1 | -1): Promise<number> {
+  async function findValidStep(from: number, direction: 1 | -1, token: number): Promise<number> {
+    const steps = getSteps()
     let index = from
     while (index >= 0 && index < steps.length) {
-      if (await shouldShowStep(steps[index])) {
+      const show = await shouldShowStep(steps[index])
+      if (token !== generation) return -1
+      if (show) {
         return index
       }
       index += direction
@@ -105,92 +120,109 @@ export function createTourStateMachine(options: TourStateMachineOptions): TourSt
     return -1
   }
 
-  async function start() {
-    if (state.status === 'active') return
-
-    setStatus('active')
-
-    // Begin at the current index — 0 for a fresh machine, or a restored index
-    // when the machine was seeded with persisted `initialState` (resume). The
-    // next valid step at or after that index is entered.
-    const startIndex =
-      state.currentStepIndex >= 0 && state.currentStepIndex < steps.length
-        ? state.currentStepIndex
-        : 0
-    const firstValid = await findValidStep(startIndex, 1)
-    if (firstValid === -1) {
-      // No valid steps at all — complete immediately
-      setState({
-        status: 'completed',
-        completedAt: Date.now(),
-      })
-      onComplete?.()
-      return
+  async function transition(work: (token: number) => Promise<void>) {
+    if (transitioning) return
+    transitioning = true
+    const token = ++generation
+    try {
+      await work(token)
+    } catch (error) {
+      if (token === generation) {
+        entered = false
+        setState({ status: 'idle', isTransitioning: false })
+        options.onError?.(error)
+      }
+    } finally {
+      if (token === generation) transitioning = false
     }
+  }
 
-    await enterStep(firstValid)
+  function complete() {
+    leaveCurrentStep()
+    setState({ status: 'completed', isTransitioning: false, completedAt: Date.now() })
+    onComplete?.()
+  }
+
+  async function start() {
+    if (state.status === 'active' || transitioning) return
+    await transition(async (token) => {
+      setState({
+        status: 'active',
+        isTransitioning: true,
+        completedAt: undefined,
+        skippedAt: undefined,
+      })
+      const steps = getSteps()
+      const startIndex =
+        Number.isInteger(state.currentStepIndex) &&
+        state.currentStepIndex >= 0 &&
+        state.currentStepIndex < steps.length
+          ? state.currentStepIndex
+          : 0
+      const index = await findValidStep(startIndex, 1, token)
+      if (token !== generation) return
+      if (index === -1) complete()
+      else await enterStep(index, token)
+    })
+  }
+
+  function dispose() {
+    generation++
+    transitioning = false
   }
 
   function stop() {
     if (state.status !== 'active') return
+    dispose()
     leaveCurrentStep()
-    setStatus('idle')
+    setState({ status: 'idle', isTransitioning: false })
   }
 
-  async function next() {
+  async function move(direction: 1 | -1) {
     if (state.status !== 'active') return
-
-    const nextIndex = await findValidStep(state.currentStepIndex + 1, 1)
-
-    if (nextIndex === -1) {
-      // No more steps — tour is complete
+    await transition(async (token) => {
+      const index = await findValidStep(state.currentStepIndex + direction, direction, token)
+      if (token !== generation) return
+      if (index === -1) {
+        if (direction === 1) complete()
+        return
+      }
       leaveCurrentStep()
-      setState({
-        status: 'completed',
-        completedAt: Date.now(),
-      })
-      onComplete?.()
-      return
-    }
-
-    leaveCurrentStep()
-    await enterStep(nextIndex)
+      await enterStep(index, token)
+    })
   }
 
-  async function previous() {
-    if (state.status !== 'active') return
-
-    const prevIndex = await findValidStep(state.currentStepIndex - 1, -1)
-
-    if (prevIndex === -1) {
-      // Already at the first valid step — do nothing
-      return
-    }
-
-    leaveCurrentStep()
-    await enterStep(prevIndex)
-  }
+  const next = () => move(1)
+  const previous = () => move(-1)
 
   function skip() {
     if (state.status !== 'active') return
-
+    dispose()
     const stepIndex = state.currentStepIndex
     leaveCurrentStep()
     setState({
       status: 'completed',
+      isTransitioning: false,
       skippedAt: { stepIndex, timestamp: Date.now() },
     })
     onSkip?.(stepIndex)
   }
 
   async function goToStep(index: number) {
-    if (state.status !== 'active') return
-    if (index < 0 || index >= steps.length) return
-
-    if (!(await shouldShowStep(steps[index]))) return
-
-    leaveCurrentStep()
-    await enterStep(index)
+    if (
+      state.status !== 'active' ||
+      !Number.isInteger(index) ||
+      index < 0 ||
+      index >= getSteps().length ||
+      index === state.currentStepIndex
+    )
+      return
+    await transition(async (token) => {
+      const show = await shouldShowStep(getSteps()[index])
+      if (token !== generation || !show) return
+      leaveCurrentStep()
+      await enterStep(index, token)
+    })
   }
 
   function getState(): TourState {
@@ -213,5 +245,6 @@ export function createTourStateMachine(options: TourStateMachineOptions): TourSt
     goToStep,
     getState,
     subscribe,
+    dispose,
   }
 }

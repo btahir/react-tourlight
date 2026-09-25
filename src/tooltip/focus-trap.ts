@@ -22,11 +22,27 @@ export interface FocusTrap {
  * elements inside the container. The previously focused element
  * is stored and restored when the trap is deactivated.
  */
-export function createFocusTrap(container: HTMLElement): FocusTrap {
+export function createFocusTrap(
+  container: HTMLElement,
+  additionalContainer?: HTMLElement | null,
+): FocusTrap {
   let previousActiveElement: Element | null = null
 
   function getFocusableElements(): HTMLElement[] {
-    return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
+    const roots = additionalContainer ? [container, additionalContainer] : [container]
+    return roots
+      .flatMap((root) => [
+        ...(root.matches(FOCUSABLE_SELECTOR) ? [root] : []),
+        ...Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)),
+      ])
+      .filter(
+        (element) =>
+          !element.closest('[inert], [hidden]') &&
+          !element.hasAttribute('disabled') &&
+          element.getAttribute('aria-hidden') !== 'true' &&
+          getComputedStyle(element).display !== 'none' &&
+          getComputedStyle(element).visibility !== 'hidden',
+      )
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -47,6 +63,14 @@ export function createFocusTrap(container: HTMLElement): FocusTrap {
     if (focusable.length === 1) {
       event.preventDefault()
       first?.focus()
+      return
+    }
+
+    if (additionalContainer) {
+      const index = focusable.indexOf(document.activeElement as HTMLElement)
+      const next = (index + (event.shiftKey ? -1 : 1) + focusable.length) % focusable.length
+      event.preventDefault()
+      focusable[next]?.focus()
       return
     }
 
@@ -92,7 +116,7 @@ export function createFocusTrap(container: HTMLElement): FocusTrap {
     document.removeEventListener('keydown', handleKeyDown, true)
 
     // Restore focus to the previously active element
-    if (previousActiveElement instanceof HTMLElement) {
+    if (previousActiveElement instanceof HTMLElement && previousActiveElement.isConnected) {
       previousActiveElement.focus()
     }
     previousActiveElement = null

@@ -29,14 +29,44 @@
       }
     },
     "./styles.css": "./dist/styles/spotlight.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./document": {
+      "import": {
+        "types": "./dist/document.d.mts",
+        "default": "./dist/document.mjs"
+      }
+    },
+    "./diagnostics": {
+      "import": {
+        "types": "./dist/diagnostics.d.mts",
+        "default": "./dist/diagnostics.mjs"
+      }
+    },
+    "./studio": {
+      "import": {
+        "types": "./dist/studio.d.mts",
+        "default": "./dist/studio.mjs"
+      }
+    },
+    "./studio.css": "./dist/styles/studio.css",
+    "./schema.json": "./schema/tour.schema.json",
+    "./guidance": {
+      "import": {
+        "types": "./dist/guidance.d.mts",
+        "default": "./dist/guidance.mjs"
+      }
+    },
+    "./guidance.css": "./dist/styles/guidance.css"
   },
   "main": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "scripts/tourlight.mjs",
+    "schema",
+    "skills/tourlight"
   ],
   "sideEffects": [
     "*.css"
@@ -64,10 +94,12 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.5",
+    "@axe-core/playwright": "^4.13.0",
     "@biomejs/biome": "^2.5.12",
     "@changesets/changelog-github": "^0.5.0",
     "@changesets/cli": "^2.27.0",
     "@floating-ui/react-dom": "^2.1.9",
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.2.18",
@@ -89,11 +121,16 @@
     "test:coverage": "vitest run --coverage",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
-    "lint:pkg": "publint && attw --pack . --profile esm-only --exclude-entrypoints ./styles.css",
+    "lint:pkg": "publint && attw --pack . --profile esm-only --exclude-entrypoints ./styles.css ./studio.css ./schema.json ./guidance.css",
     "validate": "pnpm run build && pnpm run lint:pkg && pnpm run check && pnpm run test:run",
     "prepublishOnly": "pnpm run build",
     "changeset": "changeset",
     "version": "changeset version",
-    "release": "pnpm run build && changeset publish"
+    "release": "pnpm run build && changeset publish",
+    "test:e2e": "playwright test",
+    "test:tools": "node --test scripts/cli.test.mjs && pnpm --filter react-tourlight-mcp test"
+  },
+  "bin": {
+    "tourlight": "./scripts/tourlight.mjs"
   }
 }

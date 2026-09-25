@@ -16,6 +16,8 @@ export interface PersistedTourState extends TourState {
   savedAt: number
   /** Number of steps in the tour definition when saved (staleness guard). */
   stepCount: number
+  /** Ordered stable IDs for detecting changes that preserve the step count. */
+  stepIds?: string[]
 }
 
 interface PersistedEnvelope {
@@ -71,10 +73,31 @@ function readEnvelope(storage: SpotlightStorage, key: string): PersistedEnvelope
     const raw = storage.getItem(key)
     if (!raw) return { v: SCHEMA_VERSION, tours: {} }
     const parsed = JSON.parse(raw) as Partial<PersistedEnvelope>
-    if (!parsed || parsed.v !== SCHEMA_VERSION || typeof parsed.tours !== 'object') {
+    if (
+      !parsed ||
+      parsed.v !== SCHEMA_VERSION ||
+      !parsed.tours ||
+      typeof parsed.tours !== 'object' ||
+      Array.isArray(parsed.tours)
+    ) {
       return { v: SCHEMA_VERSION, tours: {} }
     }
-    return { v: SCHEMA_VERSION, tours: parsed.tours as Record<string, PersistedTourState> }
+    const tours = Object.fromEntries(
+      Object.entries(parsed.tours).filter(([, state]) => {
+        if (!state || typeof state !== 'object') return false
+        return (
+          ['idle', 'active', 'completed'].includes(state.status) &&
+          Number.isInteger(state.currentStepIndex) &&
+          state.currentStepIndex >= 0 &&
+          Number.isInteger(state.stepCount) &&
+          state.stepCount > 0 &&
+          Number.isFinite(state.savedAt) &&
+          Array.isArray(state.seenSteps) &&
+          state.seenSteps.every((index: unknown) => Number.isInteger(index) && Number(index) >= 0)
+        )
+      }),
+    )
+    return { v: SCHEMA_VERSION, tours }
   } catch {
     // Corrupt/unreadable payload — start fresh.
     return { v: SCHEMA_VERSION, tours: {} }
@@ -96,10 +119,11 @@ export function savePersistedTour(
   tourId: string,
   state: TourState,
   stepCount: number,
+  stepIds?: string[],
 ): void {
   try {
     const env = readEnvelope(storage, key)
-    env.tours[tourId] = { ...state, savedAt: Date.now(), stepCount }
+    env.tours[tourId] = { ...state, savedAt: Date.now(), stepCount, stepIds }
     storage.setItem(key, JSON.stringify(env))
   } catch {
     // Storage full / unavailable — persistence is best-effort.
@@ -129,7 +153,17 @@ export function isPersistedStateFresh(
   state: PersistedTourState,
   stepCount: number,
   maxAge?: number,
+  stepIds?: string[],
 ): boolean {
+  if (!state || !Number.isInteger(state.currentStepIndex) || !Number.isFinite(state.savedAt))
+    return false
+  if (
+    stepIds &&
+    state.stepIds &&
+    (state.stepIds.length !== stepIds.length ||
+      stepIds.some((id, index) => state.stepIds?.[index] !== id))
+  )
+    return false
   if (state.stepCount !== stepCount) return false
   if (state.currentStepIndex < 0 || state.currentStepIndex >= stepCount) return false
   if (maxAge !== undefined && Date.now() - state.savedAt > maxAge) return false
@@ -138,6 +172,6 @@ export function isPersistedStateFresh(
 
 /** Strips persistence metadata, returning a plain {@link TourState}. */
 export function toTourState(persisted: PersistedTourState): TourState {
-  const { savedAt: _savedAt, stepCount: _stepCount, ...state } = persisted
+  const { savedAt: _savedAt, stepCount: _stepCount, stepIds: _stepIds, ...state } = persisted
   return state
 }

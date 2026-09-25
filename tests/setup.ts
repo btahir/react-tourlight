@@ -50,3 +50,8 @@ class MockResizeObserver {
 }
 
 globalThis.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver
+
+// jsdom has no layout engine. Give ordinary fixture elements a measurable box;
+// visibility/zero-layout regressions override this per element explicitly.
+HTMLElement.prototype.getBoundingClientRect = () =>
+  DOMRect.fromRect({ x: 0, y: 0, width: 100, height: 32 })
