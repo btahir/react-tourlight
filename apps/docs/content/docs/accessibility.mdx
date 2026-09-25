@@ -1,17 +1,17 @@
 ---
 title: Accessibility
-description: react-tourlight is WCAG 2.1 AA compliant with focus trapping, keyboard navigation, ARIA attributes, and screen reader support.
+description: Focus management, keyboard behavior, ARIA semantics, reduced motion, and what to verify in your integration.
 ---
 
-react-tourlight is designed to be accessible out of the box. No additional configuration is needed to meet WCAG 2.1 AA compliance.
+react-tourlight includes focus management, keyboard navigation, ARIA semantics, and reduced-motion behavior. These are building blocks for an accessible guide, not a certification of your application. Test your content, theme contrast, custom tooltips, and interactive targets with the input methods and assistive technologies your users rely on.
 
 ## Focus management
 
-When a tour or highlight becomes active, focus is immediately moved into the tooltip. This prevents users from accidentally interacting with background content while the spotlight is active.
+When the tooltip is displayed, focus moves to its primary action. Non-interactive steps keep focus within the tooltip; interactive steps also need access to the highlighted target. On dismissal, focus should return to the control that launched the guide. Include this behavior in your browser checks, especially when routes or dialogs replace that control.
 
 ### Focus trap
 
-A focus trap is applied to the tooltip while it's visible. Pressing **Tab** cycles focus through the interactive elements inside the tooltip (buttons, links) without leaking focus to the background page. When the tour ends or the highlight is dismissed, focus is restored to the element that was focused before the tour started.
+On non-interactive steps, **Tab** cycles through the tooltip's controls. On interactive steps, the highlighted target remains available to keyboard users. Verify that custom tooltips and application dialogs preserve a usable focus order.
 
 ## Keyboard navigation
 
@@ -22,7 +22,7 @@ All tours and highlights support full keyboard navigation:
 | **Escape** | Dismiss the tour or highlight |
 | **Right Arrow** | Go to the next step |
 | **Left Arrow** | Go to the previous step |
-| **Tab** | Cycle focus through tooltip buttons |
+| **Tab** | Navigate available controls; non-interactive steps trap focus in the tooltip |
 | **Shift + Tab** | Reverse cycle through tooltip buttons |
 | **Enter / Space** | Activate the focused button |
 
@@ -54,7 +54,7 @@ The tooltip is rendered as a dialog with proper ARIA semantics:
 
 ## Screen reader support
 
-Step changes are announced via an `aria-live` region. When the user navigates to a new step, screen readers announce the new step's title and content. This works with VoiceOver (macOS/iOS), NVDA (Windows), JAWS (Windows), and TalkBack (Android).
+Step changes use an `aria-live` region. Announcement behavior can vary with the screen reader, browser, content, and custom rendering. Test the combinations your application supports; automated ARIA checks alone do not establish that the whole journey is understandable.
 
 ## prefers-reduced-motion
 
@@ -68,12 +68,11 @@ No configuration is needed. This behavior is automatic and CSS-based.
 
 ## Inert background content
 
-When a tour or highlight is active, the background page content is marked with the `inert` attribute. This means:
+While the spotlight UI is active, off-path background content is marked with `inert`. For interactive steps, the target's subtree remains available. Inert content:
 
-- Background elements cannot receive focus via Tab
-- Background elements are hidden from the accessibility tree
-- Screen readers won't read background content while the tour is active
-- Click events on background elements are blocked
+- Cannot receive focus via Tab
+- Is excluded from the accessibility tree
+- Does not receive user click interactions
 
 This ensures that users navigating with a screen reader or keyboard stay within the tour context.
 
@@ -100,4 +99,4 @@ Here's a summary of the accessibility features built into react-tourlight:
 - `inert` on background content
 - `prefers-reduced-motion` respected
 - Semantic `<button>` elements throughout
-- Keyboard-only operation fully supported
+- Keyboard behavior to verify with your application and custom components

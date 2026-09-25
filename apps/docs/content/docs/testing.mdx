@@ -1,0 +1,89 @@
+---
+title: Testing & diagnostics
+description: Separate a valid guide document, a ready target, and a successful real-user journey.
+---
+
+Use three layers of checks. Each answers a different question.
+
+| Check | What it establishes |
+| --- | --- |
+| Document validation | The guide follows the supported format |
+| Target diagnostics | A selector resolves in the current page state |
+| Browser scenario | The tested user, routes, and interactions work together |
+
+Passing one layer does not imply the others passed.
+
+## Validate the document
+
+```tsx
+import { validateTourDocument } from 'react-tourlight/document'
+
+const result = validateTourDocument(importedJson)
+if (!result.valid) {
+  // Show result.issues near the corresponding fields in your editor.
+}
+```
+
+Issues include `path`, `code`, `message`, and `severity`. Validation checks supported fields and types; compilation additionally resolves named registry actions and conditions. Runtime callbacks remain your application's responsibility.
+
+From a built source checkout:
+
+```bash
+node scripts/tourlight.mjs validate welcome.tour.json
+```
+
+## Inspect targets in the browser
+
+```tsx
+import { inspectTourTargets } from 'react-tourlight/diagnostics'
+
+const diagnostics = inspectTourTargets(guide, document, window.location.pathname)
+```
+
+Each result includes `stepId`, `target`, `matches`, `status`, and `message`.
+
+| Status | Meaning |
+| --- | --- |
+| `ready` | One visible, measurable element matched |
+| `missing` | No target matched in this page state |
+| `hidden` | The target exists but is hidden or has no measurable size |
+| `ambiguous` | More than one element matched |
+| `invalid` | The CSS selector could not be parsed |
+| `other-route` | Inspect this target on its configured route |
+
+These are snapshots. A `ready` result does not establish that the element is unobscured, enabled, usable by every input method, or still present a moment later. A closed dialog's target can be missing until the app opens it. Do not “fix” that by changing the selector to an unrelated visible element.
+
+`suggestTourTarget(element)` prefers a unique `data-tour`, then `data-testid`, then an ID. It returns `null` when no supported stable anchor can identify the element uniquely. Add a deliberate anchor to your application in that case.
+
+## Generate a Playwright starting point
+
+The CLI can generate target smoke checks from the document:
+
+```bash
+node scripts/tourlight.mjs test welcome.tour.json \
+  --base-url http://localhost:3000 > welcome.tour.spec.ts
+```
+
+This prints source code. It does not launch the app, install Playwright, or run a test. Review the output and run it within your application's configured Playwright setup:
+
+```bash
+pnpm exec playwright test welcome.tour.spec.ts
+```
+
+Generated checks establish basic target uniqueness and visibility. Steps that need preparation hooks, conditions, or dynamic route parameters may be marked skipped. Supply the right authenticated state, route values, and setup, then replace those skips with meaningful assertions. Keep the app running while you execute the tests.
+
+## Test the actual journey
+
+A complete scenario should launch the guide, perform its real actions, verify step progression, and assert the resulting application state. Include the variations your application supports:
+
+- Initial launch, replay, dismissal, and focus restoration.
+- Next, back, interactive steps, and the application's success or failure response.
+- Route transitions, delayed data, and persisted resume.
+- Missing targets, removed elements, and cancellation during a wait.
+- Keyboard navigation, narrow viewports, and reduced motion.
+
+For example, an “Invite a teammate” test should assert that the invitation appears in your application's test data or confirmation UI. Reaching the last tooltip only establishes that the guide ended.
+
+## Keep evidence useful
+
+Run your checks against controlled test accounts and environments. Report which guide version, viewport, route, and role were exercised, and which steps were skipped. A failed target check should point to the guide's stable step ID so a product teammate can find it in Studio.

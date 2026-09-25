@@ -4,6 +4,7 @@ import type React from 'react'
 import { useEffect, useId, useRef, useState } from 'react'
 import type { SpotlightTheme } from '../themes/types.ts'
 import type { Placement, SpotlightLabels, SpotlightStep, TooltipRenderProps } from '../types.ts'
+import { runCallback } from '../utils/callback.ts'
 import { cn } from '../utils/css.ts'
 import { createFocusTrap } from './focus-trap.ts'
 import { TooltipArrow } from './tooltip-arrow.tsx'
@@ -18,6 +19,7 @@ export interface SpotlightTooltipProps {
   onPrevious: () => void
   onSkip: () => void
   onClose: () => void
+  onError?: (error: unknown) => void
   theme: SpotlightTheme
   showProgress?: boolean
   showSkip?: boolean
@@ -88,6 +90,7 @@ export function SpotlightTooltip({
   onPrevious,
   onSkip,
   onClose,
+  onError,
   theme,
   showProgress,
   showSkip,
@@ -135,13 +138,13 @@ export function SpotlightTooltip({
     const tooltip = tooltipRef.current
     if (!tooltip || !targetElement) return
 
-    const trap = createFocusTrap(tooltip)
+    const trap = createFocusTrap(tooltip, step.interactive || step.advanceOn ? targetElement : null)
     trap.activate()
 
     return () => {
       trap.deactivate()
     }
-  }, [targetElement])
+  }, [targetElement, step.interactive, step.advanceOn])
 
   // Enter animation: start with enter class, add enter-active on next frame.
   // We intentionally depend on currentIndex to restart the animation when the step changes.
@@ -169,9 +172,18 @@ export function SpotlightTooltip({
     arrowData?.y ?? undefined,
   )
 
+  const safeStep: SpotlightStep = step.action
+    ? {
+        ...step,
+        action: {
+          ...step.action,
+          onClick: () => runCallback(step.action?.onClick, (error) => onError?.(error)),
+        },
+      }
+    : step
   const tooltipContent = renderTooltip ? (
     renderTooltip({
-      step,
+      step: safeStep,
       next: onNext,
       previous: onPrevious,
       skip: onSkip,
@@ -183,7 +195,7 @@ export function SpotlightTooltip({
     })
   ) : (
     <TooltipContent
-      step={step}
+      step={safeStep}
       currentIndex={currentIndex}
       totalSteps={totalSteps}
       onNext={onNext}
@@ -230,6 +242,8 @@ export function SpotlightTooltip({
         } as React.CSSProperties
       }
       role="dialog"
+      aria-label={renderTooltip ? step.title : undefined}
+      aria-modal={step.interactive || step.advanceOn ? undefined : true}
       aria-labelledby={titleId}
       aria-describedby={contentId}
     >

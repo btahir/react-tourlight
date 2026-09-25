@@ -31,3 +31,8 @@ export interface SpotlightTheme {
   arrow: { fill: string }
   closeButton: { color: string; hoverColor: string }
 }
+
+/** Override only the theme sections and tokens your product needs. */
+export type SpotlightThemeInput = {
+  [Section in keyof SpotlightTheme]?: Partial<SpotlightTheme[Section]>
+}

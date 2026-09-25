@@ -1,7 +1,14 @@
 import { defineConfig } from 'tsdown'
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/core.ts'],
+  entry: [
+    'src/index.ts',
+    'src/core.ts',
+    'src/document.ts',
+    'src/diagnostics.ts',
+    'src/studio.ts',
+    'src/guidance.ts',
+  ],
   format: ['esm'],
   dts: true,
   clean: true,
@@ -13,5 +20,9 @@ export default defineConfig({
   // unreferenced dist/styles/spotlight.mjs alongside the CSS. Copying the
   // plain file instead ships the exact same dist/styles/spotlight.css path
   // referenced by the "./styles.css" export, with no JS module emitted.
-  copy: [{ from: 'src/styles/spotlight.css', to: 'dist/styles' }],
+  copy: [
+    { from: 'src/styles/spotlight.css', to: 'dist/styles' },
+    { from: 'src/styles/studio.css', to: 'dist/styles' },
+    { from: 'src/styles/guidance.css', to: 'dist/styles' },
+  ],
 })

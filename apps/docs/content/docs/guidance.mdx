@@ -1,0 +1,71 @@
+---
+title: Checklists & guide launcher
+description: Let people discover, start, and revisit useful guides at their own pace.
+---
+
+A guide is useful beyond the first visit. `TourChecklist` gives people a short set of tasks to work through; `TourLauncher` offers a searchable library of guides. Try the [live component playground](/guidance).
+
+Both are optional components from `react-tourlight/guidance`. They use your existing `SpotlightProvider` and registered tours. They do not require a hosted service, analytics integration, or extra state store.
+
+## Add a checklist
+
+```tsx
+'use client'
+
+import { SpotlightProvider, SpotlightTour } from 'react-tourlight'
+import { TourChecklist, TourLauncher, type GuideItem } from 'react-tourlight/guidance'
+import 'react-tourlight/styles.css'
+import 'react-tourlight/guidance.css'
+
+export function WorkspaceHelp({ projectCount }: { projectCount: number }) {
+  const items: GuideItem[] = [{
+    id: 'create-project-task',
+    tourId: 'create-project',
+    title: 'Create your first project',
+    description: 'A home for your next idea.',
+    completed: projectCount > 0,
+  }]
+
+  return (
+    <SpotlightProvider>
+      <SpotlightTour id="create-project" steps={[{
+        target: '[data-tour="new-project"]',
+        title: 'Start something new',
+        content: 'Create a project to bring your work together.',
+        interactive: true,
+      }]} />
+      <button data-tour="new-project">New project</button>
+      <TourChecklist items={items} title="Make yourself at home" />
+      <TourLauncher items={items} title="Need a little help?" />
+    </SpotlightProvider>
+  )
+}
+```
+
+Wire the example's New project button to your own creation workflow and pass the resulting `projectCount` from application state. If the app already has a provider, mount these components inside it instead of introducing a second provider.
+
+## Completion belongs to the application
+
+`completed` is controlled by you. Derive it from a meaningful result such as a saved project, an accepted invitation, or a configured preference. The components do not equate a tour's `onComplete` callback with successful task completion.
+
+Completed tasks remain available for replay. Starting a guide does not change its completion state, and clearing browser storage does not reset application-owned progress. Use your app's own persistence when tasks should follow a user across devices.
+
+## Item and component props
+
+| Item field | Purpose |
+| --- | --- |
+| `id` | Stable checklist or library item ID |
+| `tourId` | ID of a tour registered inside the same provider |
+| `title` | The task or guide's human-readable name |
+| `description` | Optional supporting text; also searched by the launcher |
+| `completed` | Optional application-owned completion state |
+
+Both components accept `items`, `title`, `className`, and `onSelect`. `onSelect(item)` runs alongside starting the selected tour, so keep it lightweight; for example, send an event to your own analytics adapter.
+
+The checklist also accepts `description`. The launcher accepts `placeholder` and `emptyMessage`. Search filters the supplied titles and descriptions locally; it does not send queries to a server. Selection buttons are disabled while a guide is active.
+
+## Match your interface
+
+The separate `guidance.css` stylesheet supplies the default appearance. Add `className` to scope your own CSS or override the `--tlg-bg`, `--tlg-ink`, `--tlg-muted`, `--tlg-line`, and `--tlg-accent` variables. Build your own launcher with `useSpotlight().start(tourId)` if you need a different interaction pattern.
+
+Register every referenced `tourId`, and test guides from each entry point. A checklist cannot make an unavailable target or an unauthorized application action valid; your application still determines what the user can see and do.

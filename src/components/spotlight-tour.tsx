@@ -29,18 +29,10 @@ export function SpotlightTour({
 
   useEffect(() => {
     registerTour(id, steps, { onComplete, onSkip, onStart, onStepChange, renderTooltip })
-    return () => unregisterTour(id)
-  }, [
-    id,
-    steps,
-    onComplete,
-    onSkip,
-    onStart,
-    onStepChange,
-    renderTooltip,
-    registerTour,
-    unregisterTour,
-  ])
+  }, [id, steps, onComplete, onSkip, onStart, onStepChange, renderTooltip, registerTour])
+
+  // Updating definitions is separate from removing the tour on unmount.
+  useEffect(() => () => unregisterTour(id), [id, unregisterTour])
 
   return null
 }

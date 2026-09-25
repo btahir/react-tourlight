@@ -1,0 +1,80 @@
+---
+title: Build with agents
+description: Give your coding agent a guide format it can understand, validate, and hand back to your team.
+---
+
+Agent support starts with a shared artifact. A coding agent can create or modify the same JSON that Studio opens and your application plays. You review its work visually and in source control.
+
+The document schema, local CLI, skill, and MCP server serve different purposes. None of them automatically discovers every user journey or proves that a tour works for every role.
+
+## Give an agent a concrete job
+
+```text
+Read the Tourlight skill and our onboarding page.
+Create a tour document for creating a first project.
+
+Use stable data-tour attributes on real elements in our app.
+Keep the guide short and explain the task, not every button.
+Use named registry hooks for preparation; never put code in JSON.
+Validate the document, preview it in Studio, and run browser checks.
+Report any routes or user states that were not tested.
+```
+
+The package includes `skills/tourlight/SKILL.md`. Copy that skill directory into your agent client's supported skill location, or explicitly ask the agent to read it. Skill discovery varies by client; the file is guidance, not a background service.
+
+Documentation is also available as [llms.txt](/llms.txt) and [llms-full.txt](/llms-full.txt). The JSON Schema is shipped at `react-tourlight/schema.json` for editor integrations and machine validation.
+
+## Local CLI
+
+In a checkout of this repository, install dependencies and build the package first. These commands do not require a cloud account:
+
+```bash
+pnpm install
+pnpm build
+node scripts/tourlight.mjs template > welcome.tour.json
+node scripts/tourlight.mjs validate welcome.tour.json
+node scripts/tourlight.mjs inspect welcome.tour.json
+node scripts/tourlight.mjs format welcome.tour.json
+```
+
+After installing a release that includes the CLI, the executable is named `tourlight`. `validate` reports structured issues; `inspect` summarizes routes, targets, and capability names. CLI inspection does not open a browser. `format` writes formatted JSON to stdout, leaving the source file untouched. Use `-` instead of a file path to read from stdin.
+
+## MCP for local agent clients
+
+The repository includes a separate stdio MCP server in `packages/tourlight-mcp`. After building the workspace, configure a local client to launch it:
+
+```json
+{
+  "mcpServers": {
+    "tourlight": {
+      "command": "node",
+      "args": ["/absolute/path/to/react-tourlight/packages/tourlight-mcp/index.mjs"]
+    }
+  }
+}
+```
+
+This is the `mcpServers` JSON shape used by compatible clients; use your client's equivalent configuration if it uses TOML or another format. Replace the path with your checkout's actual absolute path. The separate MCP package must be published before registry-based installation commands are available.
+
+| Tool | What it returns |
+| --- | --- |
+| `tourlight_schema` | The document JSON Schema |
+| `tourlight_template` | A starter document; optional `id` and `name` |
+| `tourlight_validate` | Validation results for `document` |
+| `tourlight_inspect` | Routes, targets, named capabilities, and issues |
+| `tourlight_format` | Canonical JSON for `document` |
+| `tourlight_generate_tests` | Playwright test source for `document` and `baseUrl` |
+
+The server accepts documents as tool arguments. It does not read your project files, drive your browser, publish guides, or run generated tests. Your coding agent uses its own authorized filesystem and browser tools for those tasks.
+
+## Claude, Codex, ChatGPT, and other clients
+
+Local clients that support stdio MCP can run the server directly. Follow the current [Claude Code MCP](https://code.claude.com/docs/en/mcp) or [Codex MCP](https://developers.openai.com/codex/mcp) configuration instructions for that client.
+
+A cloud ChatGPT connector cannot launch a local stdio process from this JSON. It needs an appropriate remote MCP transport or supported tunnel configured separately; Tourlight does not ship a hosted endpoint. You can still use the document format and exported JSON in a conversation without an MCP connection.
+
+Other agents can read the skill or use the CLI without MCP. [OpenClaw skills](https://docs.openclaw.ai/tools/skills) have their own installation rules; compatibility means using these documented files and tools, not a bundled native integration.
+
+## Review the output together
+
+Open the resulting file in Studio, verify its words and targets, and make a real browser pass. A successful schema check means the document is structurally valid. It does not mean that a menu opened, a route completed, or a user's business task succeeded. See [testing and diagnostics](/docs/testing).

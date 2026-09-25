@@ -1,14 +1,29 @@
 ---
 title: Introduction
-description: Install react-tourlight and build your first onboarding tour in under 5 minutes.
+description: Choose visual authoring, portable documents, or the React API to build your first guide.
 ---
+
+Tourlight includes a React player, a [visual Studio](/docs/studio), and
+[portable documents](/docs/documents) that your teammates and agents can edit.
+Use the player directly, or start with the [Studio playground](/studio).
+
+Studio, portable documents, guidance components, and the CLI require
+`react-tourlight` **0.5.0 or later**. You can also run the demo from source:
+
+```bash
+pnpm install
+pnpm build
+pnpm --filter react-tourlight-docs dev
+```
+
+Run these from the repository root, then visit `/studio` on the local URL.
 
 ## Installation
 
 Install react-tourlight and its peer dependency:
 
 ```package-install
-npm install react-tourlight @floating-ui/react-dom
+npm install react-tourlight@^0.5.0 @floating-ui/react-dom
 ```
 
 `@floating-ui/react-dom` is used for intelligent tooltip positioning (flip, shift, overflow handling). It's listed as a peer dependency to keep the core bundle small.
@@ -152,6 +167,10 @@ function Dashboard() {
 
 ## Next steps
 
+- [Visual Studio](/docs/studio) -- author guides in your integrated app
+- [Tour Documents](/docs/documents) -- a shared JSON artifact for your team
+- [Build with Agents](/docs/agents) -- skill, CLI, and MCP setup
+- [Testing & Diagnostics](/docs/testing) -- check targets and real journeys
 - [Multi-Step Tours](/docs/tour) -- step configuration, lifecycle hooks, and conditional steps
 - [Single-Element Highlights](/docs/highlight) -- one-off "what's new" callouts
 - [Customization](/docs/customization) -- themes, custom tooltips, and i18n

@@ -212,7 +212,10 @@ describe('SpotlightProvider', () => {
       expect(screen.getByText('Step 2')).toBeInTheDocument()
     })
 
-    expect(waitForElementSpy).toHaveBeenCalledWith('#missing-target')
+    expect(waitForElementSpy).toHaveBeenCalledWith(
+      '#missing-target',
+      expect.objectContaining({ requireVisible: true }),
+    )
 
     waitForElementSpy.mockRestore()
     document.body.removeChild(targetEl)
@@ -244,7 +247,10 @@ describe('SpotlightProvider', () => {
       await Promise.resolve()
     })
 
-    expect(waitForElementSpy).toHaveBeenCalledWith('#missing-with-timeout', { timeout: 1234 })
+    expect(waitForElementSpy).toHaveBeenCalledWith(
+      '#missing-with-timeout',
+      expect.objectContaining({ timeout: 1234 }),
+    )
 
     waitForElementSpy.mockRestore()
   })
@@ -274,9 +280,12 @@ describe('SpotlightProvider', () => {
       await Promise.resolve()
     })
 
-    expect(waitForElementSpy).toHaveBeenCalledWith('#missing-with-provider-timeout', {
-      timeout: 9999,
-    })
+    expect(waitForElementSpy).toHaveBeenCalledWith(
+      '#missing-with-provider-timeout',
+      expect.objectContaining({
+        timeout: 9999,
+      }),
+    )
 
     waitForElementSpy.mockRestore()
   })

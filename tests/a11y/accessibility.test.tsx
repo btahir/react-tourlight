@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import React from 'react'
 import { SpotlightProvider } from '../../src/components/spotlight-provider.tsx'
 import { SpotlightTour } from '../../src/components/spotlight-tour.tsx'
@@ -70,10 +70,7 @@ describe('accessibility', () => {
   it('tooltip has role="dialog"', async () => {
     const { cleanup } = renderWithActiveTour()
 
-    await act(async () => {
-      // Allow state machine and effects to settle
-      await new Promise((r) => setTimeout(r, 50))
-    })
+    await screen.findByRole('dialog')
 
     const dialog = screen.queryByRole('dialog')
     expect(dialog).toBeInTheDocument()
@@ -84,9 +81,7 @@ describe('accessibility', () => {
   it('tooltip has aria-labelledby and aria-describedby', async () => {
     const { cleanup } = renderWithActiveTour()
 
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 50))
-    })
+    await screen.findByRole('dialog')
 
     const dialog = screen.queryByRole('dialog')
     expect(dialog).toBeInTheDocument()
@@ -105,9 +100,7 @@ describe('accessibility', () => {
   it('screen reader live region announces step changes', async () => {
     const { cleanup } = renderWithActiveTour()
 
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 50))
-    })
+    await screen.findByRole('dialog')
 
     // There should be a live region with aria-live="polite" (portaled to document.body)
     const liveRegion = document.querySelector('[aria-live="polite"]')
@@ -121,9 +114,7 @@ describe('accessibility', () => {
   it('close button has aria-label', async () => {
     const { cleanup } = renderWithActiveTour()
 
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 50))
-    })
+    await screen.findByRole('dialog')
 
     const closeButton = screen.queryByLabelText('Close')
     expect(closeButton).toBeInTheDocument()
@@ -134,9 +125,7 @@ describe('accessibility', () => {
   it('marks background elements as inert while active', async () => {
     const { cleanup } = renderWithActiveTour()
 
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 50))
-    })
+    await screen.findByRole('dialog')
 
     const backgroundTarget = document.getElementById('a11y-target')
     expect(backgroundTarget?.inert).toBe(true)

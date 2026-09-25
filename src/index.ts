@@ -36,7 +36,7 @@ export type { SpotlightControl, UseTourOptions, UseTourResult } from './hooks/in
 export { useSpotlight, useSpotlightControl, useSpotlightTarget, useTour } from './hooks/index.ts'
 // Overlay primitives
 export { generateClipPath, measureElement } from './overlay/index.ts'
-export type { SpotlightTheme } from './themes/index.ts'
+export type { SpotlightTheme, SpotlightThemeInput } from './themes/index.ts'
 // Themes
 export { darkTheme, lightTheme, resolveTheme } from './themes/index.ts'
 

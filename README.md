@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="react-tourlight" width="120" />
+  <img src="https://raw.githubusercontent.com/btahir/react-tourlight/main/assets/logo.svg" alt="react-tourlight" width="120" />
 </p>
 
 <h1 align="center">react-tourlight</h1>
 
 <p align="center">
-  Beautiful onboarding tours & feature highlights for React.<br/>
-  Headless core, multi-page tours, real interactive steps, WCAG 2.1 AA. MIT.
+  Guides for people. Tools for builders.<br/>
+  A React runtime, visual Studio, and portable documents for your team and agents. MIT.
 </p>
 
 <p align="center">
@@ -17,34 +17,51 @@
 </p>
 
 <p align="center">
-  <a href="assets/launch-video.mp4">Watch the launch video</a>
+  <a href="https://github.com/btahir/react-tourlight/blob/main/assets/launch-video.mp4">Watch the launch video</a> ·
+  <a href="#support-tourlight">Support Tourlight</a>
 </p>
 
 ---
 
 <p align="center">
-  <img src="assets/readme-hero.gif" alt="react-tourlight spotlight tour demo" width="720" />
+  <img src="https://raw.githubusercontent.com/btahir/react-tourlight/main/assets/readme-hero.gif" alt="react-tourlight spotlight tour demo" width="720" />
 </p>
 
-## Why another tour library?
+## Build a guide together
 
-Most tour libraries were designed for a different era of React. They render
-into the DOM imperatively, style themselves with `mix-blend-mode` overlays that
-break in dark mode, treat accessibility as an afterthought, and either cost
-money (Shepherd.js Pro, Intro.js commercial) or aren't React-first at all
-(Driver.js, Intro.js). React Joyride is MIT and works on React 19 again as of
-v3.2, but it's still a ~30 kB, class-component-era design without a headless
-mode, multi-page persistence, or true interactive steps.
+Product people edit the words and journey in Studio. Developers own the
+integration, routes, and application behavior. Agents work with the same
+validated JSON document. Everything stays in your application and your files.
 
-react-tourlight is built for how React apps are written now: hooks, Server
-Components, App Router, strict TypeScript, and design systems that want to own
-the tooltip. You get a polished default UI **and** an unstyled engine you can
-build on — under one MIT license.
+- **Visual Studio:** an optional authoring component with live target picking,
+  preview, browser drafts, and JSON import/export.
+- **Portable documents:** stable IDs, plain text, and named app capabilities.
+  Validate, review in Git, and compile into the regular React runtime.
+- **Agent tools:** a skill, JSON Schema, local CLI, and a separate stdio MCP
+  server. Generate target smoke checks, then verify real application journeys.
+- **React runtime:** themed or headless, interactive steps, multi-page guides,
+  highlights, beacons, and explicit control over when guidance appears.
+
+**Version requirement:** Studio, portable documents, guidance components, and the
+CLI require `react-tourlight` **0.5.0 or later**. See the
+[changelog](https://github.com/btahir/react-tourlight/blob/main/CHANGELOG.md) for release details.
+
+### Run the demo from source
+
+```bash
+pnpm install
+pnpm build
+pnpm --filter react-tourlight-docs dev
+```
+
+Open the local URL printed by Next.js and visit `/studio`. It demonstrates a
+sample application; embed Studio in your own app to pick its real elements.
+No Tourlight account or backend is required. See the [Studio guide](https://react-tourlight.vercel.app/docs/studio).
 
 ## Install
 
 ```bash
-npm install react-tourlight @floating-ui/react-dom
+npm install react-tourlight@^0.5.0 @floating-ui/react-dom
 ```
 
 `@floating-ui/react-dom` is a **required peer dependency** — it powers tooltip
@@ -54,10 +71,10 @@ something else in your app already depends on it.
 
 ```bash
 # yarn
-yarn add react-tourlight @floating-ui/react-dom
+yarn add react-tourlight@^0.5.0 @floating-ui/react-dom
 
 # pnpm
-pnpm add react-tourlight @floating-ui/react-dom
+pnpm add react-tourlight@^0.5.0 @floating-ui/react-dom
 ```
 
 **Next.js App Router:** as of v0.2.0 the package ships its own `"use client"`
@@ -99,7 +116,13 @@ function App() {
 
 function Dashboard() {
   const { start } = useSpotlight()
-  return <button onClick={() => start('onboarding')}>Start Tour</button>
+  return (
+    <main>
+      <input id="search-input" aria-label="Search projects" />
+      <nav data-tour="sidebar" aria-label="Workspace">Projects · Team</nav>
+      <button onClick={() => start('onboarding')}>Start Tour</button>
+    </main>
+  )
 }
 ```
 
@@ -108,27 +131,27 @@ function Dashboard() {
 |  | What you get |
 |---|---|
 | **Beautiful by default** | Modern, polished tooltips with smooth CSS clip-path spotlight transitions. Light, dark, and custom themes out of the box. |
-| **Accessible** | WCAG 2.1 AA compliant. Focus trap, keyboard navigation, ARIA roles, screen reader announcements. |
-| **Small** | ~8 kB gzipped for the headless engine, ~19 kB with the styled tooltip and CSS. Floating UI (~3 kB, peer dependency) handles positioning. |
+| **Accessible** | Focus management, keyboard navigation, ARIA roles, and screen reader announcements. Verify accessibility in your own integration. |
+| **Separate entry points** | Import the player, headless engine, document tools, or Studio where you need them. The editor is not included by a player-only import. |
 | **Headless when you want it** | `react-tourlight/core` gives you the state machine, element resolution, clip-path, and a11y utilities with no CSS and no Floating UI. |
 | **Multi-page & interactive** | Route-aware tours that survive navigation and reloads. Interactive steps with real event pass-through and `advanceOn`. |
 | **MIT License** | Free for commercial use. No GPL restrictions, no paid tiers. |
 
 ## Features
 
-- **CSS clip-path spotlight** — GPU-accelerated, perfect in dark mode (no `mix-blend-mode` hacks)
+- **CSS clip-path spotlight** — an overlay cutout that works with light and dark themes
 - **Floating UI positioning** — smart flip, shift, and overflow handling
 - **Full keyboard navigation** — Arrow keys, Escape, Tab focus trap that opens with focus on the primary (Next/Done) button
 - **Async element waiting** — `MutationObserver`-based, handles lazy-loaded content, with a configurable timeout (`SpotlightStep.timeout` / `SpotlightProviderProps.waitForElementTimeout`) and a dimmed loading overlay while a target is still resolving
 - **Light / Dark / Custom themes** — auto-detect OS preference (and stay in sync when it changes live), or bring your own theme, including working hover states on buttons and the close button
-- **Responsive & mobile-friendly** — works on any screen size
+- **Responsive positioning** — tooltip flip, shift, and overflow handling; test your content at the viewports you support
 - **React 19 compatible** — built for modern React, no deprecated APIs
 - **Next.js / RSC ready** — ships its own `"use client"` directive, no manual wrapper required
 - **i18n support** — customize all button labels and step text
 - **Multi-page / route-aware tours** — a tour can pause on one route, navigate to another (SPA _or_ full page reload), and resume automatically via pluggable persistence (`localStorage` / custom / memory). Router-agnostic — plug in `next/navigation`, React Router, or `location.assign` (see below)
 - **Single-element highlights** — one-off "What's new" callouts without a full tour
 - **Beacons / hotspots** — `<SpotlightBeacon>` renders a pulsing dot on any element that starts a tour or a highlight when clicked, so users can opt in instead of being interrupted
-- **Flexible targets** — steps accept a CSS selector, a React ref, **or a resolver function** (`() => element`) for shadow DOM, iframes, and anything `querySelector` can't reach; all three are waited for with `MutationObserver`
+- **Flexible targets** — steps accept a CSS selector, a React ref, **or a resolver function** (`() => element`). Cross-document and shadow-root integrations require their own coordinate, event, and accessibility checks; a resolver alone does not establish complete support.
 - **Analytics-ready callbacks** — `onStart`, `onStepChange(stepIndex, step)`, `onComplete`, `onSkip` at both tour and provider level
 - **Start anywhere** — `start('tour', { stepIndex: 2 })` for deep links and "resume" buttons; `portalContainer` and `autoScroll` props for apps with custom scroll or stacking contexts
 - **Custom tooltips** — full render prop API for complete control, with unique per-instance ARIA ids (`useId`) so multiple tooltips never collide and no `aria-labelledby`/`aria-describedby` reference is left dangling
@@ -309,26 +332,56 @@ import { SpotlightBeacon } from 'react-tourlight'
 Beacons hide automatically while a tour is running, follow the target across
 scroll and resize, and respect `prefers-reduced-motion`.
 
-## Comparison
+## Documents, Studio, and agents
 
-| Feature | react-tourlight | React Joyride | Shepherd.js | Driver.js | Intro.js |
-|---|---|---|---|---|---|
-| **React 19** | Yes | Yes (since v3.2) | Wrapper | No React bindings | No React bindings |
-| **License** | MIT | MIT | Paid for commercial use | MIT | GPL / paid commercial |
-| **React-first** | Yes | Yes | No (vanilla JS) | No (vanilla JS) | No (vanilla JS) |
-| **Headless core** | Yes (`/core`, no CSS / Floating UI) | No | Partial | No | No |
-| **Multi-page tours** | Built-in (persist + resume) | No | Manual | No | No |
-| **Interactive steps** | Real event pass-through + `advanceOn` | Spotlight clicks only | Yes | Yes | Partial |
-| **Beacons / hotspots** | Yes | Yes | No | No | Hints |
-| **Dark mode overlay** | CSS clip-path | mix-blend-mode | SVG | Yes | Partial |
-| **Focus trap + inert** | Yes | No | No | No | No |
-| **RSC / App Router** | Ships `"use client"` | Manual wrapper | n/a | n/a | n/a |
-| **Runtime deps** | 1 peer (Floating UI) | Several | Several | 0 | 0 |
+Keep a guide as data and compile it for the player:
 
-Bundle sizes change with every release, so we don't list competitors' numbers
-here — check [bundlephobia](https://bundlephobia.com) for current figures.
-react-tourlight is ~8 kB gzipped headless and ~19 kB with the styled tooltip
-and stylesheet.
+```tsx
+import { compileTourDocument, parseTourDocument } from 'react-tourlight/document'
+import guideJson from './welcome.tour.json'
+
+const guide = parseTourDocument(guideJson)
+const steps = compileTourDocument(guide)
+
+// Inside your existing SpotlightProvider:
+<SpotlightTour id={guide.id} steps={steps} />
+```
+
+Mount the editor only in your app's authoring experience:
+
+```tsx
+import { TourStudio } from 'react-tourlight/studio'
+import 'react-tourlight/studio.css'
+import 'react-tourlight/styles.css'
+
+<TourStudio defaultValue={guide} storageKey="welcome-draft">
+  <YourApp />
+</TourStudio>
+```
+
+Studio contains its own preview provider. It works with the integrated app's
+DOM; it cannot inspect unrelated websites merely by entering their URLs.
+Browser drafts remain local. Export a document to hand work to another person,
+then integrate it using your own release process.
+
+After installing the package in your project:
+
+```bash
+npx --no-install tourlight validate welcome.tour.json
+npx --no-install tourlight inspect welcome.tour.json
+npx --no-install tourlight test welcome.tour.json --base-url http://localhost:3000
+```
+
+The last command prints Playwright target smoke-check source. It does not run
+a browser or prove that the user's task completed. Configure your application's
+actual authentication, setup, interactions, and outcome assertions.
+
+The [agent skill](https://github.com/btahir/react-tourlight/blob/main/skills/tourlight/SKILL.md) guides coding agents through this
+workflow and is included at `node_modules/react-tourlight/skills/tourlight/SKILL.md`.
+The separate `react-tourlight-mcp` package accepts guide
+documents and returns schemas, validation, summaries, and generated test source.
+It does not read app files or publish guides. See the [agent guide](https://react-tourlight.vercel.app/docs/agents)
+and [testing guide](https://react-tourlight.vercel.app/docs/testing).
 
 ## Documentation
 
@@ -336,8 +389,22 @@ Visit **[react-tourlight.vercel.app](https://react-tourlight.vercel.app)** for t
 
 ## Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, project structure, and PR workflow.
+We welcome contributions! See [CONTRIBUTING.md](https://github.com/btahir/react-tourlight/blob/main/CONTRIBUTING.md) for development setup, project structure, and PR workflow.
+
+## Support Tourlight
+
+Help keep Tourlight free. Voluntary support funds maintenance, documentation,
+and new features. The player, Studio, and agent tools remain free under MIT;
+sponsorship includes no exclusive features or dedicated support.
+
+- **[Give once](https://buy.stripe.com/fZu14m0FO3v050PfqP3ks00):** choose your amount; $20 suggested.
+- **Support monthly (USD):** [$5](https://buy.stripe.com/9B68wOewEaXsgJxdiH3ks01) · [$15](https://buy.stripe.com/7sYbJ088g3v0gJx4Mb3ks02) · [$50](https://buy.stripe.com/28EeVc88g5D80Kz2E33ks03) · [$100 company sponsorship](https://buy.stripe.com/00w14m6088PkbpdceD3ks04).
+- **[Manage your sponsorship](https://billing.stripe.com/p/login/fZu14m0FO3v050PfqP3ks00):** update your card, view invoices, or cancel renewal. Monthly payments renew automatically until canceled; cancellation takes effect at the end of the billing period.
+
+Stripe processes contributions through our existing **GPT Hotline** account.
+That name and logo appear at checkout alongside your Tourlight contribution.
+Bug reports, documentation, code contributions, and sharing the project help too.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/btahir/react-tourlight/blob/main/LICENSE)

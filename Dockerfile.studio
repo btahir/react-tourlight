@@ -1,0 +1,19 @@
+FROM node:24-alpine AS build
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@11.1.1 --activate
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter react-tourlight-docs build
+
+FROM node:24-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+COPY --from=build --chown=node:node /app/apps/docs/.next/standalone ./
+COPY --from=build --chown=node:node /app/apps/docs/.next/static ./apps/docs/.next/static
+COPY --from=build --chown=node:node /app/apps/docs/public ./apps/docs/public
+USER node
+EXPOSE 3000
+CMD ["node", "apps/docs/server.js"]

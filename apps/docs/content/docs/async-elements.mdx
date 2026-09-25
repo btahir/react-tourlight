@@ -7,9 +7,9 @@ In real applications, target elements aren't always present in the DOM when a to
 
 ## How it works
 
-When react-tourlight encounters a step whose target element isn't in the DOM, it uses a `MutationObserver` to watch for the element to appear. The observer monitors `document.body` for `childList` and `subtree` mutations, checking for the target on each mutation batch.
+The player waits for a connected, visible target with a measurable layout box. Its `MutationObserver` watches for added or removed elements and attribute changes. A short polling interval also checks ref updates and layout changes that do not produce a DOM mutation.
 
-This approach is more reliable than polling with `setTimeout` because it reacts instantly when the element appears, regardless of how long the async operation takes.
+Waiting ends when a target is ready, the configured timeout expires, or the guide is cancelled. After a step appears, target tracking updates the spotlight as its element moves or is replaced.
 
 ## Automatic waiting
 
@@ -37,7 +37,7 @@ const steps: SpotlightStep[] = [
 
 By default, react-tourlight waits up to **5 seconds** for a target element to appear. If the element doesn't appear within the timeout, the step is skipped and the tour advances to the next step.
 
-The timeout is a safety net -- in most cases, elements appear well within this window. If your content takes longer to load (e.g., large data fetches), you can adjust the timeout behavior using `onBeforeShow` to await the data before the step is shown:
+Set `timeout` on an individual step, or `waitForElementTimeout` on the provider, to adjust this window. You can also prepare application state in `onBeforeShow` before target resolution begins:
 
 ```tsx
 {
@@ -70,7 +70,7 @@ This is useful when the element's existence depends on user permissions or featu
 
 ## Using React refs for dynamic content
 
-When using React refs instead of CSS selectors, the element is available as soon as the component renders. This sidesteps the element-waiting mechanism entirely:
+React refs can identify targets without a selector. The player still waits for the ref to point to a connected, visible element with a measurable box:
 
 ```tsx
 import { useSpotlightTarget, SpotlightTour } from 'react-tourlight'
@@ -96,17 +96,19 @@ function LazyPanel() {
 }
 ```
 
-The tradeoff: the `<SpotlightTour>` must be rendered in the same component (or a child) that renders the target element. CSS selectors let you decouple tour definitions from the components they reference.
+Pass the same ref to the rendered target and the tour definition. They can live in different components if you pass or share that ref. CSS selectors let you keep the definition independent of React ref wiring.
 
 ## Error handling
 
 When a target element isn't found within the timeout:
 
-1. The step is **skipped** -- the tour advances to the next step
-2. No error is thrown -- the tour continues gracefully
-3. The skipped step is not included in `seenSteps` in the tour state
+1. The unavailable step advances to the next step.
+2. A target timeout by itself does not throw a hook error.
+3. If no steps remain, the guide can reach its completed state.
 
-If all remaining steps fail to find their targets, the tour ends. This means tours degrade gracefully even if parts of the UI fail to load.
+Tour state tracks guide progression; it does not prove that every target was visible or that a business task succeeded. Use [target diagnostics and browser checks](/docs/testing) to catch missing required elements before release.
+
+An exception from application lifecycle code is different: the guide stops and reports the error through the provider's `onError(error, tourId)` callback. Make preparation hooks handle their expected application failures, and test cancellation while an asynchronous hook is pending.
 
 ### Debugging missing elements
 
@@ -114,5 +116,5 @@ If steps are unexpectedly being skipped, check:
 
 - The CSS selector matches the element exactly (use `document.querySelector()` in DevTools)
 - The element is in the DOM, not inside a Shadow DOM
-- The element isn't hidden with `display: none` (hidden elements are still found by selectors, but the spotlight position will be wrong)
-- If using a ref, the component with the ref is mounted before the tour starts
+- The element is visible and has nonzero dimensions; an existing but hidden element is not ready
+- If using a ref, its target mounts and becomes visible within the configured timeout

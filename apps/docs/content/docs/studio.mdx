@@ -1,0 +1,66 @@
+---
+title: Visual Studio
+description: Build and edit guides in the application they explain. No Tourlight account required.
+---
+
+Studio is the visual authoring surface included with Tourlight. It edits a portable [tour document](/docs/documents), previews through the same runtime you ship, and saves drafts in your browser. Try the [interactive Studio](/studio).
+
+## Where it belongs
+
+A developer integrates Studio into an application they control. Product teammates then select targets, edit the guide, preview it, and export the document. Mount the editor on an authoring route that your application protects; end users only need the player.
+
+Studio's element picker works with the DOM of the integrated application. Entering an unrelated website URL does not grant access to that website. The public demo is a sample app you can experiment with, not a remote website editor.
+
+## Add Studio to your app
+
+```tsx
+'use client'
+
+import { TourStudio } from 'react-tourlight/studio'
+import { parseTourDocument } from 'react-tourlight/document'
+import 'react-tourlight/styles.css'
+import 'react-tourlight/studio.css'
+import guideJson from './getting-started.json'
+import { YourApp } from './your-app'
+
+const guide = parseTourDocument(guideJson)
+
+export function GuideAuthoringPage() {
+  return (
+    <TourStudio
+      defaultValue={guide}
+      storageKey="my-app-getting-started-draft"
+      onChange={(document) => {
+        // Connect an app-owned save workflow here if needed.
+      }}
+    >
+      <YourApp />
+    </TourStudio>
+  )
+}
+```
+
+Studio includes its own preview provider. Importing the library's player or headless entry does not require importing Studio. Load the editor only on the routes where people author guides.
+
+For application state to control the document, pass `value` and `onChange` instead of `defaultValue`. Pass `registry` when the document references application actions or conditions; see [named capabilities](/docs/documents#connect-application-behavior-by-name).
+
+## The authoring loop
+
+1. **Start with a document.** Use an example, create a guide, or import an exported JSON file.
+2. **Select the right element.** Pick a target in your integrated app. Stable `data-tour` anchors make guides easier to maintain.
+3. **Write useful guidance.** Explain what the user can accomplish, then adjust step order and placement.
+4. **Preview the journey.** Play it using the actual Tourlight runtime. Try the real interactions and routes your guide needs.
+5. **Check the diagnostics.** A missing target can mean that the app is on a different route or that a menu needs to be open. Inspect the message before changing the selector.
+6. **Export and review.** Keep the JSON in your repository or app-owned storage, then compile it into your player integration.
+
+Browser drafts are local to that browser and origin. Export important work. Clearing site data removes locally stored drafts; a draft is not a shared team database or a published production guide.
+
+## Host it yourself
+
+Studio is a React component, so it runs wherever your application runs. Embed it in your own React app, or run this repository's documentation app to use the included playground. There is no required Tourlight backend, sign-in service, or hosted configuration endpoint.
+
+If you need shared drafts, permissions, publishing, or review workflows, connect them through your own application and `onChange`. Exporting a document does not publish it to your users automatically.
+
+## Keep the code-first escape hatch
+
+Portable documents support text and named application behavior. Continue using `SpotlightTour` directly when a tour needs arbitrary React content, refs, or custom rendering. You do not need to convert existing tours to documents to use this release.

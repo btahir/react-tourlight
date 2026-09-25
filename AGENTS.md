@@ -4,9 +4,11 @@ This file provides guidance to AI coding agents working with this repository.
 
 ## Project Overview
 
-react-tourlight is a modern React library for building onboarding tours and feature highlights. It uses CSS clip-path for GPU-accelerated spotlight transitions, is WCAG 2.1 AA accessible out of the box, ships a headless `/core` entry (~8 kB gzipped) plus a styled default UI (~19 kB gzipped with CSS), and is MIT licensed. `@floating-ui/react-dom` is its only runtime peer dependency (positioning). It targets React 18+ and React 19 and ships its own `"use client"` directive for Next.js App Router.
+react-tourlight is an MIT-licensed React library and visual authoring toolkit for product guides. Its optional entry points include the player, headless `/core`, portable `/document` tools, `/diagnostics`, `/studio`, and `/guidance` components. It targets React 18 and 19 and declares client boundaries for the React entries used by Next.js App Router.
 
-Positioning notes for anyone editing docs or marketing copy: do **not** claim React Joyride is "broken on React 19" (it has supported React 19 since v3.2, July 2026) and do **not** claim "~5 kB" or "zero dependencies" — both are out of date. Differentiate on the headless core, multi-page persistence, true interactive steps, beacons, accessibility, and license.
+Positioning notes: describe concrete, tested capabilities. Do not claim that competitors are broken or universally inferior; verify specific comparisons against their current releases. Do not promise WCAG certification or automatic conversion improvements. Report bundle size only with a current build measurement, named entry point, and clear treatment of CSS and peer dependencies. The editor is optional and should not enter player-only bundles.
+
+Studio edits data-only tour documents. Applications own named actions, conditions, completion state, authentication, storage, and publishing. A document validation pass is distinct from current-page target diagnostics and from a full browser journey. Do not imply that the standalone editor can inspect arbitrary remote websites.
 
 ## Structure
 
@@ -14,6 +16,10 @@ Positioning notes for anyone editing docs or marketing copy: do **not** claim Re
 react-tourlight/
 ├── src/                    # Library source code
 │   ├── components/         # React components (Provider, Tour, Highlight, Beacon)
+│   ├── studio/             # Optional visual authoring UI
+│   ├── guidance/           # Optional checklist and searchable guide launcher
+│   ├── document.ts         # Portable schema, validation, compilation
+│   ├── diagnostics.ts      # Current-page target inspection
 │   ├── hooks/              # useSpotlight, useSpotlightControl, useSpotlightTarget
 │   ├── tooltip/            # Tooltip rendering and positioning (Floating UI)
 │   ├── overlay/            # Spotlight overlay and clip-path generation
@@ -22,7 +28,12 @@ react-tourlight/
 │   ├── utils/              # Utilities (a11y, CSS, scroll)
 │   ├── styles/             # CSS stylesheets
 │   └── index.ts            # Public API exports
-├── tests/                  # Vitest test files (mirrors src/ structure)
+├── tests/                  # Vitest unit and integration tests
+├── e2e/                    # Playwright real-browser verification
+├── schema/                 # Tour document JSON Schema
+├── scripts/                # Local CLI
+├── skills/tourlight/       # Agent workflow guidance
+├── packages/tourlight-mcp/ # Separate stdio MCP server
 ├── apps/
 │   ├── docs/               # Fumadocs documentation site (Next.js App Router)
 │   └── video/              # Remotion-based promotional videos
@@ -59,10 +70,11 @@ pnpm validate             # full pipeline: build + lint:pkg + check + test
 
 ## Architecture
 
-- **State machine**: Tour state (idle, active, transitioning) is managed by a lightweight state machine in `src/engine/`
-- **CSS clip-path overlay**: The spotlight effect uses a single SVG clip-path on a full-screen overlay div, avoiding `mix-blend-mode` hacks that break in dark mode
-- **Floating UI**: Tooltip positioning uses `@floating-ui/react-dom` as an optional peer dependency for smart placement with flip/shift
-- **Element observer**: Uses `MutationObserver` to wait for async/lazy-loaded target elements
-- **Accessibility**: Focus trap, `inert` attribute on background content, ARIA live regions, keyboard navigation (Arrow keys, Escape, Tab)
+- **State machine**: Tour status and cancellable step transitions are managed in `src/engine/`. Late asynchronous work must not revive a stopped tour.
+- **CSS clip-path overlay**: A cutout highlights the target. Interactive steps leave a real event path to the target while blocking surrounding page interaction.
+- **Floating UI**: `@floating-ui/react-dom` is a required declared peer for the styled player. Headless and document imports do not load the tooltip positioning implementation.
+- **Element readiness**: Wait for visible, measurable targets and cancel waiting when the guide stops. Test delayed layout, DOM changes, and missing targets in a real browser.
+- **Accessibility**: Verify focus restoration after inert cleanup, target access for interactive steps, ARIA relationships, reduced motion, and contrast. Custom content and themes need application-level checks.
 - **Theming**: CSS custom properties with light/dark/auto modes
-- **Peer dependencies**: React >=18, React DOM >=18, @floating-ui/react-dom >=2 (all peer deps, zero bundled runtime deps)
+- **Peer dependencies**: React >=18, React DOM >=18, @floating-ui/react-dom >=2. Check package.json for current constraints.
+- **Agent tools**: MCP accepts documents as arguments and returns data/test source; it does not drive browsers, read application files, or publish guides.

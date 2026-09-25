@@ -1,0 +1,54 @@
+---
+title: Self-hosting
+description: Run Studio locally, embed it in your app, or host the documentation and playground yourself.
+---
+
+Studio is a React component. It needs no Tourlight server, account, model API, or database. Drafts can stay in the current browser; exported JSON belongs in your own repository or storage.
+
+## Run this checkout
+
+The new Studio and tooling live in this checkout until a release is published. From the repository root, with Node 24 and pnpm 11:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm --filter react-tourlight-docs dev
+```
+
+Open `http://localhost:3000/studio`. The sample Fieldnotes app is interactive: create a project during a tour and see the result. The standalone playground edits documents and targets its sample app. It cannot inspect an arbitrary website by URL.
+
+## Author inside your own app
+
+Use the [Studio integration](/docs/studio) on an app-owned authoring route. This gives product colleagues real elements to pick. Connect your router with `navigate` and keep the authoring shell mounted across route changes. Include portalled targets within the Studio child subtree; cross-origin frames and targets outside it are outside this editor's picking scope.
+
+Do not expose an authoring route to end users unintentionally. Your app owns any access control. The production player only needs the exported document and the React runtime; it does not need Studio.
+
+For a controlled editor, pass `value` and `onChange`. For browser drafts, use `defaultValue` with `storageKey`. Local storage is specific to a browser and origin: export before clearing browser data or moving hosts. It is not collaborative storage.
+
+## Production Node server
+
+```bash
+pnpm --filter react-tourlight-docs build
+pnpm --filter react-tourlight-docs start
+```
+
+Next.js also emits a standalone bundle. Copy static/public assets into it before starting:
+
+```bash
+cp -R apps/docs/.next/static apps/docs/.next/standalone/apps/docs/.next/static
+cp -R apps/docs/public apps/docs/.next/standalone/apps/docs/public
+node apps/docs/.next/standalone/apps/docs/server.js
+```
+
+Set the process `PORT` and `HOSTNAME` to choose its listener. No application secrets are required. The documentation site currently requests its optional display fonts from Google Fonts; the editor package itself has system-font fallbacks and makes no network requests. Remove or replace those font links if your deployment must be fully offline.
+
+## Container recipe
+
+A root `Dockerfile.studio` packages the documentation and playground with the standalone Node server:
+
+```bash
+docker build -f Dockerfile.studio -t tourlight-studio .
+docker run --rm -p 3000:3000 tourlight-studio
+```
+
+The container serves authoring UI and documentation. It does not add shared draft storage, authentication, analytics, or remote MCP transport. Those are application concerns rather than hidden requirements of the package.

@@ -14,7 +14,11 @@ import type { ElementRect, SpotlightTarget } from '../types.ts'
 export function resolveTarget(target: SpotlightTarget): HTMLElement | null {
   if (typeof target === 'string') {
     if (typeof document === 'undefined') return null
-    return document.querySelector<HTMLElement>(target)
+    try {
+      return document.querySelector<HTMLElement>(target)
+    } catch {
+      return null
+    }
   }
 
   if (typeof target === 'function') {

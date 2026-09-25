@@ -6,7 +6,7 @@ Thanks for your interest in contributing! This guide will help you get set up an
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) >= 18.0.0
+- [Node.js](https://nodejs.org/) 24 for workspace development (the library runtime supports Node.js 18+; MCP requires 20+)
 - [pnpm](https://pnpm.io/) (latest)
 
 ### Getting started
@@ -105,6 +105,10 @@ This will prompt you for:
 3. **Summary** — a short description of the change
 
 The changeset file will be committed with your PR and consumed during the release process.
+
+For local npm publishing after a release PR is merged, follow
+[the release guide](docs/RELEASING.md). The 0.5.0 release PR already applies
+its version bump and changelogs; do not bump it again before publishing.
 
 **Skip changesets for:**
 - Documentation-only changes
