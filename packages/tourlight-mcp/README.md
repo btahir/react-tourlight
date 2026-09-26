@@ -55,10 +55,11 @@ Every tool is read-only and deterministic. Validation does not check live select
 
 SDK reference: [MCP TypeScript SDK v2](https://ts.sdk.modelcontextprotocol.io/v2/), protocol 2026-07-28. SDK 2.1.0 is the verified baseline.
 
-## Support Tourlight
+## Support this project
 
 This server and the Tourlight package are free under MIT. You can
 [give once](https://buy.stripe.com/fZu14m0FO3v050PfqP3ks00) or explore
 [monthly sponsorship](https://react-tourlight.vercel.app/support) to support maintenance,
-documentation, and new features. Sponsorship does not unlock additional tools or dedicated support.
+documentation, and development across Tourlight, Kino, Clickmap, and Redact through
+**React Maintainer Support**. Sponsorship does not unlock additional tools or dedicated support.
 Stripe checkout uses our existing GPT Hotline account name and logo.

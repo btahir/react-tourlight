@@ -18,7 +18,7 @@
 
 <p align="center">
   <a href="https://github.com/btahir/react-tourlight/blob/main/assets/launch-video.mp4">Watch the launch video</a> ·
-  <a href="#support-tourlight">Support Tourlight</a>
+  <a href="#support-this-project">Support this project</a>
 </p>
 
 ---
@@ -391,10 +391,10 @@ Visit **[react-tourlight.vercel.app](https://react-tourlight.vercel.app)** for t
 
 We welcome contributions! See [CONTRIBUTING.md](https://github.com/btahir/react-tourlight/blob/main/CONTRIBUTING.md) for development setup, project structure, and PR workflow.
 
-## Support Tourlight
+## Support this project
 
-Help keep Tourlight free. Voluntary support funds maintenance, documentation,
-and new features. The player, Studio, and agent tools remain free under MIT;
+**React Maintainer Support** funds development, documentation, and maintenance
+of Tourlight, Kino, Clickmap, and Redact. All four projects remain free under MIT;
 sponsorship includes no exclusive features or dedicated support.
 
 - **[Give once](https://buy.stripe.com/fZu14m0FO3v050PfqP3ks00):** choose your amount; $20 suggested.
@@ -402,7 +402,7 @@ sponsorship includes no exclusive features or dedicated support.
 - **[Manage your sponsorship](https://billing.stripe.com/p/login/fZu14m0FO3v050PfqP3ks00):** update your card, view invoices, or cancel renewal. Monthly payments renew automatically until canceled; cancellation takes effect at the end of the billing period.
 
 Stripe processes contributions through our existing **GPT Hotline** account.
-That name and logo appear at checkout alongside your Tourlight contribution.
+That name and logo appear at checkout alongside your maintainer contribution.
 Bug reports, documentation, code contributions, and sharing the project help too.
 
 ## License

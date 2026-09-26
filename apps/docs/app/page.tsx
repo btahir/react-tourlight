@@ -338,12 +338,12 @@ export default function HomePage() {
         </Link>
         <p>No account. No credit card. Just a guide waiting to happen.</p>
       </section>
-      <aside className="tl-support-callout tl-container" aria-label="Support Tourlight">
+      <aside className="tl-support-callout tl-container" aria-label="Support this project">
         <div>
           <h2>Help keep Tourlight free.</h2>
-          <p>Support maintenance, documentation, and new features. Give once or sponsor monthly.</p>
+          <p>Support the maintainer behind Tourlight, Kino, Clickmap, and Redact. Give once or sponsor monthly.</p>
         </div>
-        <Link className="tl-button tl-button-small" href="/support">Support Tourlight ↗</Link>
+        <Link className="tl-button tl-button-small" href="/support">Support this project ↗</Link>
       </aside>
       <footer className="tl-footer tl-container">
         <Link className="tl-brand" href="/">

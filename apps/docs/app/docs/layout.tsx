@@ -7,7 +7,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <DocsLayout
       tree={source.pageTree}
       nav={{ title: 'react-tourlight' }}
-      links={[{ text: 'Support Tourlight', url: '/support' }]}
+      links={[{ text: 'Support this project', url: '/support' }]}
     >
       {children}
     </DocsLayout>
