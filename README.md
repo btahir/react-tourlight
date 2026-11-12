@@ -77,6 +77,14 @@ yarn add react-tourlight@^0.5.0 @floating-ui/react-dom
 pnpm add react-tourlight@^0.5.0 @floating-ui/react-dom
 ```
 
+**Using a coding agent?** Add the Tourlight skill to your project so agents
+such as Claude Code, Codex, and Cursor know how to install, write, and check a
+tour when you ask for one:
+
+```bash
+npx skills add btahir/react-tourlight
+```
+
 **Next.js App Router:** as of v0.2.0 the package ships its own `"use client"`
 directive, so `SpotlightProvider`, `SpotlightTour`, and friends can be
 imported directly into a Server Component (like `app/layout.tsx`) without
@@ -376,8 +384,10 @@ The last command prints Playwright target smoke-check source. It does not run
 a browser or prove that the user's task completed. Configure your application's
 actual authentication, setup, interactions, and outcome assertions.
 
-The [agent skill](https://github.com/btahir/react-tourlight/blob/main/skills/tourlight/SKILL.md) guides coding agents through this
-workflow and is included at `node_modules/react-tourlight/skills/tourlight/SKILL.md`.
+The [agent skill](https://github.com/btahir/react-tourlight/blob/main/skills/tourlight/SKILL.md) guides coding agents from a first
+code-first tour through this document workflow. Install it with
+`npx skills add btahir/react-tourlight`; it is also included at
+`node_modules/react-tourlight/skills/tourlight/SKILL.md`.
 The separate `react-tourlight-mcp` package accepts guide
 documents and returns schemas, validation, summaries, and generated test source.
 It does not read app files or publish guides. See the [agent guide](https://react-tourlight.vercel.app/docs/agents)
