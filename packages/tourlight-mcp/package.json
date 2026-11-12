@@ -1,6 +1,6 @@
 {
   "name": "react-tourlight-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Local MCP tools for authoring, validating, and testing portable Tourlight documents",
   "type": "module",
   "license": "MIT",
@@ -10,8 +10,12 @@
     "directory": "packages/tourlight-mcp"
   },
   "homepage": "https://react-tourlight.vercel.app/docs/agents",
-  "bugs": { "url": "https://github.com/btahir/react-tourlight/issues" },
-  "publishConfig": { "access": "public" },
+  "bugs": {
+    "url": "https://github.com/btahir/react-tourlight/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "funding": {
     "type": "individual",
     "url": "https://react-tourlight.vercel.app/support"
