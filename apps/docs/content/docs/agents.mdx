@@ -7,6 +7,18 @@ Agent support starts with a shared artifact. A coding agent can create or modify
 
 The document schema, local CLI, skill, and MCP server serve different purposes. None of them automatically discovers every user journey or proves that a tour works for every role.
 
+## Install the skill
+
+```bash
+npx skills add btahir/react-tourlight
+```
+
+This copies the `tourlight` skill into your project's skill folder for the agents you choose, such as Claude Code, Codex, or Cursor. Its description is written to match plain requests such as "add an onboarding tour to the dashboard", so you do not need to name Tourlight. The skill covers installing the package, a code-first tour, when to use a tour document instead, and how to check the tour in a browser. Longer API, troubleshooting, and document workflow notes sit in its `references/` folder and load only when needed.
+
+The npm package also ships the same skill at `node_modules/react-tourlight/skills/tourlight/`. You can copy that directory into your agent client's skill location or ask the agent to read `SKILL.md` directly. Skill discovery varies by client; the file is guidance, not a background service.
+
+Documentation is also available as [llms.txt](/llms.txt) and [llms-full.txt](/llms-full.txt). The JSON Schema is shipped at `react-tourlight/schema.json` for editor integrations and machine validation.
+
 ## Give an agent a concrete job
 
 ```text
@@ -19,10 +31,6 @@ Use named registry hooks for preparation; never put code in JSON.
 Validate the document, preview it in Studio, and run browser checks.
 Report any routes or user states that were not tested.
 ```
-
-The package includes `skills/tourlight/SKILL.md`. Copy that skill directory into your agent client's supported skill location, or explicitly ask the agent to read it. Skill discovery varies by client; the file is guidance, not a background service.
-
-Documentation is also available as [llms.txt](/llms.txt) and [llms-full.txt](/llms-full.txt). The JSON Schema is shipped at `react-tourlight/schema.json` for editor integrations and machine validation.
 
 ## Local CLI
 
